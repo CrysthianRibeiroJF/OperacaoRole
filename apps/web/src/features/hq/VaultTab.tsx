@@ -5,6 +5,7 @@ import { useVault } from '../../lib/queries';
 import { Ticket } from '../events/shared';
 import { DepositSection } from './vault/DepositSection';
 import { ExpensesSection } from './vault/ExpensesSection';
+import { RefundsSection } from './vault/RefundsSection';
 import { SettlementSection } from './vault/SettlementSection';
 import { TreasurerPanel } from './vault/TreasurerPanel';
 
@@ -76,6 +77,7 @@ export function VaultTab({ detail }: { detail: EventDetail }) {
     <>
       <MyBalance eventId={detail.event.id} />
       <DepositSection detail={detail} />
+      <RefundsSection detail={detail} />
       {(isTreasurer || detail.me.can['deposit.configure']) && <TreasurerPanel detail={detail} />}
       <ExpensesSection detail={detail} />
       <SettlementSection detail={detail} />

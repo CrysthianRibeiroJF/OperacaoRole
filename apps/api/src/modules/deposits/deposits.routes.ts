@@ -8,6 +8,7 @@ import {
   reviewDeposit,
   submitProof,
 } from './deposits.service';
+import { listRefunds, markRefunded } from './refunds.service';
 
 export async function depositsRoutes(app: FastifyInstance) {
   const { ctx } = app;
@@ -50,6 +51,18 @@ export async function depositsRoutes(app: FastifyInstance) {
         reply,
         await openProofFile(ctx, requesterId, req.params.id, req.params.userId),
       );
+    },
+  );
+
+  app.get<{ Params: { id: string } }>('/events/:id/refunds', async (req) =>
+    listRefunds(ctx, await requireUser(req), req.params.id),
+  );
+
+  app.post<{ Params: { id: string; userId: string } }>(
+    '/events/:id/refunds/:userId',
+    async (req) => {
+      await markRefunded(ctx, await requireUser(req), req.params.id, req.params.userId);
+      return { ok: true };
     },
   );
 }

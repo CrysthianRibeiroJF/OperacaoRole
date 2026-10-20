@@ -18,7 +18,7 @@ Outros documentos: [PRD](../docs/PRD-Operacao-Role.md), [backlog](../docs/BACKLO
 
 ## Estado em uma olhada
 
-- **Código:** MVP funcional (API, PWA, domínio e contratos) com 148 testes automatizados. Rodar: ver [README](../README.md). Arquitetura: [docs/arquitetura.md](../docs/arquitetura.md).
+- **Código:** MVP funcional (API, PWA, domínio e contratos) com 160 testes automatizados mais testes de ponta a ponta em desktop, Android e iOS (Playwright). Rodar: ver [README](../README.md). Arquitetura: [docs/arquitetura.md](../docs/arquitetura.md).
 - **Tese central:** proposta fechada + massa crítica + sinal Pix + rateio justo resolvem a inércia dos rolês em grupo.
 - **Não validado ainda:** o problema e as metas numéricas (nenhuma pesquisa com usuários até agora).
 - **Pronto para produção técnica (D-027 a D-031):** um processo serve app e API, CI, termos provisórios com aceite, retenção de 90 dias, quartos e `npm run metrics`.

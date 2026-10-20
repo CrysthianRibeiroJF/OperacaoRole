@@ -20,16 +20,25 @@ Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealiz
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Sobe API e app com recarga automática |
-| `npm test` | 148 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
+| `npm test` | 160 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
 | `npm run typecheck` | TypeScript estrito em todos os pacotes |
 | `npm run lint` / `npm run format` | ESLint e Prettier |
 | `npm run check` | Typecheck + lint + testes (rode antes de enviar mudanças) |
 | `npm run build` | Build de produção da API (bundle em `apps/api/dist`) e do app (`apps/web/dist`, com PWA) |
 | `npm run db:migrate` / `npm run db:seed` | Migrations e dados de demonstração |
 | `npm run metrics` | Indicadores do PRD (G1 a G5) calculados do banco, com as metas ao lado (`-- --json` para máquinas) |
+| `npm run errors` / `npm run backup` | Últimos erros registrados e cópia consistente do banco |
+| `npm run e2e` | Testes de ponta a ponta (desktop, Android, iPhone, iPad); rode `npm run build` antes |
+| `npm run loadtest` | Teste de carga básico contra uma API no ar |
 | `npm start` | Sobe a API em produção servindo o app já compilado (rode `npm run build` antes) |
 
+## Plataformas
+
+Desktop, Android e iOS por uma base só (PWA instalável). Mínimos: iOS Safari 16.4, Chrome e Edge 111, Firefox 128. Detalhes e testes em [docs/testes-de-plataforma.md](docs/testes-de-plataforma.md).
+
 ## Colocar no ar
+
+No Render: [docs/publicar-no-render.md](docs/publicar-no-render.md) (há um `render.yaml` na raiz). Em outro servidor:
 
 Um processo só serve o app e a API na mesma origem (cookie, prévia de link e PWA funcionam sem proxy):
 

@@ -28,6 +28,7 @@ export const keys = {
   settlement: (id: string) => ['settlement', id] as const,
   vault: (id: string) => ['vault', id] as const,
   deposits: (id: string) => ['deposits', id] as const,
+  refunds: (id: string) => ['refunds', id] as const,
   supplies: (id: string) => ['supplies', id] as const,
   fleet: (id: string) => ['fleet', id] as const,
   rooms: (id: string) => ['rooms', id] as const,

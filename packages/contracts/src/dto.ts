@@ -305,3 +305,15 @@ export interface RoomsDto {
   unassigned: PublicUser[];
   myRoomId: string | null;
 }
+
+export interface RefundDto {
+  user: PublicUser;
+  amountCents: number;
+  refundedAt: string | null;
+}
+
+export interface RefundsDto {
+  /** O Tesoureiro vê todos; os demais veem só a própria linha. */
+  canManage: boolean;
+  items: RefundDto[];
+}

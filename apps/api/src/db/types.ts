@@ -273,6 +273,32 @@ export interface RoomOccupantsTable {
   user_id: string;
 }
 
+export interface ErrorEventsTable {
+  id: string;
+  source: 'server' | 'client';
+  message: string;
+  stack: string | null;
+  route: string | null;
+  user_id: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
+export interface AnalyticsEventsTable {
+  id: string;
+  name: string;
+  user_id: string | null;
+  path: string | null;
+  created_at: string;
+}
+
+export interface DepositRefundsTable {
+  event_id: string;
+  user_id: string;
+  refunded_at: string;
+  marked_by: string;
+}
+
 export interface Database {
   users: UsersTable;
   events: EventsTable;
@@ -299,4 +325,7 @@ export interface Database {
   notification_prefs: NotificationPrefsTable;
   rooms: RoomsTable;
   room_occupants: RoomOccupantsTable;
+  error_events: ErrorEventsTable;
+  analytics_events: AnalyticsEventsTable;
+  deposit_refunds: DepositRefundsTable;
 }

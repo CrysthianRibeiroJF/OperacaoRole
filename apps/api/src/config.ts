@@ -11,6 +11,8 @@ const envSchema = z.object({
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:5173'),
   /** Pasta do app compilado (apps/web/dist). Em produção, a API serve o app: um processo, uma origem. */
   WEB_DIST_DIR: z.string().optional(),
+  /** Tentativas por minuto e por IP nas rotas de acesso (cadastro, login, recuperação). */
+  AUTH_RATE_LIMIT_PER_MIN: z.coerce.number().int().min(1).default(10),
   /** Despesas acima disso (por quem não é Tesoureiro) exigem aprovação. Em centavos. */
   EXPENSE_APPROVAL_THRESHOLD_CENTS: z.coerce.number().int().default(30_000),
 });

@@ -1,0 +1,32 @@
+# Blueprint do Render: um único serviço web (a API serve o app compilado) com disco persistente.
+# Guia completo: docs/publicar-no-render.md
+services:
+  - type: web
+    name: operacao-role
+    runtime: node
+    plan: starter # disco persistente exige plano pago; o plano gratuito apaga o banco a cada deploy
+    region: oregon # troque para virginia/ohio se preferir; não dá para mudar depois sem recriar o disco
+    buildCommand: npm ci --include=dev && npm rebuild better-sqlite3 && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: role-data
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_PATH
+        value: /var/data/role.db
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: SESSION_SECRET
+        generateValue: true
+      # Preencha no painel depois do primeiro deploy, com a URL pública (https://...onrender.com ou domínio próprio).
+      - key: PUBLIC_WEB_URL
+        sync: false

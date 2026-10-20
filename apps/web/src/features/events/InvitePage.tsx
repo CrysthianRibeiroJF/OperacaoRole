@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { IconArrowLeft, IconBeer, IconClock, IconLeaf, IconPin } from '../../components/icons';
@@ -6,6 +6,7 @@ import { AvatarStack, Countdown, ErrorState, Spinner, Toggle } from '../../compo
 import { api, ApiError } from '../../lib/api';
 import { formatBRL, formatDateTime, formatEventDates } from '../../lib/format';
 import { eventKeys, keys, useAction, useInvite, useSession } from '../../lib/queries';
+import { track } from '../../lib/telemetry';
 import { ShareButton, Stamp, StatusTag, SwallowMeter, Ticket } from './shared';
 
 /** "O Convite": tela pública, feita para converter rápido (Tô dentro / Passo). */
@@ -16,6 +17,10 @@ export function InvitePage() {
   const { data: session } = useSession();
   const { data, isPending, error, refetch } = useInvite(code);
   const [showWhy, setShowWhy] = useState(false);
+
+  useEffect(() => {
+    if (data) track('invite_viewed', { once: code });
+  }, [data, code]);
 
   const loggedIn = !!session?.profile;
   const eventId = data?.event.id ?? '';
@@ -73,7 +78,7 @@ export function InvitePage() {
         : '';
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="mx-auto w-full max-w-xl space-y-5 pb-4">
       {loggedIn && (
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-bold text-navy-dark">
           <IconArrowLeft size={16} /> Meus rolês

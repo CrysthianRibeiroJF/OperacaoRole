@@ -23,10 +23,12 @@ import {
 } from './auth.service';
 
 const THIRTY_DAYS_S = 30 * 24 * 3600;
-const authLimit = { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } };
 
 export async function authRoutes(app: FastifyInstance) {
   const { ctx } = app;
+  const authLimit = {
+    config: { rateLimit: { max: ctx.config.AUTH_RATE_LIMIT_PER_MIN, timeWindow: '1 minute' } },
+  };
   const device = (req: FastifyRequest) => describeDevice(req.headers['user-agent']);
 
   async function startSession(reply: FastifyReply, userId: string, sessionId: string) {

@@ -8,3 +8,7 @@ apps/api/data/
 apps/api/uploads/
 .vite/
 .DS_Store
+
+apps/web/e2e/screenshots/
+apps/web/e2e/.results/
+apps/web/playwright-report/

@@ -4,6 +4,7 @@ import { IconClock, IconPlus, Swallow } from '../../components/icons';
 import { Countdown, EmptyState, ErrorState, Spinner } from '../../components/misc';
 import { formatBRL, formatEventDates } from '../../lib/format';
 import { useFeed, useSession } from '../../lib/queries';
+import { InstallBanner } from '../../components/InstallBanner';
 import { StatusTag, SwallowMeter, Ticket } from '../events/shared';
 
 function EventRow({ item }: { item: FeedItem }) {
@@ -101,9 +102,11 @@ function Section({ title, items }: { title: string; items: FeedItem[] }) {
           {items.length}
         </span>
       </h2>
-      {items.map((i) => (
-        <EventRow key={i.id} item={i} />
-      ))}
+      <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 md:[&>*]:self-start">
+        {items.map((i) => (
+          <EventRow key={i.id} item={i} />
+        ))}
+      </div>
     </section>
   );
 }
@@ -131,6 +134,8 @@ export function FeedPage() {
           <IconPlus size={18} /> Novo rolê
         </Link>
       </header>
+
+      <InstallBanner />
 
       {isPending && <Spinner />}
       {isError && (

@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0e1f3d" />
+    <meta name="theme-color" content="#e8edf3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a1226" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
+    <!-- iOS: instalado na tela de início abre sem a barra do Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Rolê" />
+    <meta name="format-detection" content="telephone=no" />
     <meta name="description" content='Transforme "vamos marcar algo?" em rolê confirmado.' />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Operação Rolê</title>
   </head>
   <body>
@@ -24,7 +31,24 @@
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" />
       </filter>
     </svg>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Aparece só se o app não carregar (navegador antigo ou JavaScript desligado); o React troca isto ao montar. -->
+      <p
+        style="
+          font:
+            16px/1.5 system-ui,
+            sans-serif;
+          max-width: 28rem;
+          margin: 3rem auto;
+          padding: 0 1.25rem;
+          color: #0e1f3d;
+        "
+      >
+        <strong>Operação Rolê</strong><br />
+        Não conseguimos abrir o app neste navegador. Atualize o navegador (Chrome, Safari 16.4 ou
+        superior, Firefox ou Edge) e confirme que o JavaScript está ligado.
+      </p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

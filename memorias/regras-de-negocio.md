@@ -126,3 +126,5 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-98** O cadastro exige o aceite dos termos e da privacidade; guarda data e versão aceitas.
 - **RN-99** Comprovantes de sinal e fotos de notas são apagados 90 dias após o encerramento ou cancelamento do rolê. Valores e auditoria permanecem.
 
+- **RN-100** Rolê cancelado com janela de sinal aberta: cada sinal aprovado (exceto o do Tesoureiro) aparece como "a devolver" até o Tesoureiro marcar como devolvido. O app não movimenta dinheiro. Cada pessoa vê só a própria linha; marcar é idempotente e avisa a pessoa.
+- **RN-101** Só o Idealizador transfere o comando, a um participante confirmado, e só com o rolê aberto ou confirmado. Não pode transferir para si mesmo.

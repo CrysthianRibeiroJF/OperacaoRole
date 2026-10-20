@@ -233,6 +233,25 @@ export const roomSchema = z.object({
 });
 export const roomUpdateSchema = roomSchema.partial();
 
+export const transferOrganizerSchema = z.object({ userId: z.string().min(1) });
+
+export const TRACKED_EVENTS = [
+  'invite_viewed',
+  'share_clicked',
+  'signup_started',
+  'install_shown',
+  'install_accepted',
+] as const;
+export const trackEventSchema = z.object({
+  name: z.enum(TRACKED_EVENTS),
+  path: z.string().max(200).optional(),
+});
+export const clientErrorSchema = z.object({
+  message: z.string().min(1).max(300),
+  stack: z.string().max(2000).optional(),
+  path: z.string().max(200).optional(),
+});
+
 export const deleteAccountSchema = z.object({ confirm: z.literal('EXCLUIR') });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;

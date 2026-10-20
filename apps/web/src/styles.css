@@ -78,10 +78,16 @@
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     color-scheme: light dark;
+    /* Rede de segurança: animações que começam ampliadas (carimbo) nunca criam rolagem lateral. */
+    overflow-x: clip;
   }
   body {
     @apply bg-desk font-sans text-ink antialiased;
     min-height: 100dvh;
+    /* iPhone com notch e Android com recorte: o conteúdo nunca fica sob a barra ou a câmera. */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     /* mesa de trabalho: grade de pontos quase imperceptível */
     background-image: radial-gradient(
       color-mix(in oklab, var(--color-ink) 13%, transparent) 1px,
@@ -198,6 +204,8 @@
     margin-top: -0.5px;
     background: var(--color-surface);
     border-radius: 0 0 16px 16px;
+    /* O carimbo entra ampliado (slam); sem isto ele alarga a página no celular até assentar. */
+    overflow: clip;
     -webkit-mask:
       radial-gradient(circle var(--r) at 0 0, #0000 98%, #000) 0 0 / 51% 100% no-repeat,
       radial-gradient(circle var(--r) at 100% 0, #0000 98%, #000) 100% 0 / 51% 100% no-repeat;

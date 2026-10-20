@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Operação Rolê',
         short_name: 'Rolê',
@@ -18,12 +18,20 @@ export default defineConfig({
         lang: 'pt-BR',
         theme_color: '#0e1f3d',
         background_color: '#e8edf3',
+        id: '/',
+        scope: '/',
+        categories: ['lifestyle', 'productivity', 'travel'],
         display: 'standalone',
         start_url: '/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {
@@ -52,6 +60,10 @@ export default defineConfig({
       '/share': { target: 'http://127.0.0.1:3333', changeOrigin: false },
     },
   },
-  build: { sourcemap: true },
-  test: { environment: 'node' },
+  // Tailwind 4 pede Safari 16.4 (iOS), Chrome 111, Firefox 128: é o piso de navegadores do app.
+  build: {
+    sourcemap: true,
+    target: ['es2022', 'chrome111', 'safari16.4', 'firefox128', 'edge111'],
+  },
+  test: { environment: 'node', include: ['src/**/*.test.ts'] },
 });

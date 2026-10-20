@@ -121,7 +121,7 @@ export function CreateEventPage() {
 
   return (
     <div className="space-y-5">
-      <header>
+      <header className="lg:max-w-xl">
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-bold text-navy-dark">
           <IconArrowLeft size={16} /> Voltar
         </Link>
@@ -132,145 +132,149 @@ export function CreateEventPage() {
         </p>
       </header>
 
-      <LivePreview
-        title={title}
-        destination={destination}
-        startDate={startDate}
-        endDate={endDate}
-        cost={cost}
-        quorum={quorum}
-        deposit={needsDeposit ? deposit : null}
-      />
-
-      <form onSubmit={submit} className="card space-y-5 p-5">
-        <Field label="Que rolê é esse?">
-          <input
-            className="field"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Bate e volta Maresias"
-            maxLength={80}
-            required
+      <div className="space-y-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-8 lg:space-y-0">
+        <div className="lg:sticky lg:top-8">
+          <LivePreview
+            title={title}
+            destination={destination}
+            startDate={startDate}
+            endDate={endDate}
+            cost={cost}
+            quorum={quorum}
+            deposit={needsDeposit ? deposit : null}
           />
-        </Field>
-        <Field label="Destino">
-          <input
-            className="field"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="Maresias, SP"
-            maxLength={120}
-            required
-          />
-        </Field>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Data">
+        <form onSubmit={submit} className="card space-y-5 p-5">
+          <Field label="Que rolê é esse?">
             <input
               className="field"
-              type="date"
-              min={today()}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Bate e volta Maresias"
+              maxLength={80}
               required
             />
           </Field>
-          <Field label="Volta (opcional)">
+          <Field label="Destino">
             <input
               className="field"
-              type="date"
-              min={startDate || today()}
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="Maresias, SP"
+              maxLength={120}
+              required
             />
           </Field>
-        </div>
 
-        <Field
-          label="Teto de gasto por pessoa"
-          hint="Estimativa honesta: é o que aparece no convite."
-        >
-          <MoneyInput value={cost} onChange={setCost} placeholder="120,00" />
-        </Field>
-
-        <fieldset>
-          <legend className="label">Quantas andorinhas para virar oficial?</legend>
-          <div className="flex gap-2" role="radiogroup">
-            {Array.from({ length: QUORUM_MAX - QUORUM_MIN + 1 }, (_, i) => QUORUM_MIN + i).map(
-              (n) => (
-                <button
-                  key={n}
-                  type="button"
-                  role="radio"
-                  aria-checked={quorum === n}
-                  onClick={() => setQuorum(n)}
-                  className={`mono size-12 rounded-[10px] border-2 text-lg font-semibold transition-colors ${
-                    quorum === n
-                      ? 'border-ink bg-ink text-surface'
-                      : 'border-line bg-surface text-ink'
-                  }`}
-                >
-                  {n}
-                </button>
-              ),
-            )}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Data">
+              <input
+                className="field"
+                type="date"
+                min={today()}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Volta (opcional)">
+              <input
+                className="field"
+                type="date"
+                min={startDate || today()}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </Field>
           </div>
-          <p className="hint">
-            Você já conta como a primeira. Com {quorum}, o rolê vira oficial e o resto decide se
-            quer ficar de fora.
-          </p>
-        </fieldset>
 
-        <Field label="Prazo para responder">
-          <select
-            className="field"
-            value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
+          <Field
+            label="Teto de gasto por pessoa"
+            hint="Estimativa honesta: é o que aparece no convite."
           >
-            <option value={24}>24 horas</option>
-            <option value={48}>48 horas (padrão)</option>
-            <option value={72}>3 dias</option>
-            <option value={168}>1 semana</option>
-          </select>
-        </Field>
+            <MoneyInput value={cost} onChange={setCost} placeholder="120,00" />
+          </Field>
 
-        <div className="rounded-[12px] bg-desk-deep p-4">
-          <Toggle
-            checked={needsDeposit}
-            onChange={setNeedsDeposit}
-            label="Exigir sinal por Pix"
-            hint="Trava anti-pipoca: só garante a vaga quem pagar e enviar o comprovante."
-          />
-          {needsDeposit && (
-            <div className="mt-3 space-y-4">
-              <Field label="Valor do sinal">
-                <MoneyInput value={deposit} onChange={setDeposit} placeholder="50,00" />
-              </Field>
-              <Field
-                label="Chave Pix de quem vai receber"
-                hint="O app não movimenta dinheiro: o Pix é direto entre as pessoas."
-              >
-                <input
-                  className="field"
-                  value={pix}
-                  onChange={(e) => setPix(e.target.value)}
-                  maxLength={140}
-                  placeholder="CPF, e-mail, telefone..."
-                />
-              </Field>
-              {deposit !== null && cost !== null && deposit > cost && (
-                <p className="text-sm font-bold text-warn">
-                  O sinal ({formatBRL(deposit)}) é maior que o teto por pessoa. Confere?
-                </p>
+          <fieldset>
+            <legend className="label">Quantas andorinhas para virar oficial?</legend>
+            <div className="flex gap-2" role="radiogroup">
+              {Array.from({ length: QUORUM_MAX - QUORUM_MIN + 1 }, (_, i) => QUORUM_MIN + i).map(
+                (n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    role="radio"
+                    aria-checked={quorum === n}
+                    onClick={() => setQuorum(n)}
+                    className={`mono size-12 rounded-[10px] border-2 text-lg font-semibold transition-colors ${
+                      quorum === n
+                        ? 'border-ink bg-ink text-surface'
+                        : 'border-line bg-surface text-ink'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ),
               )}
             </div>
-          )}
-        </div>
+            <p className="hint">
+              Você já conta como a primeira. Com {quorum}, o rolê vira oficial e o resto decide se
+              quer ficar de fora.
+            </p>
+          </fieldset>
 
-        <Button type="submit" size="lg" block loading={create.isPending} disabled={!valid}>
-          Lançar proposta
-        </Button>
-      </form>
+          <Field label="Prazo para responder">
+            <select
+              className="field"
+              value={hours}
+              onChange={(e) => setHours(Number(e.target.value))}
+            >
+              <option value={24}>24 horas</option>
+              <option value={48}>48 horas (padrão)</option>
+              <option value={72}>3 dias</option>
+              <option value={168}>1 semana</option>
+            </select>
+          </Field>
+
+          <div className="rounded-[12px] bg-desk-deep p-4">
+            <Toggle
+              checked={needsDeposit}
+              onChange={setNeedsDeposit}
+              label="Exigir sinal por Pix"
+              hint="Trava anti-pipoca: só garante a vaga quem pagar e enviar o comprovante."
+            />
+            {needsDeposit && (
+              <div className="mt-3 space-y-4">
+                <Field label="Valor do sinal">
+                  <MoneyInput value={deposit} onChange={setDeposit} placeholder="50,00" />
+                </Field>
+                <Field
+                  label="Chave Pix de quem vai receber"
+                  hint="O app não movimenta dinheiro: o Pix é direto entre as pessoas."
+                >
+                  <input
+                    className="field"
+                    value={pix}
+                    onChange={(e) => setPix(e.target.value)}
+                    maxLength={140}
+                    placeholder="CPF, e-mail, telefone..."
+                  />
+                </Field>
+                {deposit !== null && cost !== null && deposit > cost && (
+                  <p className="text-sm font-bold text-warn">
+                    O sinal ({formatBRL(deposit)}) é maior que o teto por pessoa. Confere?
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" size="lg" block loading={create.isPending} disabled={!valid}>
+            Lançar proposta
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

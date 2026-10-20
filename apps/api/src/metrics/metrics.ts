@@ -26,6 +26,15 @@ export interface ProductMetrics {
   settlementPaidIn7DaysRate: number | null;
   /** G5 (proxy): média de pessoas confirmadas além de quem criou, por rolê confirmado. */
   guestsPerConfirmedEvent: number | null;
+  /** Funil de entrada: do convite aberto à resposta "Tô dentro". */
+  funnel: {
+    invitesViewed: number;
+    signupsStarted: number;
+    accountsCreated: number;
+    guestsJoined: number;
+  };
+  /** Erros nas últimas 24 horas (servidor e app). */
+  errorsLast24h: { server: number; client: number };
 }
 
 const HOUR = 3_600_000;
@@ -43,7 +52,8 @@ function median(values: number[]): number | null {
 }
 
 export async function computeMetrics(db: Db, now: Date): Promise<ProductMetrics> {
-  const [events, parts, roles, transfers, users] = await Promise.all([
+  const since24h = new Date(now.getTime() - DAY).toISOString();
+  const [events, parts, roles, transfers, users, tracked, errors] = await Promise.all([
     db.selectFrom('events').selectAll().execute(),
     db.selectFrom('participations').selectAll().where('response', '=', 'in').execute(),
     db.selectFrom('event_roles').select(['event_id', 'user_id', 'role']).execute(),
@@ -53,6 +63,8 @@ export async function computeMetrics(db: Db, now: Date): Promise<ProductMetrics>
       .select(['settlement_transfers.paid_at as paid_at', 'settlements.closed_at as closed_at'])
       .execute(),
     db.selectFrom('users').select('id').where('deleted_at', 'is', null).execute(),
+    db.selectFrom('analytics_events').select('name').execute(),
+    db.selectFrom('error_events').select('source').where('created_at', '>', since24h).execute(),
   ]);
 
   const count = (status: string) => events.filter((e) => e.status === status).length;
@@ -105,6 +117,18 @@ export async function computeMetrics(db: Db, now: Date): Promise<ProductMetrics>
     depositApprovedRate: ratio(approved, needed),
     rolesSharedRate: ratio(rolesShared, reached.length),
     settlementPaidIn7DaysRate: ratio(paidInTime, dueTransfers.length),
+    funnel: {
+      invitesViewed: tracked.filter((t) => t.name === 'invite_viewed').length,
+      signupsStarted: tracked.filter((t) => t.name === 'signup_started').length,
+      accountsCreated: users.length,
+      guestsJoined: parts.filter((p) =>
+        events.some((e) => e.id === p.event_id && e.organizer_id !== p.user_id),
+      ).length,
+    },
+    errorsLast24h: {
+      server: errors.filter((e) => e.source === 'server').length,
+      client: errors.filter((e) => e.source === 'client').length,
+    },
     guestsPerConfirmedEvent: guests.length
       ? Math.round((guests.reduce((s, n) => s + n, 0) / guests.length) * 10) / 10
       : null,
@@ -126,6 +150,9 @@ export function formatMetrics(m: ProductMetrics): string {
     `G3  Cargos divididos (≥ 2 pessoas): ${pct(m.rolesSharedRate)}   meta ≥ 70%`,
     `G4  Acerto pago em até 7 dias     : ${pct(m.settlementPaidIn7DaysRate)}   meta ≥ 90%`,
     `G5  Convidados por rolê (proxy)   : ${m.guestsPerConfirmedEvent ?? 'sem dados'}   meta ≥ 1,5`,
+    '',
+    `Funil: ${m.funnel.invitesViewed} convites abertos → ${m.funnel.signupsStarted} cadastros iniciados → ${m.funnel.accountsCreated} contas → ${m.funnel.guestsJoined} "Tô dentro" de convidados`,
+    `Erros (24 h): ${m.errorsLast24h.server} no servidor, ${m.errorsLast24h.client} no app`,
   ];
   return lines.join('\n');
 }

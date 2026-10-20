@@ -13,7 +13,7 @@ export function AccountPage({
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-xl space-y-6">
       <header>
         <Link
           to="/perfil"

@@ -11,7 +11,7 @@ Derivado do [PRD](PRD-Operacao-Role.md) v0.1. Fonte de verdade das regras: [memo
 
 **Resumo:** 13 épicos (E0 a E12) · 73 tickets · P0: 51 tickets (185 pts) · P1: 16 · P2: 3
 
-**Andamento (20/10/2026):** 55 tickets feitos ✅, 7 parciais 🟡, 11 a fazer (73 no total). Fase 2, acesso interno, quartos, termos provisórios, retenção, CI e métricas estão prontos. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), beta fechado (ROL-124), teste de carga e monitoramento (ROL-125) e a revisão jurídica dos termos. Sem canal externo (SMS, WhatsApp, e-mail) por decisão.
+**Andamento (20/10/2026):** 57 tickets feitos ✅, 7 parciais 🟡, 9 a fazer (73 no total). Fase 2, acesso interno, quartos, termos provisórios, retenção, CI e métricas estão prontos. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), beta fechado (ROL-124), teste de carga e monitoramento (ROL-125) e a revisão jurídica dos termos. Sem canal externo (SMS, WhatsApp, e-mail) por decisão.
 
 | Épico | Tema | Fase | Prioridade |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Tokens, botões, cards, cronômetro, avatar de confirmados.
 - [ ] Componentes documentados; contraste AA
 
 ### ROL-013 · Instrumentação de analytics (eventos de produto) · P0 · 3 pts · Dep: ROL-010 · **Parcial 🟡**
-> Parcial: `npm run metrics` calcula os indicadores do PRD a partir do banco; faltam eventos de funil (telas e cliques).
+> Parcial: `npm run metrics` calcula os indicadores do PRD a partir do banco; o funil (convite visto, cadastro iniciado, compartilhamento, instalação) já entra no `npm run metrics`; faltam eventos de tela.
 Eventos: proposta criada, resposta, quórum atingido, sinal pago, despesa, conta fechada.
 - [ ] Todos os eventos da seção 9 do PRD emitem dados
 - [ ] Plano de tracking salvo em `memorias/`
@@ -145,7 +145,7 @@ Ativos, propostas com cronômetro, histórico com custo final.
 - [ ] Estado vazio com chamada para criar o primeiro rolê
 
 ### ROL-036 · Cancelamento e encerramento do rolê · P0 · 3 pts · Dep: ROL-033 · **Parcial 🟡**
-> Parcial: cancelamento pronto; reembolso do sinal é só orientação em notificação (o app não movimenta dinheiro).
+> Parcial: cancelamento pronto e devolução do sinal registrada pelo Tesoureiro (D-034, RN-100); o app não movimenta dinheiro. Falta a política de reembolso (Q1/Q2).
 - [ ] Cancelar após confirmação dispara regra de reembolso de sinal (depende de Q1/Q2)
 
 ---
@@ -169,7 +169,8 @@ Idealizador, Generais (Base, Frota, Suprimentos, Tesouro), Tropa, Observador.
 ### ROL-044 · Modo Observador · P0 · 2 pts · Dep: ROL-040 · **Feito ✅**
 - [ ] Leitura apenas: não vota, não escolhe vaga, não edita
 
-### ROL-045 · Transferência do cargo de Idealizador · P1 · 2 pts · Bloq: Q10 · **A fazer**
+### ROL-045 · Transferência do cargo de Idealizador · P1 · 2 pts · Bloq: Q10 · **Feito ✅**
+> Entregue (D-035, RN-101): "Passar o comando" na aba Equipe.
 
 ---
 
@@ -316,8 +317,8 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 > Aceite versionado no cadastro, exportação, exclusão por anonimização e retenção de 90 dias para comprovantes e notas.
 - [ ] Comprovantes e notas com retenção definida e exclusão sob pedido
 
-### ROL-122 · Segurança de acesso a comprovantes e dados financeiros · P0 · 3 pts · Dep: ROL-052 · **Parcial 🟡**
-> Parcial: autorização por papel em todos os endpoints e arquivos servidos só com sessão; falta revisão de segurança externa.
+### ROL-122 · Segurança de acesso a comprovantes e dados financeiros · P0 · 3 pts · Dep: ROL-052 · **Feito ✅**
+> Autorização por papel em todos os endpoints, arquivos só com sessão e teste que percorre toda a tabela de rotas e exige 401 sem login. Falta revisão de segurança externa (fora do código).
 - [ ] Links assinados com expiração; revisão de autorização por papel
 
 ### ROL-123 · Termos de uso e aviso "o app não custodia dinheiro" · P0 · 2 pts · Dep: ROL-004 · **Parcial 🟡**
@@ -326,7 +327,8 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 ### ROL-124 · Beta fechado com 10 grupos · P0 · 3 pts · Dep: Fase 1 completa · **A fazer**
 - [ ] Métricas G1, G2 e G4 coletadas e comparadas com as metas
 
-### ROL-125 · Teste de carga básico e monitoramento de erros · P0 · 3 pts · Dep: ROL-010 · **A fazer**
+### ROL-125 · Teste de carga básico e monitoramento de erros · P0 · 3 pts · Dep: ROL-010 · **Parcial 🟡**
+> Parcial: erros do servidor e do app registrados (`npm run errors`), script de carga pronto (`npm run loadtest`). Faltam os números medidos no ambiente real e um alerta ativo.
 
 ---
 

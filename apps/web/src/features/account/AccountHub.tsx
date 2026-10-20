@@ -63,7 +63,7 @@ export function AccountHub() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-xl space-y-6">
       <header>
         <p className="eyebrow">Sua credencial</p>
         <h1 className="mt-2 text-[3rem]">Conta</h1>

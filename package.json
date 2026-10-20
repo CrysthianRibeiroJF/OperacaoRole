@@ -23,6 +23,10 @@
     "db:migrate": "npm run db:migrate -w @role/api",
     "db:seed": "npm run db:seed -w @role/api",
     "metrics": "npm run metrics -w @role/api --silent --",
+    "errors": "npm run errors -w @role/api --silent --",
+    "backup": "npm run backup -w @role/api --silent --",
+    "e2e": "npm run e2e -w @role/web",
+    "loadtest": "npm run loadtest -w @role/api --",
     "check": "npm run typecheck && npm run lint && npm run test"
   },
   "devDependencies": {

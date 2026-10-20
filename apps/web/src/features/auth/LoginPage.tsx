@@ -15,6 +15,7 @@ import { Field } from '../../components/misc';
 import { api, ApiError, errorMessage } from '../../lib/api';
 import { formatBRL, formatEventDates, maskPhone } from '../../lib/format';
 import { keys, useInvite } from '../../lib/queries';
+import { track } from '../../lib/telemetry';
 import { Stamp, Ticket } from '../events/shared';
 
 /** Só aceita caminhos internos em `next`, para o login não virar redirecionamento aberto. */
@@ -134,6 +135,7 @@ export function LoginPage() {
         const res = await api.post<AuthResult>('/auth/login', { phone, password });
         enter(res.profile);
       } else if (mode === 'register') {
+        track('signup_started');
         const res = await api.post<AuthResult>('/auth/register', {
           phone,
           name,
@@ -185,25 +187,27 @@ export function LoginPage() {
           !passwordProblem;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-7 px-5 py-10">
-      <header>
-        <p className="eyebrow flex items-center gap-2 !text-ink">
-          <span className="grid size-6 place-items-center rounded-full bg-sol text-on-sol">
-            <Swallow size={14} />
-          </span>
-          Operação Rolê
-        </p>
-        <h1 className="mt-4 text-[3.5rem]">
-          Do “bora?”
-          <br />
-          ao confirmado.
-        </h1>
-        <p className="mt-3 max-w-[30ch] text-muted">
-          Lance o rolê, junte as primeiras andorinhas e deixe o app cobrar quem precisa.
-        </p>
-      </header>
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-7 px-5 py-10 lg:grid lg:max-w-5xl lg:grid-cols-2 lg:items-center lg:gap-16">
+      <div className="space-y-7">
+        <header>
+          <p className="eyebrow flex items-center gap-2 !text-ink">
+            <span className="grid size-6 place-items-center rounded-full bg-sol text-on-sol">
+              <Swallow size={14} />
+            </span>
+            Operação Rolê
+          </p>
+          <h1 className="mt-4 text-[3.5rem]">
+            Do “bora?”
+            <br />
+            ao confirmado.
+          </h1>
+          <p className="mt-3 max-w-[30ch] text-muted">
+            Lance o rolê, junte as primeiras andorinhas e deixe o app cobrar quem precisa.
+          </p>
+        </header>
 
-      {mode !== 'code' && (inviteCode ? <InviteContext code={inviteCode} /> : <ThesisDemo />)}
+        {mode !== 'code' && (inviteCode ? <InviteContext code={inviteCode} /> : <ThesisDemo />)}
+      </div>
 
       <div className="card p-5">
         {mode === 'code' && issuedCode ? (

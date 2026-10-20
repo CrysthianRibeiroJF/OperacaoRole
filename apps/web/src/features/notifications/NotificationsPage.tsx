@@ -67,7 +67,7 @@ export function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto w-full max-w-xl space-y-5">
       <header className="flex items-end justify-between gap-3">
         <div>
           <p className="eyebrow">

@@ -24,10 +24,14 @@ import { notificationsRoutes } from './modules/notifications/notifications.route
 import { rolesRoutes } from './modules/roles/roles.routes';
 import { roomsRoutes } from './modules/rooms/rooms.routes';
 import { settlementRoutes } from './modules/settlement/settlement.routes';
+import { recordError } from './modules/telemetry/telemetry.service';
+import { telemetryRoutes } from './modules/telemetry/telemetry.routes';
 
 declare module 'fastify' {
   interface FastifyInstance {
     ctx: AppContext;
+    /** Todas as rotas registradas (usado pelo teste que garante que nada privado ficou aberto). */
+    routeTable: { method: string; url: string }[];
   }
 }
 
@@ -42,6 +46,11 @@ export async function buildApp(
     trustProxy: ctx.config.NODE_ENV === 'production',
   });
   app.decorate('ctx', ctx);
+  app.decorate('routeTable', []);
+  app.addHook('onRoute', (route) => {
+    for (const method of [route.method].flat())
+      app.routeTable.push({ method: String(method), url: route.url });
+  });
 
   const production = ctx.config.NODE_ENV === 'production';
   await app.register(fastifyHelmet, {
@@ -105,6 +114,13 @@ export async function buildApp(
         .send({ error: { code: 'BAD_REQUEST', message: 'Requisição inválida' } });
     }
     req.log.error({ err }, 'erro não tratado');
+    void recordError(ctx.db, ctx.clock.now(), {
+      source: 'server',
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      route: req.method + ' ' + (req.routeOptions?.url ?? req.url.split('?')[0]),
+      userAgent: req.headers['user-agent'],
+    });
     return reply
       .code(500)
       .send({ error: { code: 'INTERNAL', message: 'Algo deu errado. Tente novamente.' } });
@@ -156,6 +172,7 @@ export async function buildApp(
       await api.register(fleetRoutes);
       await api.register(roomsRoutes);
       await api.register(accountRoutes);
+      await api.register(telemetryRoutes);
     },
     { prefix: '/api' },
   );

@@ -11,7 +11,10 @@
     "test": "vitest run",
     "db:migrate": "tsx src/db/migrate-cli.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "metrics": "tsx src/metrics/metrics-cli.ts"
+    "metrics": "tsx src/metrics/metrics-cli.ts",
+    "errors": "tsx src/metrics/errors-cli.ts",
+    "backup": "tsx src/db/backup-cli.ts",
+    "loadtest": "node scripts/loadtest.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.0",

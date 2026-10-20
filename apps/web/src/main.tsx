@@ -5,12 +5,18 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './app/App';
 import { ToastProvider } from './components/Toast';
 import { ApiError } from './lib/api';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { initInstall } from './lib/install';
+import { initTelemetry } from './lib/telemetry';
 import '@fontsource-variable/big-shoulders-display/wght';
 import '@fontsource-variable/instrument-sans';
 import '@fontsource/ibm-plex-mono/400';
 import '@fontsource/ibm-plex-mono/500';
 import '@fontsource/ibm-plex-mono/600';
 import './styles.css';
+
+initTelemetry();
+initInstall();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,12 +31,14 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ToastProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ToastProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ToastProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

@@ -4,6 +4,7 @@ import {
   createEventSchema,
   preferencesSchema,
   respondSchema,
+  transferOrganizerSchema,
 } from '@role/contracts';
 import type { FastifyInstance } from 'fastify';
 import { optionalUser, parse, requireUser } from '../../http';
@@ -16,6 +17,7 @@ import {
   respond,
   setPreferences,
   updateBase,
+  transferOrganizer,
   updateBudget,
 } from './event.service';
 
@@ -65,6 +67,13 @@ export async function eventRoutes(app: FastifyInstance) {
     const userId = await requireUser(req);
     const { fixedCostsCents } = parse(budgetSchema, req.body);
     await updateBudget(ctx, userId, req.params.id, fixedCostsCents);
+    return { ok: true };
+  });
+
+  app.post<{ Params: { id: string } }>('/events/:id/transfer-organizer', async (req) => {
+    const userId = await requireUser(req);
+    const { userId: target } = parse(transferOrganizerSchema, req.body);
+    await transferOrganizer(ctx, userId, req.params.id, target);
     return { ok: true };
   });
 }

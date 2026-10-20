@@ -633,3 +633,49 @@ export async function updateBudget(
     data: { fixedCostsCents },
   });
 }
+
+/** Passa o comando do rolê para outra pessoa confirmada (quem criou nem sempre é quem consegue tocar). */
+export async function transferOrganizer(
+  ctx: AppContext,
+  userId: string,
+  eventId: string,
+  targetId: string,
+): Promise<void> {
+  await ctx.db.transaction().execute(async (trx) => {
+    const now = ctx.clock.now();
+    const event = await requireEvent(trx, eventId);
+    if (event.organizer_id !== userId)
+      throw forbidden('Só quem tem o comando do rolê pode passá-lo');
+    if (event.status !== 'open' && event.status !== 'confirmed') {
+      throw conflict('EVENT_NOT_ACTIVE', 'Este rolê não aceita mais alterações');
+    }
+    if (targetId === userId) throw unprocessable('SAME_PERSON', 'Escolha outra pessoa');
+    const target = await getParticipation(trx, eventId, targetId);
+    if (!target || target.response !== 'in') {
+      throw unprocessable('NOT_CONFIRMED', 'Só quem confirmou presença pode receber o comando');
+    }
+
+    await trx
+      .updateTable('events')
+      .set({ organizer_id: targetId })
+      .where('id', '=', eventId)
+      .execute();
+    const names = await usersById(trx, [userId, targetId]);
+    await notify(trx, now, {
+      userIds: [targetId],
+      eventId,
+      kind: 'event.organizer_transferred',
+      title: 'Você agora comanda o rolê',
+      body: `${names.get(userId)?.name ?? 'Quem criou'} passou o comando de ${event.title} para você. Você cobre os cargos vagos e pode sortear e cancelar.`,
+      dedupeKey: `event.organizer_transferred:${eventId}:${targetId}:${now.getTime()}`,
+    });
+    await audit(trx, now, {
+      eventId,
+      actorId: userId,
+      action: 'event.organizer_transferred',
+      entity: 'event',
+      entityId: eventId,
+      data: { to: targetId },
+    });
+  });
+}

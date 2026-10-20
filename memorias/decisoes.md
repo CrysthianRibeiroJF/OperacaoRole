@@ -144,3 +144,22 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 **Decisão:** `npm run metrics` calcula direto do banco os indicadores G1 a G5 e o sinal aprovado, com as metas ao lado (`--json` para máquinas). Sem dados, devolve "sem dados" em vez de número inventado.
 **Consequências:** serve ao beta sem ferramenta externa. Não é analytics de funil (cliques, telas); isso segue em aberto (ROL-013).
 
+## D-032 · Desktop, Android e iOS com uma base só · 20/10/2026 · Aceita
+**Decisão:** continuar PWA (sem apps nativos). Piso de navegadores: iOS Safari 16.4, Chrome/Edge 111, Firefox 128 (imposto pelo Tailwind v4 e declarado no build). Layout de celular com barra inferior e, a partir de 1024 px, menu lateral e grades em duas colunas. Instalação guiada (botão no Android/desktop, passo a passo no iOS), ícones maskable e apple-touch, áreas seguras de notch, fotos reduzidas e convertidas no aparelho antes do envio. Validação com Playwright em desktop, Pixel (Chromium), iPhone e iPad (WebKit).
+**Consequências:** o WebKit do Playwright não substitui um iPhone real (teclado, câmera, instalação): teste manual obrigatório antes de divulgar. Sem push no iOS/Android enquanto não houver canal externo (D-025). Detalhes: `docs/testes-de-plataforma.md`.
+
+## D-033 · Monitoramento de erros e funil dentro do próprio app · 20/10/2026 · Aceita
+**Decisão:** erros do servidor (500) e do app (ErrorBoundary, `error`, `unhandledrejection`, no máximo 5 por sessão) e eventos do funil (`invite_viewed`, `signup_started`, `share_clicked`, `install_shown`, `install_accepted`) vão para tabelas próprias (migration 005), sem serviço externo. Aparecem em `npm run errors` e em `npm run metrics`. Nomes de evento são uma lista fechada; nada além do id do usuário logado é guardado.
+**Consequências:** serve ao beta sem custo nem terceiros e combina com a LGPD. Não alerta sozinho: alguém precisa olhar. Se o volume crescer, trocar por serviço dedicado.
+
+## D-034 · Devolução do sinal é só registro · 20/10/2026 · Aceita
+**Decisão:** em rolê cancelado com janela de sinal aberta, o Tesoureiro devolve cada sinal aprovado por Pix, **fora do app**, e marca "devolvido" aqui. Cada pessoa vê só a própria linha e é avisada. Reforça D-003 (o app não custodia dinheiro).
+**Consequências:** sem prazo nem multa automáticos. Q1/Q2 (política de reembolso) seguem para o parecer jurídico.
+
+## D-035 · Passar o comando do rolê · 20/10/2026 · Aceita
+**Decisão:** o Idealizador pode transferir o comando a um participante **confirmado**, com rolê aberto ou confirmado. O novo Idealizador passa a cobrir cargos vagos; o anterior segue na tropa. Ambos são avisados.
+**Consequências:** fecha a lacuna de o organizador sumir. Não há transferência forçada por terceiros.
+
+## D-036 · Publicação no Render · 20/10/2026 · Aceita
+**Decisão:** um serviço web Node com disco persistente (SQLite e comprovantes em `/var/data`), descrito em `render.yaml`. Instância única; plano pago por causa do disco. Backup: snapshots do Render mais `npm run backup`.
+**Consequências:** sem escala horizontal enquanto for SQLite; migrar para Postgres antes disso. Guia: `docs/publicar-no-render.md`.

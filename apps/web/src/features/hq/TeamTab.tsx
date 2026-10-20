@@ -11,6 +11,9 @@ import {
 } from '../../components/icons';
 import { Button } from '../../components/Button';
 import { Avatar, Badge } from '../../components/misc';
+import { Sheet } from '../../components/Sheet';
+import { useState } from 'react';
+import type { PublicUser } from '@role/contracts';
 import { api } from '../../lib/api';
 import { eventKeys, useAction } from '../../lib/queries';
 
@@ -58,6 +61,17 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
     invalidate,
     success: 'Cargos sorteados!',
   });
+
+  const [handover, setHandover] = useState<PublicUser | null>(null);
+  const transfer = useAction(
+    (userId: string) => api.post(`/events/${event.id}/transfer-organizer`, { userId }),
+    {
+      invalidate: eventKeys(event.id, event.code),
+      success: 'Comando passado',
+      onSuccess: () => setHandover(null),
+    },
+  );
+  const canHandover = me.isOrganizer && (event.status === 'open' || event.status === 'confirmed');
 
   const rolesOpen = event.status === 'confirmed';
   const vacant = roles.filter((r) => !r.user);
@@ -170,10 +184,36 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
                 </p>
               </div>
               {deposit.required && deposit.openedAt && depositBadge[m.depositStatus]}
+              {canHandover && m.user.id !== event.organizer.id && (
+                <Button size="sm" variant="ghost" onClick={() => setHandover(m.user)}>
+                  Passar o comando
+                </Button>
+              )}
             </li>
           ))}
         </ul>
       </section>
+
+      <Sheet open={!!handover} title="Passar o comando?" onClose={() => setHandover(null)}>
+        <div className="space-y-4">
+          <p className="text-muted">
+            {handover?.name} passa a ser o Idealizador deste rolê e cobre os cargos vagos. Você
+            segue na tropa, mas deixa de comandar. Só quem confirmou presença pode receber.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="ghost" block onClick={() => setHandover(null)}>
+              Cancelar
+            </Button>
+            <Button
+              block
+              loading={transfer.isPending}
+              onClick={() => handover && transfer.mutate(handover.id)}
+            >
+              Passar o comando
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </>
   );
 }

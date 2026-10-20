@@ -22,7 +22,8 @@ const chunk = (type, data) => {
   return Buffer.concat([len, body, sum]);
 };
 
-function png(size) {
+/** `maskable`: o desenho encolhe para a zona segura (66%) e o fundo vai até a borda, como o Android exige. */
+function png(size, maskable = false) {
   const bg = [14, 31, 61];
   const sun = [255, 199, 44];
   const wave = [224, 64, 42];
@@ -30,8 +31,9 @@ function png(size) {
   for (let y = 0; y < size; y++) {
     raw[y * (size * 3 + 1)] = 0;
     for (let x = 0; x < size; x++) {
-      const u = x / size;
-      const v = y / size;
+      const k = maskable ? 1 / 0.66 : 1;
+      const u = (x / size - 0.5) * k + 0.5;
+      const v = (y / size - 0.5) * k + 0.5;
       let px = bg;
       if ((u - 0.5) ** 2 + (v - 0.46) ** 2 < 0.2 ** 2) px = sun;
       const waveLine = 0.7 + 0.04 * Math.sin(u * Math.PI * 6);
@@ -98,4 +100,6 @@ writeFileSync(new URL('../public/og.png', import.meta.url), ogPng());
 for (const size of [192, 512]) {
   writeFileSync(new URL(`../public/icon-${size}.png`, import.meta.url), png(size));
 }
+writeFileSync(new URL('../public/icon-maskable-512.png', import.meta.url), png(512, true));
+writeFileSync(new URL('../public/apple-touch-icon.png', import.meta.url), png(180));
 console.log('Ícones gerados em public/');

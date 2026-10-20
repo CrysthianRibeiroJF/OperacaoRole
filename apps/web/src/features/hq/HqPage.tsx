@@ -73,7 +73,7 @@ export function HqPage() {
 
   return (
     <div className="space-y-4">
-      <header className="-mx-4 -mt-6 rounded-b-[28px] bg-night px-5 pb-5 pt-4 text-white">
+      <header className="-mx-4 -mt-6 rounded-b-[28px] bg-night lg:mx-0 lg:mt-0 lg:rounded-[28px] px-5 pb-5 pt-4 text-white">
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -122,7 +122,7 @@ export function HqPage() {
       <div
         role="tablist"
         aria-label="Seções do QG"
-        className="sticky top-0 z-30 -mx-4 bg-desk/90 px-4 py-2 backdrop-blur"
+        className="sticky top-0 z-30 -mx-4 bg-desk/90 px-4 py-2 backdrop-blur lg:mx-0 lg:px-0"
       >
         <div className="grid grid-cols-5 gap-1 rounded-xl border border-line bg-surface p-1">
           {TABS.map((t) => (
@@ -144,7 +144,13 @@ export function HqPage() {
         </div>
       </div>
 
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="space-y-4">
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        // Desktop: os cartões se distribuem em duas colunas, sem partir nenhum ao meio.
+        className="space-y-4 lg:columns-2 lg:gap-4 lg:space-y-0 lg:[&>*]:mb-4 lg:[&>*]:break-inside-avoid"
+      >
         {tab === 'base' && <BaseTab detail={data} />}
         {tab === 'equipe' && <TeamTab detail={data} />}
         {tab === 'mercado' && <SuppliesTab detail={data} />}

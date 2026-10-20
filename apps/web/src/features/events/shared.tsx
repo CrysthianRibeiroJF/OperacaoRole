@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import { IconShare, Swallow } from '../../components/icons';
 import { formatBRL, formatEventDates } from '../../lib/format';
+import { track } from '../../lib/telemetry';
 
 const statusInfo: Record<EventStatus, { label: string; ink: string }> = {
   open: { label: 'Aberta', ink: 'text-sol-ink' },
@@ -136,6 +137,7 @@ export function ShareButton({
   variant?: 'primary' | 'secondary' | 'soft';
 }) {
   async function share() {
+    track('share_clicked');
     const url = inviteUrl(event.code);
     const text = shareText(event);
     if (navigator.share) {
