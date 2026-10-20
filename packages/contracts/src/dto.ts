@@ -290,3 +290,18 @@ export interface AccountExport {
   expensesPaid: { eventId: string; description: string; amountCents: number; status: string }[];
   notifications: { title: string; body: string; createdAt: string }[];
 }
+
+export interface RoomDto {
+  id: string;
+  name: string;
+  beds: number;
+  freeBeds: number;
+  occupants: PublicUser[];
+}
+
+export interface RoomsDto {
+  rooms: RoomDto[];
+  /** Confirmados que ainda não têm cama. */
+  unassigned: PublicUser[];
+  myRoomId: string | null;
+}

@@ -22,7 +22,7 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-11** O Tesoureiro define valor do sinal, chave Pix e prazo.
 - **RN-12** Só entra na lista de confirmados com sinal quem anexar comprovante aprovado pelo Tesoureiro.
 - **RN-13** Sem comprovante validado até o fim do prazo, o participante volta à lista de espera e a vaga passa ao próximo da fila.
-- **RN-14** Só quem tem sinal validado pode escolher cama ou vaga no carro. *(Já vale para o rateio e para os carros; a distribuição de quartos ainda não existe.)*
+- **RN-14** Só quem tem sinal validado pode escolher cama ou vaga no carro. *(Vale para o rateio, os carros e os quartos.)*
 - **RN-16** O Tesoureiro não paga sinal a si mesmo: aparece sempre como "aprovado".
 - **RN-17** Quem entra com a janela aberta nasce "pendente"; se o prazo já passou, nasce na fila de espera. Quem está na fila pode enviar comprovante e o Tesoureiro decide.
 - **RN-18** Comprovantes aceitam imagem (JPG, PNG, WebP) ou PDF até 5 MB, identificados pelo conteúdo do arquivo. Só o dono e o Tesoureiro os veem.
@@ -113,4 +113,16 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 
 - **RN-96** Cada aviso pertence a uma categoria (quórum, sinal, cargos, mercado, carros, despesas, acerto). Quem desligou a categoria na central da conta não recebe os avisos dela, além do silenciamento por rolê (RN-51).
 - **RN-97** Todas as categorias começam ligadas. Avisos de tipo desconhecido nunca são silenciados por engano.
+
+## Quartos (D-030)
+
+- **RN-82** Só o General da Base (ou o Idealizador, se vago) cria, edita e remove quartos, e só com o rolê confirmado. Cada quarto tem de 1 a 12 camas.
+- **RN-83** Cada pessoa ocupa uma única cama por rolê; pegar outra cama libera a anterior. Quarto lotado recusa.
+- **RN-84** Com sinal exigido, só quem está com o sinal aprovado escolhe cama (vale também para o General alocar alguém).
+- **RN-85** Não se reduzem as camas abaixo do número de ocupantes. Remover o quarto avisa quem estava nele.
+
+## Termos e retenção (D-028, D-029)
+
+- **RN-98** O cadastro exige o aceite dos termos e da privacidade; guarda data e versão aceitas.
+- **RN-99** Comprovantes de sinal e fotos de notas são apagados 90 dias após o encerramento ou cancelamento do rolê. Valores e auditoria permanecem.
 

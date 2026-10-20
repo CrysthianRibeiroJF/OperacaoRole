@@ -2,10 +2,12 @@ import { loadConfig } from '../config';
 import { systemClock, type AppContext } from '../context';
 import { newId } from '../ids';
 import { LocalDiskStorage } from '../lib/storage';
+import { TERMS_VERSION } from '@role/domain';
 import { hashPassword } from '../lib/credentials';
 import { createEvent, respond } from '../modules/events/event.service';
 import { createExpense } from '../modules/expenses/expenses.service';
 import { claimRole } from '../modules/roles/roles.service';
+import { createRoom, joinRoom } from '../modules/rooms/rooms.service';
 import { createVehicle, joinVehicle } from '../modules/fleet/fleet.service';
 import { suggestSupplyList } from '../modules/supplies/supplies.service';
 import { updateBudget } from '../modules/events/event.service';
@@ -63,6 +65,8 @@ for (const p of people) {
       password_changed_at: new Date().toISOString(),
       recovery_hash: null,
       recovery_created_at: null,
+      terms_accepted_at: new Date().toISOString(),
+      terms_version: TERMS_VERSION,
     })
     .execute();
 }
@@ -144,6 +148,17 @@ const cars = await db
   .execute();
 const biaCar = cars.find((c) => c.driver_id === bia);
 if (biaCar) await joinVehicle(ctx, ana, biaCar.id);
+
+// Quartos da Base (a Bia é a General da Base).
+await createRoom(ctx, bia, trip.id, { name: 'Suíte', beds: 2 });
+await createRoom(ctx, bia, trip.id, { name: 'Quarto do beliche', beds: 4 });
+const suite = await db
+  .selectFrom('rooms')
+  .select('id')
+  .where('event_id', '=', trip.id)
+  .where('name', '=', 'Suíte')
+  .executeTakeFirst();
+if (suite) await joinRoom(ctx, bia, suite.id);
 
 console.log('Seed aplicado. Entre com qualquer telefone abaixo, senha ' + DEMO_PASSWORD + ':');
 for (const p of people)

@@ -2,6 +2,7 @@ import type { AppContext } from '../../context';
 import { expireDepositWindow, remindDeposit } from '../deposits/deposits.service';
 import { expireEventIfNeeded } from '../events/event.service';
 import { alertVacantRoles } from '../roles/roles.service';
+import { purgeEventFiles } from '../events/retention.service';
 import { remindDebtors } from '../settlement/settlement.service';
 import type { JobKind } from './schedule';
 
@@ -19,6 +20,8 @@ async function handle(ctx: AppContext, kind: JobKind, payload: Record<string, un
       return alertVacantRoles(ctx.db, now, String(payload.eventId));
     case 'settlement.remind':
       return remindDebtors(ctx.db, now, String(payload.settlementId));
+    case 'files.purge':
+      return purgeEventFiles(ctx, now, String(payload.eventId));
   }
 }
 

@@ -9,6 +9,8 @@ const envSchema = z.object({
   DATABASE_PATH: z.string().default('./data/role.db'),
   UPLOAD_DIR: z.string().default('./uploads'),
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:5173'),
+  /** Pasta do app compilado (apps/web/dist). Em produção, a API serve o app: um processo, uma origem. */
+  WEB_DIST_DIR: z.string().optional(),
   /** Despesas acima disso (por quem não é Tesoureiro) exigem aprovação. Em centavos. */
   EXPENSE_APPROVAL_THRESHOLD_CENTS: z.coerce.number().int().default(30_000),
 });

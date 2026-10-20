@@ -124,3 +124,23 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 ## D-026 · Central da conta · 20/10/2026 · Aceita
 **Decisão:** `/perfil` vira um menu com credencial no topo e quatro áreas: Dados pessoais, Avisos, Segurança e acessos, Privacidade e dados. A navegação inferior chama-se "Conta".
 
+## D-027 · Um processo serve o app e a API · 20/10/2026 · Aceita
+**Decisão:** em produção a API entrega o app compilado (`apps/web/dist`) com fallback de SPA para as rotas do React Router; `/api` e `/share` continuam da API. Arquivos com hash no nome são imutáveis (`max-age` de 1 ano); `index.html` e o service worker sempre revalidam. A política de segurança (CSP) é a padrão do Helmet mais `connect-src` para os dois domínios do Open-Meteo.
+**Consequências:** uma origem só (cookie de sessão, prévia do link e PWA funcionam sem proxy). Há CI (GitHub Actions) e um Dockerfile, este ainda não executado por falta de Docker no ambiente.
+
+## D-028 · Termos e privacidade provisórios, com aceite versionado · 20/10/2026 · Aceita
+**Decisão:** páginas públicas `/termos` e `/privacidade` em linguagem simples, marcadas como texto provisório em revisão jurídica. O cadastro exige o aceite e grava data e versão (`TERMS_VERSION`).
+**Consequências:** o texto **não substitui** a revisão jurídica (Q12, ROL-004); contatos ficam "a definir". Mudou o texto de forma relevante? Suba a versão e peça novo aceite.
+
+## D-029 · Retenção de arquivos: 90 dias · 20/10/2026 · Aceita
+**Decisão:** comprovantes de sinal e fotos de notas são apagados 90 dias depois que o rolê é encerrado ou cancelado, por um job agendado no fechamento ou no cancelamento. Valores, saldos e trilha de auditoria ficam.
+**Consequências:** quem precisar da imagem deve baixá-la antes. O prazo está em `FILE_RETENTION_DAYS`.
+
+## D-030 · Quartos na aba Base · 20/10/2026 · Aceita
+**Decisão:** o General da Base (ou o Idealizador, se vago) monta quartos com número de camas. Qualquer confirmado pega a própria cama, com a mesma trava do sinal dos carros (RN-14). Uma cama por pessoa por rolê; trocar de quarto libera a anterior.
+**Consequências:** completa a RN-14 e o PRD (distribuição de quartos). Não há aba nova: o cartão fica na Base.
+
+## D-031 · Métricas do PRD por linha de comando · 20/10/2026 · Aceita
+**Decisão:** `npm run metrics` calcula direto do banco os indicadores G1 a G5 e o sinal aprovado, com as metas ao lado (`--json` para máquinas). Sem dados, devolve "sem dados" em vez de número inventado.
+**Consequências:** serve ao beta sem ferramenta externa. Não é analytics de funil (cliques, telas); isso segue em aberto (ROL-013).
+

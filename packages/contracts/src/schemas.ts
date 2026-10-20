@@ -39,6 +39,9 @@ export const registerSchema = z
     phone: phoneSchema,
     name: text(60).min(2, 'Informe seu nome'),
     password: z.string().max(PASSWORD_MAX),
+    acceptTerms: z.literal(true, {
+      errorMap: () => ({ message: 'Aceite os termos para criar a conta' }),
+    }),
   })
   .superRefine((v, ctx) => {
     const problem = checkPassword(v.password, v.phone);
@@ -223,6 +226,12 @@ export const cargoCreateSchema = z.object({
   vehicleId: z.string().nullable().optional(),
 });
 export const cargoMoveSchema = z.object({ vehicleId: z.string().nullable() });
+
+export const roomSchema = z.object({
+  name: text(40).min(2, 'Dê um nome ao quarto'),
+  beds: z.number().int().min(1).max(12),
+});
+export const roomUpdateSchema = roomSchema.partial();
 
 export const deleteAccountSchema = z.object({ confirm: z.literal('EXCLUIR') });
 

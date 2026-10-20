@@ -7,7 +7,7 @@ import {
   PASSWORD_PROBLEM_MESSAGES,
 } from '@role/domain';
 import { useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { PasswordField, RecoveryCodeBox } from '../../components/auth';
 import { IconPin, Swallow } from '../../components/icons';
@@ -111,6 +111,7 @@ export function LoginPage() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [recoveryInput, setRecoveryInput] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -133,7 +134,12 @@ export function LoginPage() {
         const res = await api.post<AuthResult>('/auth/login', { phone, password });
         enter(res.profile);
       } else if (mode === 'register') {
-        const res = await api.post<AuthResult>('/auth/register', { phone, name, password });
+        const res = await api.post<AuthResult>('/auth/register', {
+          phone,
+          name,
+          password,
+          acceptTerms,
+        });
         // A sessão já existe; segura a navegação até a pessoa guardar o código de recuperação.
         qc.clear();
         qc.setQueryData(keys.session, { profile: res.profile });
@@ -168,7 +174,11 @@ export function LoginPage() {
     mode === 'login'
       ? phoneOk && password.length > 0
       : mode === 'register'
-        ? phoneOk && name.trim().length >= 2 && password.length > 0 && !passwordProblem
+        ? phoneOk &&
+          name.trim().length >= 2 &&
+          password.length > 0 &&
+          !passwordProblem &&
+          acceptTerms
         : phoneOk &&
           normalizeRecoveryCode(recoveryInput).length === 16 &&
           password.length > 0 &&
@@ -301,6 +311,32 @@ export function LoginPage() {
               <p className="-mt-2 text-sm font-bold text-warn">
                 {PASSWORD_PROBLEM_MESSAGES[passwordProblem]}
               </p>
+            )}
+
+            {mode === 'register' && (
+              <label className="flex cursor-pointer items-start gap-3 rounded-[10px] bg-desk-deep p-3">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-5 shrink-0 accent-navy"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                />
+                <span className="text-sm">
+                  Li e aceito os{' '}
+                  <Link to="/termos" target="_blank" className="font-bold text-navy-dark underline">
+                    termos de uso
+                  </Link>{' '}
+                  e a{' '}
+                  <Link
+                    to="/privacidade"
+                    target="_blank"
+                    className="font-bold text-navy-dark underline"
+                  >
+                    política de privacidade
+                  </Link>
+                  .
+                </span>
+              </label>
             )}
 
             {error && (

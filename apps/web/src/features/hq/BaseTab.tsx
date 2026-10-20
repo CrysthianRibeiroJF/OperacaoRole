@@ -15,6 +15,7 @@ import { api } from '../../lib/api';
 import { eventKeys, useAction } from '../../lib/queries';
 import { ShareButton } from '../events/shared';
 import { BudgetCard } from './BudgetCard';
+import { RoomsCard } from './RoomsCard';
 import { WeatherCard } from './WeatherCard';
 
 function Row({
@@ -133,6 +134,7 @@ export function BaseTab({ detail }: { detail: EventDetail }) {
         </section>
       )}
 
+      <RoomsCard detail={detail} />
       <WeatherCard event={event} />
       <BudgetCard detail={detail} />
 

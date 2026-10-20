@@ -3,6 +3,9 @@ import fastifyHelmet from '@fastify/helmet';
 import fastifyJwt from '@fastify/jwt';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyRateLimit from '@fastify/rate-limit';
+import fastifyStatic from '@fastify/static';
+import { existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 import type { AppContext } from './context';
@@ -19,6 +22,7 @@ import { suppliesRoutes } from './modules/supplies/supplies.routes';
 import { expensesRoutes } from './modules/expenses/expenses.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { rolesRoutes } from './modules/roles/roles.routes';
+import { roomsRoutes } from './modules/rooms/rooms.routes';
 import { settlementRoutes } from './modules/settlement/settlement.routes';
 
 declare module 'fastify' {
@@ -39,7 +43,24 @@ export async function buildApp(
   });
   app.decorate('ctx', ctx);
 
-  await app.register(fastifyHelmet);
+  const production = ctx.config.NODE_ENV === 'production';
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        // A previsão do tempo é chamada do navegador (D-021): só esses dois domínios saem do app.
+        'connect-src': [
+          "'self'",
+          'https://geocoding-api.open-meteo.com',
+          'https://api.open-meteo.com',
+        ],
+        'img-src': ["'self'", 'data:', 'blob:'],
+        'worker-src': ["'self'"],
+        'manifest-src': ["'self'"],
+        'upgrade-insecure-requests': production ? [] : null,
+      },
+    },
+  });
   await app.register(fastifyCookie);
   await app.register(fastifyJwt, {
     secret: ctx.config.SESSION_SECRET,
@@ -89,9 +110,37 @@ export async function buildApp(
       .send({ error: { code: 'INTERNAL', message: 'Algo deu errado. Tente novamente.' } });
   });
 
-  app.setNotFoundHandler((_req, reply) =>
-    reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Rota não encontrada' } }),
-  );
+  // O app compilado é servido pela própria API (mesma origem para /api, /share e o PWA).
+  const dist = ctx.config.WEB_DIST_DIR ?? (production ? '../web/dist' : undefined);
+  const webRoot = dist ? resolve(dist) : null;
+  const serveWeb = !!webRoot && existsSync(join(webRoot, 'index.html'));
+  if (serveWeb && webRoot) {
+    await app.register(fastifyStatic, {
+      root: webRoot,
+      wildcard: false,
+      // O cabeçalho de cache é nosso (abaixo); o padrão do plugin sobrescreveria.
+      cacheControl: false,
+      setHeaders(res, filePath) {
+        // Arquivos com hash no nome nunca mudam; o resto (index, service worker) precisa revalidar.
+        res.setHeader(
+          'cache-control',
+          /[\\/]assets[\\/]/.test(filePath) ? 'public, max-age=31536000, immutable' : 'no-cache',
+        );
+      },
+    });
+  }
+
+  app.setNotFoundHandler((req, reply) => {
+    const wantsPage =
+      serveWeb &&
+      req.method === 'GET' &&
+      !req.url.startsWith('/api') &&
+      !req.url.startsWith('/share') &&
+      (req.headers.accept ?? '').includes('text/html');
+    // Rotas do app (/c/CODIGO, /role/ID...) são do React Router: devolve o index.html.
+    if (wantsPage) return reply.header('cache-control', 'no-cache').sendFile('index.html');
+    return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Rota não encontrada' } });
+  });
 
   await app.register(
     async (api) => {
@@ -105,6 +154,7 @@ export async function buildApp(
       await api.register(notificationsRoutes);
       await api.register(suppliesRoutes);
       await api.register(fleetRoutes);
+      await api.register(roomsRoutes);
       await api.register(accountRoutes);
     },
     { prefix: '/api' },

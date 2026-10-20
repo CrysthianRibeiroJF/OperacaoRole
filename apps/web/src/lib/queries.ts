@@ -3,6 +3,7 @@ import type {
   DepositQueueItem,
   FleetDto,
   MutedEventDto,
+  RoomsDto,
   NotificationPrefsDto,
   SecurityOverview,
   SuppliesDto,
@@ -29,6 +30,7 @@ export const keys = {
   deposits: (id: string) => ['deposits', id] as const,
   supplies: (id: string) => ['supplies', id] as const,
   fleet: (id: string) => ['fleet', id] as const,
+  rooms: (id: string) => ['rooms', id] as const,
   notifications: ['notifications'] as const,
   security: ['security'] as const,
   notifPrefs: ['notif-prefs'] as const,
@@ -96,6 +98,9 @@ export const useFleet = (id: string, enabled = true) =>
     enabled,
   });
 
+export const useRooms = (id: string) =>
+  useQuery({ queryKey: keys.rooms(id), queryFn: () => api.get<RoomsDto>(`/events/${id}/rooms`) });
+
 export const useSecurity = () =>
   useQuery({ queryKey: keys.security, queryFn: () => api.get<SecurityOverview>('/me/security') });
 
@@ -127,6 +132,7 @@ export const eventKeys = (id: string, code?: string): QueryKey[] => [
   keys.deposits(id),
   keys.supplies(id),
   keys.fleet(id),
+  keys.rooms(id),
   keys.feed,
   keys.notifications,
   ...(code ? [keys.invite(code)] : []),

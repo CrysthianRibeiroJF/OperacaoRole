@@ -40,4 +40,4 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Código de recuperação** | Código de 16 caracteres entregue no cadastro; único jeito de recuperar a conta sem SMS ou e-mail. |
 | **Aparelho conectado** | Uma sessão ativa da conta (ex.: "Chrome no Android"), que a pessoa pode desconectar. |
 | **Central da conta** | Área `/perfil`: dados pessoais, avisos, segurança e privacidade. |
-
+| **Quarto / Cama** | Espaço da casa com camas; cada confirmado pega uma, com a trava do sinal. |

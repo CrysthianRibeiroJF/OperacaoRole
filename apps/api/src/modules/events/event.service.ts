@@ -15,6 +15,7 @@ import { newId, newInviteCode } from '../../ids';
 import { audit } from '../../lib/audit';
 import { openDepositWindowIfReady, toDepositConfig } from '../deposits/deposits.service';
 import { scheduleJob } from '../jobs/schedule';
+import { scheduleFilePurge } from './retention.service';
 import { dayBucket, notify } from '../notifications/notifications.service';
 import {
   buildActor,
@@ -594,6 +595,7 @@ export async function cancelEvent(ctx: AppContext, userId: string, eventId: stri
           : `${event.title} foi cancelado.`,
       dedupeKey: `event.cancelled:${eventId}`,
     });
+    await scheduleFilePurge(trx, now, eventId);
     await audit(trx, now, {
       eventId,
       actorId: userId,

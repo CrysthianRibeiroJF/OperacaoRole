@@ -23,7 +23,7 @@ function assertActive(event: EventRow) {
 }
 
 /** RN-14: com sinal exigido, só quem está com o sinal aprovado escolhe lugar no carro. */
-async function assertSeatEligible(db: Db, event: EventRow, userId: string) {
+export async function assertSeatEligible(db: Db, event: EventRow, userId: string) {
   const participation = await getParticipation(db, event.id, userId);
   if (!participation || participation.response !== 'in') {
     throw forbidden('Só quem confirmou presença ocupa um lugar no carro');

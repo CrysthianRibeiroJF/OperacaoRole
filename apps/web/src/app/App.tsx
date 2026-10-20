@@ -5,6 +5,7 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { RequireAuth } from '../features/auth/RequireAuth';
 import { FeedPage } from '../features/feed/FeedPage';
 import { InvitePage } from '../features/events/InvitePage';
+import { PrivacyPage, TermsPage } from '../features/legal/LegalPages';
 import { AppShell } from './AppShell';
 
 // O QG concentra a maior parte do código (cofre, despesas, acerto): carrega sob demanda.
@@ -43,6 +44,8 @@ export function App() {
         {/* O convite é público: abre sem login, em modo Observador. */}
         <Route element={<AppShell />}>
           <Route path="/c/:code" element={<InvitePage />} />
+          <Route path="/termos" element={<TermsPage />} />
+          <Route path="/privacidade" element={<PrivacyPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/" element={<FeedPage />} />
             <Route path="/novo" element={<CreateEventPage />} />

@@ -29,6 +29,7 @@ Visão de como o MVP é montado e por quê. As decisões estão em [memorias/dec
 - **deposit_proofs**: histórico de comprovantes; o último vale.
 - **expenses**, **expense_participants** (cota custom), **expense_contests** (uma por despesa).
 - **settlements**, **settlement_balances**, **settlement_transfers**: foto auditável do fechamento.
+- **rooms** e **room_occupants** (uma cama por pessoa por rolê).
 - **supply_items** (lista de mercado, com vínculo opcional à despesa gerada), **vehicles**, **vehicle_passengers** (um lugar por pessoa por rolê) e **cargo_items** (bagagem por carro).
 - **notifications** (com chave de deduplicação), **event_mutes**.
 - **jobs**: agendamentos que sobrevivem a reinícios. **audit_log**: trilha de quem fez o quê.
@@ -56,6 +57,14 @@ Convenções: ids UUID em TEXT; datas ISO-8601 UTC em TEXT; dinheiro em centavos
 - Autorização por papel no servidor em todos os endpoints de rolê; o convite é o único recurso público (somente leitura).
 - O service worker do PWA só guarda o "casco" do app; `/api` nunca entra em cache.
 
+## Produção
+
+`apps/api` em produção entrega o app compilado: arquivos com hash em `assets/` são imutáveis, `index.html` e o service worker revalidam, e rotas do React Router (`/c/CODIGO`, `/role/ID`) recebem o `index.html`. `/api` e `/share` seguem da API, então tudo vive em uma origem. A política de segurança (CSP) libera, além da própria origem, só `geocoding-api.open-meteo.com` e `api.open-meteo.com`. `WEB_DIST_DIR` aponta para a pasta do app (padrão `../web/dist` em produção). O CI roda em `.github/workflows/ci.yml` e há um `Dockerfile` de imagem única.
+
+## Métricas
+
+`npm run metrics` (`apps/api/src/metrics`) calcula direto do banco os indicadores do PRD: tempo até confirmar (G1), conversão de propostas (G2), cargos divididos (G3), acerto pago em 7 dias (G4), convidados por rolê (G5, proxy) e sinal aprovado. Sem dados devolve "sem dados".
+
 ## Design
 
 Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes de assinatura (`.ticket`, `.stamp`, `.key`, `.slot-in`) estão em `apps/web/src/styles.css`; os componentes React em `features/events/shared.tsx` (`Ticket`, `Stamp`, `SwallowMeter`) e `components/icons.tsx`. O modo escuro troca só os valores dos tokens. Animações respeitam `prefers-reduced-motion`.
@@ -69,6 +78,7 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 - **Celular não verificado:** sem SMS, o celular só identifica a conta. Quem perde senha e código de recuperação perde a conta.
 - **Avisos só dentro do app:** não há push, e-mail nem WhatsApp. A tabela `notifications` já serve de fila de saída para quando houver.
 - **Sem testes de interface automatizados** (o fluxo é coberto por testes de API; a interface foi verificada manualmente em visual mobile).
+- **Retenção:** um job apaga comprovantes e fotos de nota 90 dias depois do encerramento ou cancelamento; os valores ficam.
 - **Teto de despesa e de cargos fixos** (R$ 300 e 2): colunas já existem por rolê, falta a tela.
 - **Ordem de criação em empate de milissegundo** (carros, itens): a lista usa `created_at`; só os testes, com relógio fixo, expõem empates.
 

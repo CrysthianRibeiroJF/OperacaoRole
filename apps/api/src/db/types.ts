@@ -13,6 +13,8 @@ export interface UsersTable {
   password_changed_at: string | null;
   recovery_hash: string | null;
   recovery_created_at: string | null;
+  terms_accepted_at: string | null;
+  terms_version: string | null;
 }
 
 export interface EventsTable {
@@ -257,6 +259,20 @@ export interface NotificationPrefsTable {
   enabled: number;
 }
 
+export interface RoomsTable {
+  id: string;
+  event_id: string;
+  name: string;
+  beds: number;
+  created_at: string;
+}
+
+export interface RoomOccupantsTable {
+  room_id: string;
+  event_id: string;
+  user_id: string;
+}
+
 export interface Database {
   users: UsersTable;
   events: EventsTable;
@@ -281,4 +297,6 @@ export interface Database {
   user_sessions: UserSessionsTable;
   login_attempts: LoginAttemptsTable;
   notification_prefs: NotificationPrefsTable;
+  rooms: RoomsTable;
+  room_occupants: RoomOccupantsTable;
 }

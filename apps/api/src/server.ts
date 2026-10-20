@@ -18,11 +18,6 @@ const ctx: AppContext = {
 };
 
 const app = await buildApp(ctx, { logger: true });
-if (config.NODE_ENV === 'production') {
-  app.log.warn(
-    'Produção: configure um OtpSender real (SMS/WhatsApp), senão ninguém consegue entrar.',
-  );
-}
 const stopJobs = startJobRunner(ctx, 30_000, (err) =>
   app.log.error({ err }, 'falha no runner de jobs'),
 );

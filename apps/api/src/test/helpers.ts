@@ -18,9 +18,10 @@ export class FakeClock implements Clock {
   }
 }
 
-export async function makeApp() {
+export async function makeApp(extraEnv: Record<string, string> = {}) {
   const config = loadConfig({
     NODE_ENV: 'test',
+    ...extraEnv,
     SESSION_SECRET: 'test-secret-with-more-than-32-characters!!',
   } as NodeJS.ProcessEnv);
   const db = createDb(':memory:');
@@ -58,7 +59,7 @@ export class Client {
     const res = await this.app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { phone: this.phone, name: this.name, password: PASSWORD },
+      payload: { phone: this.phone, name: this.name, password: PASSWORD, acceptTerms: true },
     });
     const session = res.cookies.find((c) => c.name === 'role_session');
     if (!session) throw new Error(`cadastro falhou: ${res.body}`);

@@ -14,7 +14,8 @@ export function AppShell() {
   const { data } = useSession();
   const loggedIn = !!data?.profile;
   const { pathname } = useLocation();
-  const showNav = loggedIn && !pathname.startsWith('/c/');
+  const showNav =
+    loggedIn && !['/c/', '/termos', '/privacidade'].some((p) => pathname.startsWith(p));
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-xl">

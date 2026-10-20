@@ -2,7 +2,12 @@ import type { Db } from '../../context';
 import { newId } from '../../ids';
 
 export type JobKind =
-  'event.expire' | 'deposit.expire' | 'deposit.remind' | 'roles.vacant' | 'settlement.remind';
+  | 'event.expire'
+  | 'deposit.expire'
+  | 'deposit.remind'
+  | 'roles.vacant'
+  | 'settlement.remind'
+  | 'files.purge';
 
 /**
  * Agenda um job no banco (sobrevive a reinícios). A `dedupeKey` torna o agendamento idempotente:

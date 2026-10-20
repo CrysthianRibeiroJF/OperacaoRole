@@ -1,4 +1,5 @@
 import type { AuthResult, ProfileDto, SecurityOverview, SessionDto } from '@role/contracts';
+import { TERMS_VERSION } from '@role/domain';
 import type { AppContext, Db } from '../../context';
 import { AppError, conflict, notFound, unauthorized } from '../../errors';
 import { newId } from '../../ids';
@@ -185,6 +186,8 @@ export async function register(
       password_changed_at: now.toISOString(),
       recovery_hash: hashRecoveryCode(ctx.config.SESSION_SECRET, recoveryCode),
       recovery_created_at: now.toISOString(),
+      terms_accepted_at: now.toISOString(),
+      terms_version: TERMS_VERSION,
     })
     .execute();
   const sessionId = await createSession(ctx.db, id, device, now);

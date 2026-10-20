@@ -20,12 +20,26 @@ Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealiz
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Sobe API e app com recarga automática |
-| `npm test` | 135 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
+| `npm test` | 148 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
 | `npm run typecheck` | TypeScript estrito em todos os pacotes |
 | `npm run lint` / `npm run format` | ESLint e Prettier |
 | `npm run check` | Typecheck + lint + testes (rode antes de enviar mudanças) |
 | `npm run build` | Build de produção da API (bundle em `apps/api/dist`) e do app (`apps/web/dist`, com PWA) |
 | `npm run db:migrate` / `npm run db:seed` | Migrations e dados de demonstração |
+| `npm run metrics` | Indicadores do PRD (G1 a G5) calculados do banco, com as metas ao lado (`-- --json` para máquinas) |
+| `npm start` | Sobe a API em produção servindo o app já compilado (rode `npm run build` antes) |
+
+## Colocar no ar
+
+Um processo só serve o app e a API na mesma origem (cookie, prévia de link e PWA funcionam sem proxy):
+
+```bash
+npm ci && npm run build
+NODE_ENV=production SESSION_SECRET=<32+ caracteres aleatórios> PUBLIC_WEB_URL=https://seu-dominio \
+  DATABASE_PATH=/dados/role.db UPLOAD_DIR=/dados/uploads npm start
+```
+
+Há também um `Dockerfile` (imagem única, volume em `/data`). Ele **ainda não foi executado**: não havia Docker no ambiente. O CI (`.github/workflows/ci.yml`) roda tipos, lint, testes e build. Use HTTPS na frente (o cookie de sessão é `Secure` em produção) e faça cópia de segurança de `DATABASE_PATH` e `UPLOAD_DIR`.
 
 ## Estrutura
 
@@ -70,14 +84,14 @@ Por que assim: as regras que mexem com dinheiro e permissão ficam em `packages/
 10. **Frotas & Caronas:** carros com lugares estilo mapa de avião, bagagem por carro e trava de sinal para escolher lugar.
 11. **Orçamento e clima:** valor por pessoa caindo conforme entra gente, e previsão do tempo para os dias do rolê.
 12. **Central da conta:** dados pessoais, escolha dos avisos por categoria, segurança (trocar senha, código de recuperação, aparelhos conectados) e privacidade (exportar e excluir).
-13. **Tudo interno:** sem SMS, WhatsApp ou e-mail. O acesso é celular + senha com código de recuperação, e os avisos vivem na aba Avisos.
+13. **Quartos:** o General da Base monta os quartos e cada confirmado pega a própria cama, com a trava do sinal.
+14. **Tudo interno:** sem SMS, WhatsApp ou e-mail. O acesso é celular + senha com código de recuperação, e os avisos vivem na aba Avisos.
 
 Ficam para depois: guia do entorno, distribuição de quartos, OCR de notas e conciliação de Pix. Detalhes em [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Antes de lançar
 
-- **Parecer jurídico** sobre registrar sinais por Pix (Q12 / ROL-004) e **termos de uso** (ROL-123).
-- **LGPD:** consentimento no cadastro e retenção automática de comprovantes (ROL-121; exportação e exclusão já existem).
+- **Parecer jurídico** sobre registrar sinais por Pix (Q12 / ROL-004) e **revisão dos termos de uso e da privacidade** (ROL-123): os textos em `/termos` e `/privacidade` são rascunhos, com contatos "a definir".
 - **Validar com pessoas reais:** nenhuma meta do PRD foi testada ainda (ROL-001, ROL-124).
 - Analytics de produto (ROL-013) e pipeline de CI (ROL-010).
 - **Sem canal externo:** quem esquece a senha e perde o código de recuperação não tem como recuperar a conta; quem não abre o app não recebe lembretes (push, e-mail e WhatsApp ficam para depois).

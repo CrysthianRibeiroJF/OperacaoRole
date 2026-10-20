@@ -11,7 +11,7 @@ Derivado do [PRD](PRD-Operacao-Role.md) v0.1. Fonte de verdade das regras: [memo
 
 **Resumo:** 13 épicos (E0 a E12) · 73 tickets · P0: 51 tickets (185 pts) · P1: 16 · P2: 3
 
-**Andamento (20/10/2026):** 52 tickets feitos ✅, 7 parciais 🟡, 14 a fazer (73 no total). Fase 2 e acesso interno (celular + senha, recuperação, aparelhos, central da conta) estão no ar; **nenhum canal externo (SMS, WhatsApp, e-mail) está previsto por ora**. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), analytics (ROL-013), termos de uso (ROL-123), beta fechado (ROL-124) e teste de carga e monitoramento (ROL-125).
+**Andamento (20/10/2026):** 55 tickets feitos ✅, 7 parciais 🟡, 11 a fazer (73 no total). Fase 2, acesso interno, quartos, termos provisórios, retenção, CI e métricas estão prontos. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), beta fechado (ROL-124), teste de carga e monitoramento (ROL-125) e a revisão jurídica dos termos. Sem canal externo (SMS, WhatsApp, e-mail) por decisão.
 
 | Épico | Tema | Fase | Prioridade |
 |---|---|---|---|
@@ -55,8 +55,8 @@ Enquadramento como intermediador de pagamento, regra de reembolso, termos de uso
 
 ## E1 — Fundação técnica
 
-### ROL-010 · Setup do projeto PWA, CI e ambientes · P0 · 3 pts · Dep: ROL-003 · **Parcial 🟡**
-> Parcial: sem pipeline de CI configurado (scripts de typecheck, lint, teste e build prontos).
+### ROL-010 · Setup do projeto PWA, CI e ambientes · P0 · 3 pts · Dep: ROL-003 · **Feito ✅**
+> Workflow do GitHub Actions criado (tipos, lint, testes e build); ainda não rodou de verdade porque o repositório não tem remoto.
 Repositório, lint, testes, deploy de staging e produção.
 - [ ] Pipeline roda testes a cada PR
 - [ ] Staging acessível por URL
@@ -70,7 +70,8 @@ Entidades: Usuário, Rolê, Participação, Cargo, Sinal, Despesa, Lançamento/C
 Tokens, botões, cards, cronômetro, avatar de confirmados.
 - [ ] Componentes documentados; contraste AA
 
-### ROL-013 · Instrumentação de analytics (eventos de produto) · P0 · 3 pts · Dep: ROL-010 · **A fazer**
+### ROL-013 · Instrumentação de analytics (eventos de produto) · P0 · 3 pts · Dep: ROL-010 · **Parcial 🟡**
+> Parcial: `npm run metrics` calcula os indicadores do PRD a partir do banco; faltam eventos de funil (telas e cliques).
 Eventos: proposta criada, resposta, quórum atingido, sinal pago, despesa, conta fechada.
 - [ ] Todos os eventos da seção 9 do PRD emitem dados
 - [ ] Plano de tracking salvo em `memorias/`
@@ -255,7 +256,7 @@ Endereço, Wi-Fi com botão copiar, regras da casa, cronograma simples.
 ### ROL-082 · Aba Cofre (visão financeira individual) · P0 · 5 pts · Dep: ROL-080, ROL-060 · **Feito ✅**
 Quanto já gastei, notas lançadas, saldo atual, botão pagar/receber via Pix.
 
-### ROL-083 · Distribuição de quartos · P1 · 3 pts · Dep: ROL-081, ROL-054 · **A fazer**
+### ROL-083 · Distribuição de quartos · P1 · 3 pts · Dep: ROL-081, ROL-054 · **Feito ✅**
 
 ---
 
@@ -311,15 +312,16 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 
 ### ROL-120 · Suíte de testes de regras de negócio (quórum, rateio, permissões) · P0 · 5 pts · Dep: ROL-033, ROL-064, ROL-040 · **Feito ✅**
 
-### ROL-121 · LGPD: consentimento, minimização, retenção e exclusão · P0 · 5 pts · Dep: ROL-011 · **Parcial 🟡**
-> Parcial: há exportação dos dados e exclusão por anonimização; faltam consentimento no cadastro e retenção automática de comprovantes.
+### ROL-121 · LGPD: consentimento, minimização, retenção e exclusão · P0 · 5 pts · Dep: ROL-011 · **Feito ✅**
+> Aceite versionado no cadastro, exportação, exclusão por anonimização e retenção de 90 dias para comprovantes e notas.
 - [ ] Comprovantes e notas com retenção definida e exclusão sob pedido
 
 ### ROL-122 · Segurança de acesso a comprovantes e dados financeiros · P0 · 3 pts · Dep: ROL-052 · **Parcial 🟡**
 > Parcial: autorização por papel em todos os endpoints e arquivos servidos só com sessão; falta revisão de segurança externa.
 - [ ] Links assinados com expiração; revisão de autorização por papel
 
-### ROL-123 · Termos de uso e aviso "o app não custodia dinheiro" · P0 · 2 pts · Dep: ROL-004 · **A fazer**
+### ROL-123 · Termos de uso e aviso "o app não custodia dinheiro" · P0 · 2 pts · Dep: ROL-004 · **Parcial 🟡**
+> Parcial: páginas /termos e /privacidade em rascunho; falta a revisão jurídica e os contatos.
 
 ### ROL-124 · Beta fechado com 10 grupos · P0 · 3 pts · Dep: Fase 1 completa · **A fazer**
 - [ ] Métricas G1, G2 e G4 coletadas e comparadas com as metas

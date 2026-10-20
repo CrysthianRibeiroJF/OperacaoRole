@@ -11,6 +11,7 @@ import { conflict, forbidden, notFound } from '../../errors';
 import { newId } from '../../ids';
 import { audit } from '../../lib/audit';
 import { formatBRL } from '../../lib/format';
+import { scheduleFilePurge } from '../events/retention.service';
 import { scheduleJob } from '../jobs/schedule';
 import { dayBucket, notify } from '../notifications/notifications.service';
 import {
@@ -250,6 +251,7 @@ export async function closeSettlement(
         dedupeKey: `settlement.remind:${settlementId}:${i}`,
       });
     }
+    await scheduleFilePurge(trx, now, eventId);
     await audit(trx, now, {
       eventId,
       actorId: userId,

@@ -1,3 +1,4 @@
+import { TERMS_VERSION } from '@role/domain';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { describeDevice } from '../lib/device';
 import { Client, eventInput, makeApp, PASSWORD } from './helpers';
@@ -28,6 +29,7 @@ describe('cadastro', () => {
       phone: '(11) 98888-7777',
       name: 'Lia',
       password: PASSWORD,
+      acceptTerms: true,
     });
     expect(res.statusCode).toBe(201);
     const body = res.json();
@@ -45,11 +47,36 @@ describe('cadastro', () => {
     expect(row.recovery_hash).not.toContain(body.recoveryCode.replace(/-/g, ''));
   });
 
+  it('exige o aceite dos termos e grava a versão aceita', async () => {
+    const without = await post('/auth/register', {
+      phone: '11988887777',
+      name: 'Lia',
+      password: PASSWORD,
+    });
+    expect(without.statusCode).toBe(400);
+    expect(without.json().error.message).toMatch(/Aceite os termos/);
+
+    await post('/auth/register', {
+      phone: '11988887777',
+      name: 'Lia',
+      password: PASSWORD,
+      acceptTerms: true,
+    });
+    const row = await env.ctx.db
+      .selectFrom('users')
+      .selectAll()
+      .where('phone', '=', '5511988887777')
+      .executeTakeFirstOrThrow();
+    expect(row.terms_version).toBe(TERMS_VERSION);
+    expect(row.terms_accepted_at).not.toBeNull();
+  });
+
   it('recusa senha fraca com o motivo e celular repetido', async () => {
     const weak = await post('/auth/register', {
       phone: '11988887777',
       name: 'Lia',
       password: '12345678',
+      acceptTerms: true,
     });
     expect(weak.statusCode).toBe(400);
     expect(weak.json().error.message).toMatch(/muito comum/);
@@ -58,6 +85,7 @@ describe('cadastro', () => {
       phone: '11988887777',
       name: 'Lia',
       password: 'abc',
+      acceptTerms: true,
     });
     expect(short.json().error.message).toMatch(/pelo menos 8/);
 
@@ -65,17 +93,25 @@ describe('cadastro', () => {
       phone: '11988887777',
       name: 'Lia',
       password: '11988887777',
+      acceptTerms: true,
     });
     expect(phoneAsPassword.json().error.message).toMatch(/celular/);
 
     expect(
-      (await post('/auth/register', { phone: '11988887777', name: 'Lia', password: PASSWORD }))
-        .statusCode,
+      (
+        await post('/auth/register', {
+          phone: '11988887777',
+          name: 'Lia',
+          password: PASSWORD,
+          acceptTerms: true,
+        })
+      ).statusCode,
     ).toBe(201);
     const dup = await post('/auth/register', {
       phone: '11988887777',
       name: 'Outra',
       password: PASSWORD,
+      acceptTerms: true,
     });
     expect(dup.statusCode).toBe(409);
     expect(dup.json().error.code).toBe('PHONE_TAKEN');

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { IconDownload, IconTrash } from '../../components/icons';
 import { Field } from '../../components/misc';
@@ -56,6 +56,23 @@ export function PrivacySettings() {
         <Button variant="danger" block onClick={() => setDeleting(true)}>
           <IconTrash size={17} /> Excluir minha conta
         </Button>
+      </section>
+
+      <section className="card space-y-2 p-5">
+        <h2>Como cuidamos dos seus dados</h2>
+        <p className="text-sm text-muted">
+          Comprovantes e fotos de notas são apagados 90 dias depois que o rolê termina. Nada do que
+          você enviou aparece para quem não participa do rolê.
+        </p>
+        <p className="text-sm">
+          <Link to="/termos" className="font-bold text-navy-dark">
+            Termos de uso
+          </Link>
+          {' · '}
+          <Link to="/privacidade" className="font-bold text-navy-dark">
+            Política de privacidade
+          </Link>
+        </p>
       </section>
 
       <Sheet

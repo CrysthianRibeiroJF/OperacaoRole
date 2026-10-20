@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "concurrently -n api,web -c yellow,cyan \"npm run dev -w @role/api\" \"npm run dev -w @role/web\"",
     "build": "npm run build -w @role/api && npm run build -w @role/web",
+    "start": "npm run start -w @role/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
@@ -21,6 +22,7 @@
     "format:check": "prettier --check .",
     "db:migrate": "npm run db:migrate -w @role/api",
     "db:seed": "npm run db:seed -w @role/api",
+    "metrics": "npm run metrics -w @role/api --silent --",
     "check": "npm run typecheck && npm run lint && npm run test"
   },
   "devDependencies": {
