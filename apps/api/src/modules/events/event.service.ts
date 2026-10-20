@@ -183,7 +183,7 @@ async function confirmEvent(trx: Db, now: Date, event: EventRow): Promise<EventR
     userIds: members,
     eventId: event.id,
     kind: 'event.confirmed',
-    title: 'Rolê confirmado! 🎉',
+    title: 'Rolê confirmado!',
     body: `${event.title} virou oficial com ${members.length} andorinhas. Hora de dividir as missões.`,
     dedupeKey: `event.confirmed:${event.id}`,
   });
@@ -305,7 +305,7 @@ export async function respond(
         userIds: others,
         eventId,
         kind: 'quorum.almost',
-        title: 'Falta só 1! 🐦',
+        title: 'Falta só 1!',
         body: `Falta apenas 1 pessoa confirmar para ${event.title} virar oficial!`,
         dedupeKey: `quorum.almost:${eventId}`,
       });

@@ -100,3 +100,17 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-80** Custos fixos (casa, hospedagem) são informados pelo General da Base. O valor por pessoa estimado é (custos fixos + mercado estimado) ÷ confirmados, arredondado para cima.
 - **RN-81** Exportar os dados é direito da pessoa. Excluir a conta anonimiza o perfil e apaga comprovantes; é recusado se a pessoa organiza rolê ativo, está confirmada em rolê em andamento ou tem acerto pendente (D-022).
 
+## Acesso e conta (D-024)
+
+- **RN-90** O acesso é celular + senha. A senha tem no mínimo 8 e no máximo 72 caracteres, não pode ser comum, repetitiva ou sequência óbvia, nem o próprio celular.
+- **RN-91** O cadastro entrega um código de recuperação de 16 caracteres, exibido uma única vez. Só o hash fica no servidor.
+- **RN-92** Recuperar com o código redefine a senha, derruba todos os aparelhos e queima o código usado (nasce um novo, mostrado na hora).
+- **RN-93** Cinco erros de senha ou de código em 15 minutos bloqueiam o celular até a janela passar. A mensagem de erro é a mesma para celular inexistente e senha errada.
+- **RN-94** Cada acesso é uma sessão no servidor, com rótulo do aparelho e último uso. Sair, desconectar um aparelho, trocar a senha ou excluir a conta encerra sessões de imediato; repetir um cookie antigo não vale.
+- **RN-95** Trocar a senha ou gerar novo código exige a senha atual. Trocar a senha desconecta os outros aparelhos.
+
+## Avisos internos (D-025)
+
+- **RN-96** Cada aviso pertence a uma categoria (quórum, sinal, cargos, mercado, carros, despesas, acerto). Quem desligou a categoria na central da conta não recebe os avisos dela, além do silenciamento por rolê (RN-51).
+- **RN-97** Todas as categorias começam ligadas. Avisos de tipo desconhecido nunca são silenciados por engano.
+

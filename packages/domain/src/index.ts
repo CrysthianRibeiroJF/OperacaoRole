@@ -5,3 +5,5 @@ export * from './schedule';
 export * from './settlement';
 export * from './supplies';
 export * from './budget';
+export * from './password';
+export * from './notification-prefs';

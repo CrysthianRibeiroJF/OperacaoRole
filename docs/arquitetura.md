@@ -22,7 +22,7 @@ Visão de como o MVP é montado e por quê. As decisões estão em [memorias/dec
 
 ## Modelo de dados (resumo)
 
-- **users**, **otp_codes**: identidade por telefone.
+- **users** (senha, código de recuperação), **user_sessions** (um por aparelho), **login_attempts** (bloqueio) e **notification_prefs** (categorias desligadas).
 - **events**: cartão da proposta, status (`open`, `confirmed`, `archived`, `cancelled`, `closed`), configuração do sinal, mural da Base.
 - **participations**: resposta (`in`/`out`), preferências de consumo e status do sinal. Única por (evento, usuário).
 - **event_roles** (um ocupante por cargo), **role_declines** (quem recusou o sorteio).
@@ -50,7 +50,8 @@ Convenções: ids UUID em TEXT; datas ISO-8601 UTC em TEXT; dinheiro em centavos
 ## Segurança
 
 - Sessão por JWT em cookie `httpOnly` + `SameSite=Lax` (+ `Secure` em produção). Mutações exigem JSON ou multipart, e o `Lax` bloqueia POST de outros sites.
-- OTP guardado só como HMAC, com validade de 10 minutos, 5 tentativas e limite de pedidos por telefone, além de limite por IP nas rotas de login.
+- Senha com scrypt e sal; código de recuperação guardado só como HMAC. Bloqueio de 15 minutos após 5 erros por celular (login e recuperação), mensagem igual para celular inexistente e senha errada, e limite por IP nas rotas de acesso.
+- Sessões no servidor (uma por aparelho): o cookie carrega o id da sessão e cada requisição confere se ela segue ativa, então sair, trocar a senha ou excluir a conta valem na hora.
 - Helmet, rate limit global, validação de toda entrada com Zod, erros padronizados sem vazar detalhes internos, logs com cookies redigidos.
 - Autorização por papel no servidor em todos os endpoints de rolê; o convite é o único recurso público (somente leitura).
 - O service worker do PWA só guarda o "casco" do app; `/api` nunca entra em cache.
@@ -65,7 +66,8 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 - **Prévia do link** usa uma única imagem para todos os rolês (a rota `/share/:code` já entrega o texto). Em produção, `/share` e `/api` precisam estar na mesma origem do app.
 - **Previsão do tempo** é chamada do navegador ao Open-Meteo; a política de segurança do site precisa liberar os dois domínios (D-021).
 - **Notificações só dentro do app.** A tabela `notifications` já serve de fila de saída para push, e-mail e WhatsApp.
-- **Login por OTP sem provedor real** em produção (interface `OtpSender` pronta).
+- **Celular não verificado:** sem SMS, o celular só identifica a conta. Quem perde senha e código de recuperação perde a conta.
+- **Avisos só dentro do app:** não há push, e-mail nem WhatsApp. A tabela `notifications` já serve de fila de saída para quando houver.
 - **Sem testes de interface automatizados** (o fluxo é coberto por testes de API; a interface foi verificada manualmente em visual mobile).
 - **Teto de despesa e de cargos fixos** (R$ 300 e 2): colunas já existem por rolê, falta a tela.
 - **Ordem de criação em empate de milissegundo** (carros, itens): a lista usa `created_at`; só os testes, com relógio fixo, expõem empates.
@@ -78,5 +80,5 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 | Novo campo ou endpoint | schema em `packages/contracts`, migration, serviço e rota |
 | Trocar para PostgreSQL | dialeto em `db/client.ts`, tipos `INTEGER`/`TEXT` das migrations, `onConflict` já é portável |
 | Guardar arquivos em S3 | nova classe que implementa `FileStorage` |
-| Enviar SMS/WhatsApp | nova classe que implementa `OtpSender` e um consumidor da tabela `notifications` |
+| Enviar avisos por canal externo | um consumidor da tabela `notifications` (respeitando `notification_prefs`) |
 | Novo módulo do QG | pasta em `apps/api/src/modules`, tabela em nova migration, ação em `packages/domain/permissions.ts`, aba em `features/hq` |

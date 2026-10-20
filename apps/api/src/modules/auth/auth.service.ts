@@ -1,107 +1,146 @@
-import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
-import type { ProfileDto } from '@role/contracts';
-import type { AppContext } from '../../context';
-import { AppError, notFound, unauthorized, unprocessable } from '../../errors';
+import type { AuthResult, ProfileDto, SecurityOverview, SessionDto } from '@role/contracts';
+import type { AppContext, Db } from '../../context';
+import { AppError, conflict, notFound, unauthorized } from '../../errors';
 import { newId } from '../../ids';
+import { audit } from '../../lib/audit';
+import {
+  burnPasswordTime,
+  generateRecoveryCode,
+  hashPassword,
+  hashRecoveryCode,
+  recoveryCodeMatches,
+  verifyPassword,
+} from '../../lib/credentials';
 
-const OTP_TTL_MS = 10 * 60_000;
-const OTP_MAX_REQUESTS_PER_WINDOW = 3;
-const OTP_MAX_ATTEMPTS = 5;
+/* -------------------------------------------------------------------------------------------- */
+/* Tentativas e bloqueio                                                                         */
+/* -------------------------------------------------------------------------------------------- */
 
-const hashCode = (secret: string, phone: string, code: string) =>
-  createHmac('sha256', secret).update(`${phone}:${code}`).digest('hex');
+const MAX_FAILURES = 5;
+const LOCK_WINDOW_MS = 15 * 60_000;
 
-export async function requestOtp(ctx: AppContext, phone: string): Promise<{ devCode?: string }> {
-  const now = ctx.clock.now();
-  const windowStart = new Date(now.getTime() - OTP_TTL_MS).toISOString();
+type AttemptKind = 'login' | 'recover';
 
-  const recent = await ctx.db
-    .selectFrom('otp_codes')
-    .select((eb) => eb.fn.countAll<number>().as('n'))
+/** Bloqueia por celular depois de 5 erros em 15 minutos (vale também para o código de recuperação). */
+async function assertNotLocked(db: Db, phone: string, now: Date) {
+  const since = new Date(now.getTime() - LOCK_WINDOW_MS).toISOString();
+  const failures = await db
+    .selectFrom('login_attempts')
+    .select('created_at')
     .where('phone', '=', phone)
-    .where('created_at', '>', windowStart)
-    .executeTakeFirstOrThrow();
-  if (Number(recent.n) >= OTP_MAX_REQUESTS_PER_WINDOW) {
-    throw new AppError(429, 'OTP_RATE_LIMIT', 'Muitos pedidos de código. Tente em alguns minutos.');
+    .where('success', '=', 0)
+    .where('created_at', '>', since)
+    .orderBy('created_at')
+    .execute();
+  if (failures.length >= MAX_FAILURES) {
+    const unlocksAt = new Date(failures[0]!.created_at).getTime() + LOCK_WINDOW_MS;
+    const minutes = Math.max(1, Math.ceil((unlocksAt - now.getTime()) / 60_000));
+    throw new AppError(
+      429,
+      'LOGIN_LOCKED',
+      `Muitas tentativas erradas. Tente de novo em ${minutes} min.`,
+    );
   }
+}
 
-  const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
-  await ctx.otpSender.send(phone, code);
-  await ctx.db
-    .insertInto('otp_codes')
+async function recordAttempt(
+  db: Db,
+  phone: string,
+  kind: AttemptKind,
+  success: boolean,
+  now: Date,
+) {
+  await db
+    .insertInto('login_attempts')
+    .values({ id: newId(), phone, kind, success: success ? 1 : 0, created_at: now.toISOString() })
+    .execute();
+  if (success) {
+    await db
+      .deleteFrom('login_attempts')
+      .where('phone', '=', phone)
+      .where('success', '=', 0)
+      .execute();
+  }
+}
+
+/* -------------------------------------------------------------------------------------------- */
+/* Sessões                                                                                       */
+/* -------------------------------------------------------------------------------------------- */
+
+export async function createSession(
+  db: Db,
+  userId: string,
+  device: string,
+  now: Date,
+): Promise<string> {
+  const id = newId();
+  await db
+    .insertInto('user_sessions')
     .values({
-      id: newId(),
-      phone,
-      code_hash: hashCode(ctx.config.SESSION_SECRET, phone, code),
-      expires_at: new Date(now.getTime() + OTP_TTL_MS).toISOString(),
-      attempts: 0,
-      consumed_at: null,
+      id,
+      user_id: userId,
+      device,
       created_at: now.toISOString(),
+      last_seen_at: now.toISOString(),
+      revoked_at: null,
     })
     .execute();
-
-  return ctx.config.OTP_DEV_ECHO ? { devCode: code } : {};
+  return id;
 }
 
-export async function verifyOtp(
+export async function listSessions(
   ctx: AppContext,
-  input: { phone: string; code: string; name?: string | undefined },
-): Promise<ProfileDto> {
-  const now = ctx.clock.now();
-
-  const otp = await ctx.db
-    .selectFrom('otp_codes')
+  userId: string,
+  currentSessionId: string,
+): Promise<SessionDto[]> {
+  const rows = await ctx.db
+    .selectFrom('user_sessions')
     .selectAll()
-    .where('phone', '=', input.phone)
-    .where('consumed_at', 'is', null)
-    .where('expires_at', '>', now.toISOString())
-    .orderBy('created_at', 'desc')
-    .executeTakeFirst();
-  if (!otp) throw new AppError(401, 'INVALID_CODE', 'Código inválido ou expirado');
-  if (otp.attempts >= OTP_MAX_ATTEMPTS) {
-    throw new AppError(429, 'OTP_LOCKED', 'Muitas tentativas. Peça um novo código.');
-  }
-
-  const expected = Buffer.from(otp.code_hash, 'hex');
-  const actual = Buffer.from(hashCode(ctx.config.SESSION_SECRET, input.phone, input.code), 'hex');
-  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
-    await ctx.db
-      .updateTable('otp_codes')
-      .set({ attempts: otp.attempts + 1 })
-      .where('id', '=', otp.id)
-      .execute();
-    throw new AppError(401, 'INVALID_CODE', 'Código inválido ou expirado');
-  }
-
-  let user = await ctx.db
-    .selectFrom('users')
-    .selectAll()
-    .where('phone', '=', input.phone)
-    .executeTakeFirst();
-  if (!user && !input.name) {
-    // Não consome o código: o front pede o nome e reenvia o mesmo código.
-    throw unprocessable('NAME_REQUIRED', 'Como podemos te chamar?');
-  }
-
-  await ctx.db
-    .updateTable('otp_codes')
-    .set({ consumed_at: now.toISOString() })
-    .where('id', '=', otp.id)
+    .where('user_id', '=', userId)
+    .where('revoked_at', 'is', null)
+    .orderBy('last_seen_at', 'desc')
     .execute();
-
-  if (!user) {
-    user = {
-      id: newId(),
-      phone: input.phone,
-      name: input.name!,
-      pix_key: null,
-      created_at: now.toISOString(),
-      deleted_at: null,
-    };
-    await ctx.db.insertInto('users').values(user).execute();
-  }
-  return toProfile(user);
+  return rows.map((r) => ({
+    id: r.id,
+    device: r.device,
+    createdAt: r.created_at,
+    lastSeenAt: r.last_seen_at,
+    current: r.id === currentSessionId,
+  }));
 }
+
+export async function revokeSession(
+  ctx: AppContext,
+  userId: string,
+  sessionId: string,
+): Promise<void> {
+  const res = await ctx.db
+    .updateTable('user_sessions')
+    .set({ revoked_at: ctx.clock.now().toISOString() })
+    .where('id', '=', sessionId)
+    .where('user_id', '=', userId)
+    .where('revoked_at', 'is', null)
+    .executeTakeFirst();
+  if (Number(res.numUpdatedRows) === 0) throw notFound('Acesso não encontrado');
+}
+
+export async function revokeOtherSessions(
+  ctx: AppContext,
+  userId: string,
+  keepSessionId: string,
+): Promise<void> {
+  await ctx.db
+    .updateTable('user_sessions')
+    .set({ revoked_at: ctx.clock.now().toISOString() })
+    .where('user_id', '=', userId)
+    .where('id', '!=', keepSessionId)
+    .where('revoked_at', 'is', null)
+    .execute();
+}
+
+/* -------------------------------------------------------------------------------------------- */
+/* Cadastro, entrada e recuperação                                                               */
+/* -------------------------------------------------------------------------------------------- */
 
 export function toProfile(user: {
   id: string;
@@ -112,13 +151,232 @@ export function toProfile(user: {
   return { id: user.id, name: user.name, phone: user.phone, pixKey: user.pix_key };
 }
 
+export async function register(
+  ctx: AppContext,
+  input: { phone: string; name: string; password: string },
+  device: string,
+): Promise<AuthResult & { sessionId: string }> {
+  const now = ctx.clock.now();
+  const exists = await ctx.db
+    .selectFrom('users')
+    .select('id')
+    .where('phone', '=', input.phone)
+    .executeTakeFirst();
+  if (exists) {
+    throw conflict(
+      'PHONE_TAKEN',
+      'Esse celular já tem conta. Entre com a senha ou recupere o acesso.',
+    );
+  }
+
+  const id = newId();
+  const recoveryCode = generateRecoveryCode();
+  const [passwordHash] = await Promise.all([hashPassword(input.password)]);
+  await ctx.db
+    .insertInto('users')
+    .values({
+      id,
+      phone: input.phone,
+      name: input.name,
+      pix_key: null,
+      created_at: now.toISOString(),
+      deleted_at: null,
+      password_hash: passwordHash,
+      password_changed_at: now.toISOString(),
+      recovery_hash: hashRecoveryCode(ctx.config.SESSION_SECRET, recoveryCode),
+      recovery_created_at: now.toISOString(),
+    })
+    .execute();
+  const sessionId = await createSession(ctx.db, id, device, now);
+  await audit(ctx.db, now, {
+    eventId: null,
+    actorId: id,
+    action: 'account.registered',
+    entity: 'user',
+    entityId: id,
+  });
+  return {
+    profile: toProfile({ id, name: input.name, phone: input.phone, pix_key: null }),
+    recoveryCode,
+    sessionId,
+  };
+}
+
+export async function login(
+  ctx: AppContext,
+  input: { phone: string; password: string },
+  device: string,
+): Promise<AuthResult & { sessionId: string }> {
+  const now = ctx.clock.now();
+  await assertNotLocked(ctx.db, input.phone, now);
+
+  const user = await ctx.db
+    .selectFrom('users')
+    .selectAll()
+    .where('phone', '=', input.phone)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst();
+
+  let ok = false;
+  if (user?.password_hash) ok = await verifyPassword(input.password, user.password_hash);
+  else await burnPasswordTime(input.password);
+
+  await recordAttempt(ctx.db, input.phone, 'login', ok, now);
+  if (!ok || !user) throw new AppError(401, 'INVALID_CREDENTIALS', 'Celular ou senha incorretos.');
+
+  const sessionId = await createSession(ctx.db, user.id, device, now);
+  return { profile: toProfile(user), sessionId };
+}
+
+/** Recuperação sem canal externo: o código guardado no cadastro prova que é a mesma pessoa. */
+export async function recover(
+  ctx: AppContext,
+  input: { phone: string; recoveryCode: string; newPassword: string },
+  device: string,
+): Promise<AuthResult & { sessionId: string }> {
+  const now = ctx.clock.now();
+  await assertNotLocked(ctx.db, input.phone, now);
+
+  const user = await ctx.db
+    .selectFrom('users')
+    .selectAll()
+    .where('phone', '=', input.phone)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst();
+  const ok =
+    !!user?.recovery_hash &&
+    recoveryCodeMatches(ctx.config.SESSION_SECRET, input.recoveryCode, user.recovery_hash);
+
+  await recordAttempt(ctx.db, input.phone, 'recover', ok, now);
+  if (!ok || !user)
+    throw new AppError(401, 'INVALID_RECOVERY', 'Celular ou código de recuperação incorretos.');
+
+  const recoveryCode = generateRecoveryCode();
+  const passwordHash = await hashPassword(input.newPassword);
+  await ctx.db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable('users')
+      .set({
+        password_hash: passwordHash,
+        password_changed_at: now.toISOString(),
+        // O código usado queima: nasce um novo, mostrado agora.
+        recovery_hash: hashRecoveryCode(ctx.config.SESSION_SECRET, recoveryCode),
+        recovery_created_at: now.toISOString(),
+      })
+      .where('id', '=', user.id)
+      .execute();
+    await trx
+      .updateTable('user_sessions')
+      .set({ revoked_at: now.toISOString() })
+      .where('user_id', '=', user.id)
+      .where('revoked_at', 'is', null)
+      .execute();
+    await audit(trx, now, {
+      eventId: null,
+      actorId: user.id,
+      action: 'account.recovered',
+      entity: 'user',
+      entityId: user.id,
+    });
+  });
+  const sessionId = await createSession(ctx.db, user.id, device, now);
+  return { profile: toProfile(user), recoveryCode, sessionId };
+}
+
+async function requirePassword(ctx: AppContext, userId: string, password: string) {
+  const user = await ctx.db
+    .selectFrom('users')
+    .selectAll()
+    .where('id', '=', userId)
+    .executeTakeFirst();
+  if (!user) throw unauthorized();
+  await assertNotLocked(ctx.db, user.phone, ctx.clock.now());
+  const ok = !!user.password_hash && (await verifyPassword(password, user.password_hash));
+  await recordAttempt(ctx.db, user.phone, 'login', ok, ctx.clock.now());
+  if (!ok) throw new AppError(403, 'WRONG_PASSWORD', 'A senha informada está incorreta.');
+  return user;
+}
+
+export async function changePassword(
+  ctx: AppContext,
+  userId: string,
+  currentSessionId: string,
+  input: { currentPassword: string; newPassword: string },
+): Promise<void> {
+  const now = ctx.clock.now();
+  await requirePassword(ctx, userId, input.currentPassword);
+  const hash = await hashPassword(input.newPassword);
+  await ctx.db
+    .updateTable('users')
+    .set({ password_hash: hash, password_changed_at: now.toISOString() })
+    .where('id', '=', userId)
+    .execute();
+  // Trocou a senha: todo outro aparelho precisa entrar de novo.
+  await revokeOtherSessions(ctx, userId, currentSessionId);
+  await audit(ctx.db, now, {
+    eventId: null,
+    actorId: userId,
+    action: 'account.password_changed',
+    entity: 'user',
+    entityId: userId,
+  });
+}
+
+export async function regenerateRecoveryCode(
+  ctx: AppContext,
+  userId: string,
+  password: string,
+): Promise<string> {
+  const now = ctx.clock.now();
+  await requirePassword(ctx, userId, password);
+  const code = generateRecoveryCode();
+  await ctx.db
+    .updateTable('users')
+    .set({
+      recovery_hash: hashRecoveryCode(ctx.config.SESSION_SECRET, code),
+      recovery_created_at: now.toISOString(),
+    })
+    .where('id', '=', userId)
+    .execute();
+  await audit(ctx.db, now, {
+    eventId: null,
+    actorId: userId,
+    action: 'account.recovery_regenerated',
+    entity: 'user',
+    entityId: userId,
+  });
+  return code;
+}
+
+export async function securityOverview(
+  ctx: AppContext,
+  userId: string,
+  currentSessionId: string,
+): Promise<SecurityOverview> {
+  const user = await ctx.db
+    .selectFrom('users')
+    .select(['password_changed_at', 'recovery_created_at'])
+    .where('id', '=', userId)
+    .executeTakeFirst();
+  if (!user) throw unauthorized();
+  return {
+    sessions: await listSessions(ctx, userId, currentSessionId),
+    passwordChangedAt: user.password_changed_at,
+    recoveryCodeCreatedAt: user.recovery_created_at,
+  };
+}
+
+/* -------------------------------------------------------------------------------------------- */
+/* Perfil                                                                                        */
+/* -------------------------------------------------------------------------------------------- */
+
 export async function getProfile(ctx: AppContext, userId: string): Promise<ProfileDto> {
   const user = await ctx.db
     .selectFrom('users')
     .selectAll()
     .where('id', '=', userId)
     .executeTakeFirst();
-  if (!user) throw unauthorized('Sessão inválida');
+  if (!user || user.deleted_at) throw unauthorized('Sessão inválida');
   return toProfile(user);
 }
 

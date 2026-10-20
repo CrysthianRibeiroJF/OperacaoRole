@@ -86,7 +86,7 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 ## D-017 · QG do MVP tem três abas · 20/10/2026 · Aceita
 **Decisão:** Base & Roteiro, **Equipe** e Cofre. O PRD previa duas abas no MVP, mas cargos e sorteio precisam de uma tela. Frotas e Mercado entram na Fase 2.
 
-## D-018 · Login por telefone com código (OTP) · 20/10/2026 · Aceita, com provedor pendente
+## D-018 · Login por telefone com código (OTP) · 20/10/2026 · Substituída por D-024
 **Decisão:** sessão por cookie `httpOnly`, `SameSite=Lax`, 30 dias. O envio do código passa pela interface `OtpSender`; em desenvolvimento o código é impresso no console e devolvido na resposta (`OTP_DEV_ECHO`). Em produção, o servidor recusa subir com esse eco ligado e o envio falha explicitamente até existir um provedor real (Q11).
 
 ## D-019 · Direção visual "ordem de missão" · 20/10/2026 · Aceita
@@ -111,4 +111,16 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 ## D-023 · Link compartilhado com prévia (Open Graph) · 20/10/2026 · Aceita
 **Decisão:** o botão de compartilhar usa `/share/:code`, uma página mínima com título, descrição e imagem Open Graph (WhatsApp lê só o HTML) que redireciona o humano para o convite. Só dados públicos do convite.
 **Consequências:** em produção, `/share` e `/api` precisam sair da mesma origem do app (proxy reverso). A imagem é a mesma para todos os rolês; uma imagem com o texto do rolê fica como evolução.
+
+## D-024 · Acesso interno: celular e senha, sem SMS, WhatsApp ou e-mail · 20/10/2026 · Aceita (substitui D-018)
+**Contexto:** o login por código dependia de um provedor de SMS que o projeto decidiu não integrar por enquanto. Sem ele, ninguém conseguia entrar fora do desenvolvimento.
+**Decisão:** o acesso é **celular + senha**. Senha com política em português (mínimo 8, sem comuns nem sequências, diferente do celular) e guardada com scrypt e sal. Como não há canal para recuperar a conta, o cadastro entrega um **código de recuperação** de 16 caracteres, mostrado uma vez e só confirmado quando a pessoa marca que guardou; usar o código redefine a senha, derruba todos os aparelhos e emite um novo. Sessões ficam no servidor, uma por aparelho (rótulo como "Chrome no Android"), e podem ser encerradas uma a uma ou todas as outras; trocar a senha derruba os demais aparelhos. Erros de senha ou de código bloqueiam o celular por 15 minutos depois de 5 tentativas. O celular **não é verificado**: serve só como identificador.
+**Consequências:** quem perde a senha e o código não tem como recuperar a conta (a mensagem avisa isso). Alguém pode cadastrar o celular de outra pessoa antes dela; o dano é pequeno (nenhum rolê entra sem o link do convite) e entra no risco registrado. A tabela de códigos por SMS foi removida (migration 003).
+
+## D-025 · Todos os avisos são internos ao app · 20/10/2026 · Aceita
+**Decisão:** nenhum canal externo por ora. Os avisos vivem na aba **Avisos** (caixa de entrada com filtros por categoria, agrupamento por dia, atalho para a aba certa do QG e "marcar lidos") e no selo da navegação e do título da aba do navegador. A pessoa escolhe as categorias que quer receber em **Conta > Avisos** e pode reativar rolês silenciados.
+**Consequências:** sem push, quem não abre o app não é lembrado. Isso aumenta o peso de quórum, sinal e cobrança como avisos dentro do app; a tabela `notifications` continua pronta para virar fila de saída quando houver um canal externo.
+
+## D-026 · Central da conta · 20/10/2026 · Aceita
+**Decisão:** `/perfil` vira um menu com credencial no topo e quatro áreas: Dados pessoais, Avisos, Segurança e acessos, Privacidade e dados. A navegação inferior chama-se "Conta".
 

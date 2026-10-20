@@ -2,6 +2,9 @@ import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/
 import type {
   DepositQueueItem,
   FleetDto,
+  MutedEventDto,
+  NotificationPrefsDto,
+  SecurityOverview,
   SuppliesDto,
   EventDetail,
   ExpenseDto,
@@ -27,6 +30,9 @@ export const keys = {
   supplies: (id: string) => ['supplies', id] as const,
   fleet: (id: string) => ['fleet', id] as const,
   notifications: ['notifications'] as const,
+  security: ['security'] as const,
+  notifPrefs: ['notif-prefs'] as const,
+  mutedEvents: ['muted-events'] as const,
 };
 
 export const useSession = () =>
@@ -88,6 +94,21 @@ export const useFleet = (id: string, enabled = true) =>
     queryKey: keys.fleet(id),
     queryFn: () => api.get<FleetDto>(`/events/${id}/fleet`),
     enabled,
+  });
+
+export const useSecurity = () =>
+  useQuery({ queryKey: keys.security, queryFn: () => api.get<SecurityOverview>('/me/security') });
+
+export const useNotificationPrefs = () =>
+  useQuery({
+    queryKey: keys.notifPrefs,
+    queryFn: () => api.get<NotificationPrefsDto>('/me/notification-prefs'),
+  });
+
+export const useMutedEvents = () =>
+  useQuery({
+    queryKey: keys.mutedEvents,
+    queryFn: () => api.get<MutedEventDto[]>('/me/muted-events'),
   });
 
 export const useNotifications = () =>

@@ -2,7 +2,7 @@ import { loadConfig } from '../config';
 import { systemClock, type AppContext } from '../context';
 import { newId } from '../ids';
 import { LocalDiskStorage } from '../lib/storage';
-import { ConsoleOtpSender } from '../modules/auth/otp-sender';
+import { hashPassword } from '../lib/credentials';
 import { createEvent, respond } from '../modules/events/event.service';
 import { createExpense } from '../modules/expenses/expenses.service';
 import { claimRole } from '../modules/roles/roles.service';
@@ -12,7 +12,7 @@ import { updateBudget } from '../modules/events/event.service';
 import { createDb } from './client';
 import { migrateToLatest } from './migrate';
 
-/** Dados de demonstração para desenvolver e apresentar. Telefones fictícios; login por código OTP. */
+/** Dados de demonstração para desenvolver e apresentar. Telefones fictícios; todos entram com a senha DEMO_PASSWORD. */
 const config = loadConfig();
 if (config.NODE_ENV === 'production') throw new Error('O seed não roda em produção');
 
@@ -23,8 +23,9 @@ const ctx: AppContext = {
   config,
   clock: systemClock,
   storage: new LocalDiskStorage(config.UPLOAD_DIR),
-  otpSender: new ConsoleOtpSender(),
 };
+
+const DEMO_PASSWORD = 'role-demo-2026';
 
 const people = [
   { name: 'Ana', phone: '5511999990001' },
@@ -58,6 +59,10 @@ for (const p of people) {
       pix_key: `${p.name.toLowerCase()}@pix.com`,
       created_at: new Date().toISOString(),
       deleted_at: null,
+      password_hash: await hashPassword(DEMO_PASSWORD),
+      password_changed_at: new Date().toISOString(),
+      recovery_hash: null,
+      recovery_created_at: null,
     })
     .execute();
 }
@@ -140,9 +145,7 @@ const cars = await db
 const biaCar = cars.find((c) => c.driver_id === bia);
 if (biaCar) await joinVehicle(ctx, ana, biaCar.id);
 
-console.log(
-  'Seed aplicado. Entre com qualquer telefone abaixo (o código aparece no console da API):',
-);
+console.log('Seed aplicado. Entre com qualquer telefone abaixo, senha ' + DEMO_PASSWORD + ':');
 for (const p of people)
   console.log(`  ${p.name}: (${p.phone.slice(2, 4)}) ${p.phone.slice(4, 9)}-${p.phone.slice(9)}`);
 await db.destroy();

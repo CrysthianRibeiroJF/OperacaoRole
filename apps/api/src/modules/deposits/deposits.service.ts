@@ -91,7 +91,7 @@ export async function openDepositWindowIfReady(
     userIds: payers,
     eventId: event.id,
     kind: 'deposit.window_opened',
-    title: 'Hora do sinal 💸',
+    title: 'Hora do sinal',
     body: `Pague ${formatBRL(event.deposit_cents!)} no Pix e anexe o comprovante até ${fmtDateTime(deadline)}. Sem comprovante, a vaga vai para a fila de espera.`,
     dedupeKey: `deposit.window_opened:${event.id}`,
   });
@@ -351,7 +351,7 @@ export async function reviewDeposit(
       userIds: [targetUserId],
       eventId,
       kind: approve ? 'deposit.approved' : 'deposit.rejected',
-      title: approve ? 'Sinal aprovado ✅' : 'Comprovante recusado',
+      title: approve ? 'Sinal aprovado' : 'Comprovante recusado',
       body: approve
         ? `Sua vaga em ${event.title} está garantida. Agora você pode escolher seu lugar.`
         : `O Tesoureiro recusou o comprovante: ${input.reason}. Envie outro para garantir a vaga.`,

@@ -1,8 +1,6 @@
 import { existsSync } from 'node:fs';
 import { z } from 'zod';
 
-const bool = z.enum(['true', 'false']).transform((v) => v === 'true');
-
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().default(3333),
@@ -10,7 +8,6 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET precisa ter ao menos 32 caracteres'),
   DATABASE_PATH: z.string().default('./data/role.db'),
   UPLOAD_DIR: z.string().default('./uploads'),
-  OTP_DEV_ECHO: bool.default('false'),
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:5173'),
   /** Despesas acima disso (por quem não é Tesoureiro) exigem aprovação. Em centavos. */
   EXPENSE_APPROVAL_THRESHOLD_CENTS: z.coerce.number().int().default(30_000),
@@ -28,9 +25,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Config {
     throw new Error(`Configuração inválida:\n${problems.join('\n')}`);
   }
   const config = parsed.data;
-  if (config.NODE_ENV === 'production' && config.OTP_DEV_ECHO) {
-    throw new Error('OTP_DEV_ECHO não pode estar ligado em produção');
-  }
   if (config.NODE_ENV === 'production' && config.SESSION_SECRET.startsWith('dev-only')) {
     throw new Error('Troque o SESSION_SECRET de desenvolvimento antes de ir para produção');
   }

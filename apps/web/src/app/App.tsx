@@ -17,8 +17,22 @@ const NotificationsPage = lazy(() =>
     default: m.NotificationsPage,
   })),
 );
-const ProfilePage = lazy(() =>
-  import('../features/auth/ProfilePage').then((m) => ({ default: m.ProfilePage })),
+const AccountHub = lazy(() =>
+  import('../features/account/AccountHub').then((m) => ({ default: m.AccountHub })),
+);
+const ProfileData = lazy(() =>
+  import('../features/account/ProfileData').then((m) => ({ default: m.ProfileData })),
+);
+const NotificationSettings = lazy(() =>
+  import('../features/account/NotificationSettings').then((m) => ({
+    default: m.NotificationSettings,
+  })),
+);
+const SecuritySettings = lazy(() =>
+  import('../features/account/SecuritySettings').then((m) => ({ default: m.SecuritySettings })),
+);
+const PrivacySettings = lazy(() =>
+  import('../features/account/PrivacySettings').then((m) => ({ default: m.PrivacySettings })),
 );
 
 export function App() {
@@ -34,7 +48,11 @@ export function App() {
             <Route path="/novo" element={<CreateEventPage />} />
             <Route path="/role/:id" element={<HqPage />} />
             <Route path="/avisos" element={<NotificationsPage />} />
-            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/perfil" element={<AccountHub />} />
+            <Route path="/perfil/dados" element={<ProfileData />} />
+            <Route path="/perfil/avisos" element={<NotificationSettings />} />
+            <Route path="/perfil/seguranca" element={<SecuritySettings />} />
+            <Route path="/perfil/privacidade" element={<PrivacySettings />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

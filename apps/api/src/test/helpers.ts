@@ -5,7 +5,8 @@ import type { AppContext, Clock } from '../context';
 import { createDb } from '../db/client';
 import { migrateToLatest } from '../db/migrate';
 import { MemoryStorage } from '../lib/storage';
-import { ConsoleOtpSender } from '../modules/auth/otp-sender';
+
+export const PASSWORD = 'senha-forte-77';
 
 export class FakeClock implements Clock {
   constructor(private current: Date) {}
@@ -21,13 +22,12 @@ export async function makeApp() {
   const config = loadConfig({
     NODE_ENV: 'test',
     SESSION_SECRET: 'test-secret-with-more-than-32-characters!!',
-    OTP_DEV_ECHO: 'true',
   } as NodeJS.ProcessEnv);
   const db = createDb(':memory:');
   await migrateToLatest(db);
   const clock = new FakeClock(new Date('2026-11-01T12:00:00Z'));
   const storage = new MemoryStorage();
-  const ctx: AppContext = { db, config, clock, storage, otpSender: new ConsoleOtpSender(() => {}) };
+  const ctx: AppContext = { db, config, clock, storage };
   const app = await buildApp(ctx);
   return { app, ctx, clock, storage };
 }
@@ -41,6 +41,11 @@ export interface Res<T = any> {
 export class Client {
   private cookie = '';
   userId = '';
+  recoveryCode = '';
+  /** Cookie de sessão atual (para simular o mesmo celular em outro aparelho). */
+  get sessionCookie() {
+    return this.cookie;
+  }
 
   constructor(
     private readonly app: FastifyInstance,
@@ -48,22 +53,34 @@ export class Client {
     readonly name: string,
   ) {}
 
+  /** Cria a conta (cadastro) e guarda o cookie de sessão, como o navegador faria. */
   async login(): Promise<this> {
-    const req = await this.app.inject({
-      method: 'POST',
-      url: '/api/auth/otp/request',
-      payload: { phone: this.phone },
-    });
-    const { devCode } = req.json();
     const res = await this.app.inject({
       method: 'POST',
-      url: '/api/auth/otp/verify',
-      payload: { phone: this.phone, code: devCode, name: this.name },
+      url: '/api/auth/register',
+      payload: { phone: this.phone, name: this.name, password: PASSWORD },
+    });
+    const session = res.cookies.find((c) => c.name === 'role_session');
+    if (!session) throw new Error(`cadastro falhou: ${res.body}`);
+    this.cookie = `role_session=${session.value}`;
+    const body = res.json();
+    this.userId = body.profile.id;
+    this.recoveryCode = body.recoveryCode;
+    return this;
+  }
+
+  /** Entra numa conta que já existe (outro aparelho do mesmo usuário). */
+  async signIn(password = PASSWORD, userAgent?: string): Promise<this> {
+    const res = await this.app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { phone: this.phone, password },
+      headers: userAgent ? { 'user-agent': userAgent } : {},
     });
     const session = res.cookies.find((c) => c.name === 'role_session');
     if (!session) throw new Error(`login falhou: ${res.body}`);
     this.cookie = `role_session=${session.value}`;
-    this.userId = res.json().id;
+    this.userId = res.json().profile.id;
     return this;
   }
 

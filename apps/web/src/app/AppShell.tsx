@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IconBell, IconFlag, IconUser } from '../components/icons';
 import { useNotifications, useSession } from '../lib/queries';
@@ -6,7 +7,7 @@ import { useNotifications, useSession } from '../lib/queries';
 const tabs: { to: string; label: string; icon: ReactNode; end: boolean }[] = [
   { to: '/', label: 'Rolês', icon: <IconFlag size={22} />, end: true },
   { to: '/avisos', label: 'Avisos', icon: <IconBell size={22} />, end: false },
-  { to: '/perfil', label: 'Perfil', icon: <IconUser size={22} />, end: false },
+  { to: '/perfil', label: 'Conta', icon: <IconUser size={22} />, end: false },
 ];
 
 export function AppShell() {
@@ -28,6 +29,14 @@ export function AppShell() {
 function BottomNav() {
   const { data } = useNotifications();
   const unread = data?.unread ?? 0;
+
+  // Como tudo é interno, a aba do navegador também avisa quando há novidade.
+  useEffect(() => {
+    document.title = unread > 0 ? '(' + unread + ') Operação Rolê' : 'Operação Rolê';
+    return () => {
+      document.title = 'Operação Rolê';
+    };
+  }, [unread]);
 
   return (
     <nav

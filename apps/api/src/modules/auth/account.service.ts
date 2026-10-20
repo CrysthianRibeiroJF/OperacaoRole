@@ -129,7 +129,14 @@ export async function deleteAccount(ctx: AppContext, userId: string): Promise<vo
     await trx.deleteFrom('deposit_proofs').where('user_id', '=', userId).execute();
     await trx.deleteFrom('notifications').where('user_id', '=', userId).execute();
     await trx.deleteFrom('event_mutes').where('user_id', '=', userId).execute();
-    await trx.deleteFrom('otp_codes').where('phone', '=', user.phone).execute();
+    await trx.deleteFrom('login_attempts').where('phone', '=', user.phone).execute();
+    await trx.deleteFrom('notification_prefs').where('user_id', '=', userId).execute();
+    await trx
+      .updateTable('user_sessions')
+      .set({ revoked_at: now.toISOString() })
+      .where('user_id', '=', userId)
+      .where('revoked_at', 'is', null)
+      .execute();
     await trx
       .updateTable('users')
       .set({

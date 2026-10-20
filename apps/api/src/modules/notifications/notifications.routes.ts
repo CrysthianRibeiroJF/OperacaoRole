@@ -2,8 +2,12 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { parse, requireUser } from '../../http';
 import { requireEvent } from '../events/event.queries';
+import { notificationPrefsSchema } from '@role/contracts';
 import {
+  getNotificationPrefs,
   isEventMuted,
+  listMutedEvents,
+  setNotificationPrefs,
   listNotifications,
   markNotificationsRead,
   setEventMuted,
@@ -37,4 +41,16 @@ export async function notificationsRoutes(app: FastifyInstance) {
     await setEventMuted(ctx.db, userId, req.params.id, muted);
     return { muted };
   });
+
+  app.get('/me/notification-prefs', async (req) =>
+    getNotificationPrefs(ctx.db, await requireUser(req)),
+  );
+
+  app.put('/me/notification-prefs', async (req) => {
+    const userId = await requireUser(req);
+    const { categories } = parse(notificationPrefsSchema, req.body);
+    return setNotificationPrefs(ctx.db, userId, categories);
+  });
+
+  app.get('/me/muted-events', async (req) => listMutedEvents(ctx.db, await requireUser(req)));
 }

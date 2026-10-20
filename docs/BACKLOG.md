@@ -9,9 +9,9 @@ Derivado do [PRD](PRD-Operacao-Role.md) v0.1. Fonte de verdade das regras: [memo
 - **Status:** `A fazer` | `Em andamento` | `Bloqueado` | `Parcial 🟡` | `Feito ✅`, no fim de cada título. Atualize aqui e registre decisões em [memorias/decisoes.md](../memorias/decisoes.md).
 - **Bloq:** questão em aberto que trava o ticket (ver [memorias/questoes-abertas.md](../memorias/questoes-abertas.md)).
 
-**Resumo:** 13 épicos (E0 a E12) · 70 tickets · P0: 51 tickets (185 pts) · P1: 16 · P2: 3
+**Resumo:** 13 épicos (E0 a E12) · 73 tickets · P0: 51 tickets (185 pts) · P1: 16 · P2: 3
 
-**Andamento (20/10/2026):** 47 tickets feitos ✅, 8 parciais 🟡, 15 a fazer. A Fase 2 (Mercado, Frotas, orçamento e clima) está no ar. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), analytics (ROL-013), termos de uso (ROL-123), beta fechado (ROL-124) e teste de carga e monitoramento (ROL-125). Do P1 faltam: central de notificações, fila com promoção automática, distribuição de quartos e transferência do Idealizador.
+**Andamento (20/10/2026):** 52 tickets feitos ✅, 7 parciais 🟡, 14 a fazer (73 no total). Fase 2 e acesso interno (celular + senha, recuperação, aparelhos, central da conta) estão no ar; **nenhum canal externo (SMS, WhatsApp, e-mail) está previsto por ora**. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), analytics (ROL-013), termos de uso (ROL-123), beta fechado (ROL-124) e teste de carga e monitoramento (ROL-125).
 
 | Épico | Tema | Fase | Prioridade |
 |---|---|---|---|
@@ -84,9 +84,20 @@ Execução confiável de expirações de prazo, janelas de sinal e lembretes, id
 
 ## E2 — Identidade e acesso
 
-### ROL-020 · Login por telefone (OTP) · P0 · 5 pts · Dep: ROL-011 · **Feito ✅**
+### ROL-020 · Acesso por celular e senha (substitui o OTP) · P0 · 5 pts · Dep: ROL-011 · **Feito ✅**
 - [ ] Código por SMS/WhatsApp com limite de tentativas e expiração
 - [ ] Sessão persistente no mobile
+
+### ROL-024 · Recuperação de acesso sem canal externo · P0 · 3 pts · Dep: ROL-020 · **Feito ✅**
+Código de recuperação no cadastro, redefinição de senha e bloqueio por tentativas.
+- [x] Código mostrado uma vez, com cópia, download e confirmação de que foi guardado
+- [x] Usar o código derruba os aparelhos e emite outro
+
+### ROL-025 · Aparelhos conectados e sessões no servidor · P0 · 3 pts · Dep: ROL-020 · **Feito ✅**
+- [x] Lista com rótulo do aparelho e último uso; desconectar um ou todos os outros
+- [x] Trocar a senha desconecta os demais aparelhos
+
+### ROL-026 · Central da conta (dados, avisos, segurança, privacidade) · P0 · 5 pts · Dep: ROL-020 · **Feito ✅**
 
 ### ROL-021 · Entrada de convidado via link com perfil mínimo · P0 · 3 pts · Dep: ROL-020 · **Feito ✅**
 Nome e foto opcional; sem instalação.
@@ -216,8 +227,7 @@ Implementa as regras 1–4 de [regras-de-negocio.md](../memorias/regras-de-negoc
 
 ## E7 — Notificações "Chato Oficial"
 
-### ROL-070 · Serviço de notificações multicanal · P0 · 5 pts · Bloq: Q7 · Dep: ROL-014 · **Parcial 🟡**
-> Parcial: só notificações dentro do app; faltam push, e-mail e WhatsApp (ponto de extensão pronto).
+### ROL-070 · Serviço de notificações (internas ao app) · P0 · 5 pts · Dep: ROL-014 · **Feito ✅**
 Push web, e-mail e fallback WhatsApp/SMS.
 - [ ] Máximo de 1 lembrete por gatilho a cada 24h
 - [ ] Usuário silencia por rolê
@@ -229,7 +239,7 @@ Push web, e-mail e fallback WhatsApp/SMS.
 ### ROL-073 · Cobrança pós-rolê (D+3, D+7), privada ao devedor · P0 · 3 pts · Dep: ROL-070, ROL-065 · **Feito ✅**
 - [ ] Nunca expõe devedor ao grupo; botão copiar Pix na mensagem
 
-### ROL-074 · Central de preferências de notificação · P1 · 3 pts · Dep: ROL-070 · **A fazer**
+### ROL-074 · Central de preferências de notificação · P1 · 3 pts · Dep: ROL-070 · **Feito ✅**
 
 ---
 

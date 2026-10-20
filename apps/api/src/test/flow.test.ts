@@ -31,45 +31,6 @@ const notificationsOf = async (c: Client) =>
   (await c.get('/notifications')).body.items as { kind: string; body: string }[];
 
 describe('autenticação', () => {
-  it('rejeita código errado e bloqueia depois de 5 tentativas (RN de OTP)', async () => {
-    const phone = '11999990000';
-    await env.app.inject({ method: 'POST', url: '/api/auth/otp/request', payload: { phone } });
-    for (let i = 0; i < 5; i++) {
-      const r = await env.app.inject({
-        method: 'POST',
-        url: '/api/auth/otp/verify',
-        payload: { phone, code: '000000', name: 'Zé' },
-      });
-      expect(r.statusCode).toBe(401);
-    }
-    const locked = await env.app.inject({
-      method: 'POST',
-      url: '/api/auth/otp/verify',
-      payload: { phone, code: '000000', name: 'Zé' },
-    });
-    expect(locked.statusCode).toBe(429);
-  });
-
-  it('pede o nome de quem é novo sem queimar o código', async () => {
-    const phone = '11988887777';
-    const { devCode } = (
-      await env.app.inject({ method: 'POST', url: '/api/auth/otp/request', payload: { phone } })
-    ).json();
-    const first = await env.app.inject({
-      method: 'POST',
-      url: '/api/auth/otp/verify',
-      payload: { phone, code: devCode },
-    });
-    expect(first.statusCode).toBe(422);
-    expect(first.json().error.code).toBe('NAME_REQUIRED');
-    const second = await env.app.inject({
-      method: 'POST',
-      url: '/api/auth/otp/verify',
-      payload: { phone, code: devCode, name: 'Novo' },
-    });
-    expect(second.statusCode).toBe(200);
-  });
-
   it('exige sessão para rotas privadas', async () => {
     const anon = new Client(env.app, '0', 'x');
     expect((await anon.get('/events')).status).toBe(401);

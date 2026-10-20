@@ -1,4 +1,12 @@
-import type { Action, Diet, EventStatus, Quota, RoleKey, SupplyCategory } from '@role/domain';
+import type {
+  Action,
+  Diet,
+  EventStatus,
+  NotificationCategory,
+  Quota,
+  RoleKey,
+  SupplyCategory,
+} from '@role/domain';
 
 /** Formatos das respostas da API. Datas em ISO 8601, dinheiro em centavos. */
 
@@ -192,10 +200,34 @@ export interface NotificationDto {
   readAt: string | null;
 }
 
-export interface OtpRequestResponse {
-  ok: true;
-  /** Só existe em desenvolvimento (OTP_DEV_ECHO). Nunca em produção. */
-  devCode?: string;
+export interface AuthResult {
+  profile: ProfileDto;
+  /** Só existe no cadastro e na recuperação: é mostrado uma única vez. */
+  recoveryCode?: string;
+}
+
+export interface SessionDto {
+  id: string;
+  device: string;
+  createdAt: string;
+  lastSeenAt: string;
+  current: boolean;
+}
+
+export interface SecurityOverview {
+  sessions: SessionDto[];
+  passwordChangedAt: string | null;
+  recoveryCodeCreatedAt: string | null;
+}
+
+export interface NotificationPrefsDto {
+  categories: Record<NotificationCategory, boolean>;
+}
+
+export interface MutedEventDto {
+  id: string;
+  code: string;
+  title: string;
 }
 
 export interface ApiError {

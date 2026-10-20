@@ -37,4 +37,7 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Tralhas** | Itens grandes (cooler, guarda-sol, caixa de som) alocados a um carro. |
 | **Ordem nº** | Código curto do convite, exibido como número de série do bilhete. |
 | **Bilhete / Carimbo** | Elementos visuais do app: o bilhete representa um rolê ou saldo; o carimbo aparece só em decisões (Confirmado). |
+| **Código de recuperação** | Código de 16 caracteres entregue no cadastro; único jeito de recuperar a conta sem SMS ou e-mail. |
+| **Aparelho conectado** | Uma sessão ativa da conta (ex.: "Chrome no Android"), que a pessoa pode desconectar. |
+| **Central da conta** | Área `/perfil`: dados pessoais, avisos, segurança e privacidade. |
 

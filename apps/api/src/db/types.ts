@@ -9,16 +9,10 @@ export interface UsersTable {
   pix_key: string | null;
   created_at: string;
   deleted_at: string | null;
-}
-
-export interface OtpCodesTable {
-  id: string;
-  phone: string;
-  code_hash: string;
-  expires_at: string;
-  attempts: number;
-  consumed_at: string | null;
-  created_at: string;
+  password_hash: string | null;
+  password_changed_at: string | null;
+  recovery_hash: string | null;
+  recovery_created_at: string | null;
 }
 
 export interface EventsTable {
@@ -240,9 +234,31 @@ export interface CargoItemsTable {
   created_at: string;
 }
 
+export interface UserSessionsTable {
+  id: string;
+  user_id: string;
+  device: string;
+  created_at: string;
+  last_seen_at: string;
+  revoked_at: string | null;
+}
+
+export interface LoginAttemptsTable {
+  id: string;
+  phone: string;
+  kind: string;
+  success: number;
+  created_at: string;
+}
+
+export interface NotificationPrefsTable {
+  user_id: string;
+  category: string;
+  enabled: number;
+}
+
 export interface Database {
   users: UsersTable;
-  otp_codes: OtpCodesTable;
   events: EventsTable;
   participations: ParticipationsTable;
   event_roles: EventRolesTable;
@@ -262,4 +278,7 @@ export interface Database {
   vehicles: VehiclesTable;
   vehicle_passengers: VehiclePassengersTable;
   cargo_items: CargoItemsTable;
+  user_sessions: UserSessionsTable;
+  login_attempts: LoginAttemptsTable;
+  notification_prefs: NotificationPrefsTable;
 }

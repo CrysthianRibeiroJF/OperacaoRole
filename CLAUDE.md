@@ -6,7 +6,7 @@ App de organização de rolês em grupo (PWA + API). Idioma de trabalho e de int
 
 - `npm run dev`: API (:3333) e app (:5173). `npm run check`: typecheck + lint + testes (rode antes de dar algo por pronto).
 - `npm test -w @role/api`: testes de integração da API (relógio falso, SQLite em memória).
-- `npm run db:seed`: dados de demonstração (telefones `(11) 99999-0001` a `0005`).
+- `npm run db:seed`: dados de demonstração (telefones `(11) 99999-0001` a `0005`, senha `role-demo-2026`).
 
 ## Arquitetura em uma frase
 
@@ -40,4 +40,5 @@ Não duplique conteúdo: o PRD descreve o produto, `memorias/` guarda o que foi 
 - Tickets: `ROL-NNN`. Prioridades P0/P1/P2. Status no fim do título no backlog.
 - Questões em aberto: `Q1`, `Q2`... Decisões: `D-001`, `D-002`... Regras: `RN-01`...
 - **O app não custodia dinheiro** (princípio inegociável; D-003). Qualquer ideia que mova dinheiro dentro do app exige parecer jurídico antes.
-- Não lance publicamente sem fechar: parecer jurídico (Q12), provedor de OTP (Q11), LGPD (ROL-121) e termos de uso (ROL-123).
+- **Tudo é interno ao app** (D-024, D-025): sem SMS, WhatsApp ou e-mail. Acesso por celular e senha com código de recuperação; avisos só na aba Avisos. Não reintroduza canal externo sem decisão nova.
+- Não lance publicamente sem fechar: parecer jurídico (Q12), LGPD (ROL-121) e termos de uso (ROL-123).

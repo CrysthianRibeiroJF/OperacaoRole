@@ -4,7 +4,6 @@ import { systemClock, type AppContext } from './context';
 import { createDb } from './db/client';
 import { migrateToLatest } from './db/migrate';
 import { LocalDiskStorage } from './lib/storage';
-import { createOtpSender } from './modules/auth/otp-sender';
 import { startJobRunner } from './modules/jobs/runner';
 
 const config = loadConfig();
@@ -16,7 +15,6 @@ const ctx: AppContext = {
   config,
   clock: systemClock,
   storage: new LocalDiskStorage(config.UPLOAD_DIR),
-  otpSender: createOtpSender(config),
 };
 
 const app = await buildApp(ctx, { logger: true });

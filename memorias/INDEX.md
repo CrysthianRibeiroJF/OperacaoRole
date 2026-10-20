@@ -18,12 +18,13 @@ Outros documentos: [PRD](../docs/PRD-Operacao-Role.md), [backlog](../docs/BACKLO
 
 ## Estado em uma olhada
 
-- **Código:** MVP funcional (API, PWA, domínio e contratos) com 99 testes automatizados. Rodar: ver [README](../README.md). Arquitetura: [docs/arquitetura.md](../docs/arquitetura.md).
+- **Código:** MVP funcional (API, PWA, domínio e contratos) com 135 testes automatizados. Rodar: ver [README](../README.md). Arquitetura: [docs/arquitetura.md](../docs/arquitetura.md).
 - **Tese central:** proposta fechada + massa crítica + sinal Pix + rateio justo resolvem a inércia dos rolês em grupo.
 - **Não validado ainda:** o problema e as metas numéricas (nenhuma pesquisa com usuários até agora).
+- **Acesso interno (D-024 a D-026):** celular + senha, código de recuperação, aparelhos conectados, central da conta e avisos só dentro do app. Sem SMS, WhatsApp ou e-mail.
 - **Fase 2 no ar (D-020 a D-023):** Mercado, Frotas, orçamento, previsão do tempo, prévia de link e exclusão de conta.
 - **Decididas (D-009 a D-013):** sinal opcional, sem custódia, rolê confirmado não desconfirma, sorteio com teto de 2 cargos, PWA.
-- **Pendências que bloqueiam um lançamento público:** parecer jurídico do sinal (Q12 / ROL-004), provedor de SMS/WhatsApp (Q11), LGPD (ROL-121) e termos de uso (ROL-123).
+- **Pendências que bloqueiam um lançamento público:** parecer jurídico do sinal (Q12 / ROL-004), LGPD (ROL-121) e termos de uso (ROL-123).
 - **Próximo marco:** entrevistas e beta fechado com 10 grupos (ROL-001, ROL-124).
 
 ## Princípios inegociáveis

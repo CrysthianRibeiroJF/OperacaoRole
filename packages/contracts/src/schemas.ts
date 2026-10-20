@@ -1,5 +1,15 @@
 import { z } from 'zod';
-import { QUORUM_DEFAULT, QUORUM_MAX, QUORUM_MIN, SUPPLY_CATEGORIES } from '@role/domain';
+import {
+  checkPassword,
+  isValidRecoveryCodeShape,
+  NOTIFICATION_CATEGORIES,
+  PASSWORD_MAX,
+  PASSWORD_PROBLEM_MESSAGES,
+  QUORUM_DEFAULT,
+  QUORUM_MAX,
+  QUORUM_MIN,
+  SUPPLY_CATEGORIES,
+} from '@role/domain';
 
 /** Esquemas de entrada da API. A mesma fonte valida o servidor e tipa o front. */
 
@@ -15,11 +25,68 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use o formato AAAA-MM-D
 const isoDateTime = z.string().datetime({ offset: true });
 const text = (max: number) => z.string().trim().max(max);
 
-export const otpRequestSchema = z.object({ phone: phoneSchema });
-export const otpVerifySchema = z.object({
+/** Senha nova: segue a política do domínio e informa o motivo em português. */
+const newPassword = z
+  .string()
+  .max(PASSWORD_MAX, PASSWORD_PROBLEM_MESSAGES['too-long'])
+  .superRefine((value, ctx) => {
+    const problem = checkPassword(value);
+    if (problem) ctx.addIssue({ code: 'custom', message: PASSWORD_PROBLEM_MESSAGES[problem] });
+  });
+
+export const registerSchema = z
+  .object({
+    phone: phoneSchema,
+    name: text(60).min(2, 'Informe seu nome'),
+    password: z.string().max(PASSWORD_MAX),
+  })
+  .superRefine((v, ctx) => {
+    const problem = checkPassword(v.password, v.phone);
+    if (problem) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: PASSWORD_PROBLEM_MESSAGES[problem],
+      });
+    }
+  });
+
+export const loginSchema = z.object({
   phone: phoneSchema,
-  code: z.string().regex(/^\d{6}$/, 'O código tem 6 dígitos'),
-  name: text(60).min(2).optional(),
+  password: z.string().min(1, 'Informe a senha').max(200),
+});
+
+const recoveryCode = z
+  .string()
+  .refine(
+    isValidRecoveryCodeShape,
+    'O código de recuperação tem 16 caracteres (ex.: K7M2-9QXA-PD4T-ZW8R)',
+  );
+
+export const recoverSchema = z
+  .object({ phone: phoneSchema, recoveryCode, newPassword: z.string().max(PASSWORD_MAX) })
+  .superRefine((v, ctx) => {
+    const problem = checkPassword(v.newPassword, v.phone);
+    if (problem) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['newPassword'],
+        message: PASSWORD_PROBLEM_MESSAGES[problem],
+      });
+    }
+  });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Informe a senha atual').max(200),
+  newPassword,
+});
+
+export const regenerateRecoverySchema = z.object({
+  password: z.string().min(1, 'Informe a senha').max(200),
+});
+
+export const notificationPrefsSchema = z.object({
+  categories: z.record(z.enum(NOTIFICATION_CATEGORIES), z.boolean()),
 });
 
 export const updateProfileSchema = z.object({

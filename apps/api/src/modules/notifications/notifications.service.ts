@@ -1,4 +1,5 @@
-import type { NotificationDto } from '@role/contracts';
+import type { MutedEventDto, NotificationDto, NotificationPrefsDto } from '@role/contracts';
+import { categoryOfKind, NOTIFICATION_CATEGORIES, type NotificationCategory } from '@role/domain';
 import type { Db } from '../../context';
 import { newId } from '../../ids';
 
@@ -33,6 +34,19 @@ export async function notify(db: Db, now: Date, input: NotifyInput): Promise<voi
       .execute();
     const mutedIds = new Set(muted.map((m) => m.user_id));
     recipients = ids.filter((id) => !mutedIds.has(id));
+  }
+  // Preferência por categoria (central da conta): quem desligou a categoria não recebe.
+  const category = categoryOfKind(input.kind);
+  if (category && recipients.length > 0) {
+    const off = await db
+      .selectFrom('notification_prefs')
+      .select('user_id')
+      .where('category', '=', category)
+      .where('enabled', '=', 0)
+      .where('user_id', 'in', recipients)
+      .execute();
+    const offIds = new Set(off.map((o) => o.user_id));
+    recipients = recipients.filter((id) => !offIds.has(id));
   }
   if (recipients.length === 0) return;
 
@@ -134,4 +148,51 @@ export async function isEventMuted(db: Db, userId: string, eventId: string): Pro
     .where('event_id', '=', eventId)
     .executeTakeFirst();
   return !!row;
+}
+
+/** Todas as categorias ligadas por padrão; só o que a pessoa desligou fica registrado. */
+export async function getNotificationPrefs(db: Db, userId: string): Promise<NotificationPrefsDto> {
+  const rows = await db
+    .selectFrom('notification_prefs')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .execute();
+  const categories = Object.fromEntries(NOTIFICATION_CATEGORIES.map((c) => [c, true])) as Record<
+    NotificationCategory,
+    boolean
+  >;
+  for (const r of rows) {
+    if ((NOTIFICATION_CATEGORIES as readonly string[]).includes(r.category)) {
+      categories[r.category as NotificationCategory] = r.enabled === 1;
+    }
+  }
+  return { categories };
+}
+
+export async function setNotificationPrefs(
+  db: Db,
+  userId: string,
+  categories: Partial<Record<NotificationCategory, boolean>>,
+): Promise<NotificationPrefsDto> {
+  for (const [category, enabled] of Object.entries(categories)) {
+    await db
+      .insertInto('notification_prefs')
+      .values({ user_id: userId, category, enabled: enabled ? 1 : 0 })
+      .onConflict((oc) =>
+        oc.columns(['user_id', 'category']).doUpdateSet({ enabled: enabled ? 1 : 0 }),
+      )
+      .execute();
+  }
+  return getNotificationPrefs(db, userId);
+}
+
+export async function listMutedEvents(db: Db, userId: string): Promise<MutedEventDto[]> {
+  const rows = await db
+    .selectFrom('event_mutes')
+    .innerJoin('events', 'events.id', 'event_mutes.event_id')
+    .select(['events.id as id', 'events.code as code', 'events.title as title'])
+    .where('event_mutes.user_id', '=', userId)
+    .orderBy('events.created_at', 'desc')
+    .execute();
+  return rows;
 }

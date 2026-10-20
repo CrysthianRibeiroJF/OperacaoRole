@@ -257,7 +257,7 @@ export async function reviewExpense(
       userIds: [expense.paid_by],
       eventId: event.id,
       kind: approve ? 'expense.approved' : 'expense.rejected',
-      title: approve ? 'Despesa aprovada ✅' : 'Despesa recusada',
+      title: approve ? 'Despesa aprovada' : 'Despesa recusada',
       body: approve
         ? `${expense.description} (${formatBRL(expense.amount_cents)}) entrou na conta do rolê.`
         : `${expense.description} foi recusada: ${input.reason}.`,

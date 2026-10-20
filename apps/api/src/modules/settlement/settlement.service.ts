@@ -512,7 +512,7 @@ export async function confirmTransfer(
       userIds: [transfer.from_user],
       eventId: event.id,
       kind: 'settlement.paid',
-      title: 'Pagamento confirmado ✅',
+      title: 'Pagamento confirmado',
       body: `Seu pagamento de ${formatBRL(transfer.amount_cents)} foi confirmado. Obrigado!`,
       dedupeKey: `settlement.paid:${transferId}`,
     });

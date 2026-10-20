@@ -46,7 +46,7 @@ export async function buildApp(
     cookie: { cookieName: SESSION_COOKIE, signed: false },
     sign: { expiresIn: '30d' },
   });
-  // Nos testes o IP é sempre o mesmo; o limite é coberto por um teste dedicado do OTP (regra de negócio).
+  // Nos testes o IP é sempre o mesmo; o bloqueio por tentativas erradas é regra de negócio e tem teste próprio.
   if (ctx.config.NODE_ENV !== 'test') {
     await app.register(fastifyRateLimit, { global: true, max: 300, timeWindow: '1 minute' });
   }

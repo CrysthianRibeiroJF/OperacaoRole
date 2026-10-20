@@ -15,12 +15,12 @@ npm run db:seed                  # opcional: dados de demonstração
 npm run dev                      # API em :3333 e app em http://localhost:5173
 ```
 
-Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealizadora e Tesoureira do rolê de Ubatuba). Em desenvolvimento, o código de 6 dígitos aparece na tela de login e no console da API. Para abrir no celular, use o IP da sua máquina na porta 5173.
+Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealizadora e Tesoureira do rolê de Ubatuba), com a senha `role-demo-2026`. Também dá para criar uma conta nova na tela de entrada. Para abrir no celular, use o IP da sua máquina na porta 5173.
 
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Sobe API e app com recarga automática |
-| `npm test` | 99 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
+| `npm test` | 135 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
 | `npm run typecheck` | TypeScript estrito em todos os pacotes |
 | `npm run lint` / `npm run format` | ESLint e Prettier |
 | `npm run check` | Typecheck + lint + testes (rode antes de enviar mudanças) |
@@ -59,7 +59,7 @@ Por que assim: as regras que mexem com dinheiro e permissão ficam em `packages/
 
 1. **Proposta relâmpago:** cartão fechado (destino, data, teto por pessoa, prazo, quórum de 2 a 6).
 2. **Massa crítica:** ao atingir o quórum, o rolê vira oficial e a turma é avisada. Sem quórum no prazo, a proposta é arquivada.
-3. **Convite público por link:** abre sem login (modo Observador) e converte em "Tô dentro" com login por celular.
+3. **Convite público por link:** abre sem login (modo Observador) e converte em "Tô dentro" com cadastro em 20 segundos (celular e senha; a tela mostra o rolê para o qual a pessoa foi chamada).
 4. **Cargos:** Base, Frota, Suprimentos e Tesouro, por voluntariado ou sorteio. O Idealizador cobre Base e Tesouro enquanto vagos.
 5. **Sinal por Pix (opcional):** janela com prazo, comprovante, aprovação do Tesoureiro, fila de espera automática.
 6. **QG do rolê** com cinco abas: Base (Wi-Fi, endereço, previsão do tempo e simulador de orçamento), Equipe, Mercado, Frotas e Cofre.
@@ -69,17 +69,18 @@ Por que assim: as regras que mexem com dinheiro e permissão ficam em `packages/
 9. **Mercado & Itens:** lista sugerida por pessoas, consumo e dias; "eu levo"; baixa que vira despesa com a cota certa.
 10. **Frotas & Caronas:** carros com lugares estilo mapa de avião, bagagem por carro e trava de sinal para escolher lugar.
 11. **Orçamento e clima:** valor por pessoa caindo conforme entra gente, e previsão do tempo para os dias do rolê.
-12. **Seus dados:** exportação em JSON e exclusão de conta por anonimização.
+12. **Central da conta:** dados pessoais, escolha dos avisos por categoria, segurança (trocar senha, código de recuperação, aparelhos conectados) e privacidade (exportar e excluir).
+13. **Tudo interno:** sem SMS, WhatsApp ou e-mail. O acesso é celular + senha com código de recuperação, e os avisos vivem na aba Avisos.
 
 Ficam para depois: guia do entorno, distribuição de quartos, OCR de notas e conciliação de Pix. Detalhes em [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Antes de lançar
 
 - **Parecer jurídico** sobre registrar sinais por Pix (Q12 / ROL-004) e **termos de uso** (ROL-123).
-- **Provedor de SMS/WhatsApp:** em produção o envio do código de login falha de propósito até existir um `OtpSender` real (Q11).
 - **LGPD:** consentimento no cadastro e retenção automática de comprovantes (ROL-121; exportação e exclusão já existem).
 - **Validar com pessoas reais:** nenhuma meta do PRD foi testada ainda (ROL-001, ROL-124).
-- Analytics de produto (ROL-013), pipeline de CI (ROL-010) e notificações por push, e-mail ou WhatsApp (ROL-070).
+- Analytics de produto (ROL-013) e pipeline de CI (ROL-010).
+- **Sem canal externo:** quem esquece a senha e perde o código de recuperação não tem como recuperar a conta; quem não abre o app não recebe lembretes (push, e-mail e WhatsApp ficam para depois).
 
 ## Mapa da pasta de documentação
 

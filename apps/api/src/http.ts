@@ -8,10 +8,12 @@ export const SESSION_COOKIE = 'role_session';
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
-    payload: { sub: string };
-    user: { sub: string };
+    payload: { sub: string; sid: string };
+    user: { sub: string; sid: string };
   }
 }
+
+const TOUCH_EVERY_MS = 60_000;
 
 /** Valida a entrada com o esquema compartilhado (@role/contracts). Erros viram 400 padronizados. */
 export function parse<T extends ZodTypeAny>(schema: T, data: unknown): z.infer<T> {
@@ -29,14 +31,34 @@ export async function requireUser(req: FastifyRequest): Promise<string> {
   } catch {
     throw unauthorized();
   }
-  // Conta excluída (anonimizada) ou inexistente não mantém sessão, mesmo com cookie válido.
-  const row = await req.server.ctx.db
-    .selectFrom('users')
-    .select('deleted_at')
-    .where('id', '=', req.user.sub)
+  const { db, clock } = req.server.ctx;
+  if (!req.user.sid) throw unauthorized();
+
+  // A sessão precisa existir, ser da pessoa e não ter sido encerrada (sair, trocar senha, excluir conta).
+  const session = await db
+    .selectFrom('user_sessions')
+    .innerJoin('users', 'users.id', 'user_sessions.user_id')
+    .select(['user_sessions.last_seen_at as last_seen_at', 'users.deleted_at as deleted_at'])
+    .where('user_sessions.id', '=', req.user.sid)
+    .where('user_sessions.user_id', '=', req.user.sub)
+    .where('user_sessions.revoked_at', 'is', null)
     .executeTakeFirst();
-  if (!row || row.deleted_at) throw unauthorized();
+  if (!session || session.deleted_at) throw unauthorized();
+
+  const now = clock.now();
+  if (now.getTime() - new Date(session.last_seen_at).getTime() > TOUCH_EVERY_MS) {
+    await db
+      .updateTable('user_sessions')
+      .set({ last_seen_at: now.toISOString() })
+      .where('id', '=', req.user.sid)
+      .execute();
+  }
   return req.user.sub;
+}
+
+/** Id da sessão atual (use depois de `requireUser`). */
+export function currentSessionId(req: FastifyRequest): string {
+  return req.user.sid;
 }
 
 export async function optionalUser(req: FastifyRequest): Promise<string | null> {
