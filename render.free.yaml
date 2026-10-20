@@ -1,0 +1,26 @@
+# Blueprint do Render SÓ PARA TESTE, no plano gratuito.
+# Sem disco persistente: o banco e os comprovantes são apagados a cada reinício, deploy ou hibernação,
+# e o serviço dorme após ~15 min sem acesso (a primeira visita seguinte demora). Não guarde dados reais aqui.
+# Para valer de verdade, use o render.yaml (plano pago com disco). Guia: docs/publicar-no-render.md
+services:
+  - type: web
+    name: operacao-role-teste
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npm rebuild better-sqlite3 && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: SESSION_SECRET
+        generateValue: true
+      # Preencha no painel depois do primeiro deploy, com a URL que o Render der ao serviço.
+      - key: PUBLIC_WEB_URL
+        sync: false

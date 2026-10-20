@@ -11,6 +11,8 @@ Guia passo a passo para colocar o app no ar. O arquivo [`render.yaml`](../render
 - **Uma instância apenas.** SQLite não é compartilhado entre servidores. Não ative escala horizontal (mais de 1 instância).
 - **Plano:** disco persistente só existe em planos pagos (a partir do **Starter**, cerca de US$ 7/mês mais o disco, confira os preços atuais no painel). O plano gratuito hiberna e perde dados: serve só para olhar a tela, nunca para o banco real.
 
+> **Só para testar, sem pagar:** use [`render.free.yaml`](../render.free.yaml) (em **New → Blueprint**, informe esse arquivo em "Blueprint file path"). Funciona no plano gratuito, mas **sem disco**: o banco e os comprovantes são apagados a cada reinício ou deploy, e o serviço dorme após uns 15 minutos parado. Nunca use para dados reais.
+
 ## 2. Passo a passo
 
 1. **Suba o código para o GitHub** (o projeto ainda não tem remoto):
