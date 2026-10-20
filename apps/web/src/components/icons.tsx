@@ -196,3 +196,66 @@ export const IconCart = (p: IconProps) => (
     <circle cx="17" cy="19" r="1.300" />
   </svg>
 );
+
+export const IconSun = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.600 5.600 7 7M17 17l1.400 1.400M5.600 18.400 7 17M17 7l1.400-1.400" />
+  </svg>
+);
+export const IconCloud = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M7 18a4 4 0 0 1-.5-7.970A5.500 5.500 0 0 1 17 8.500a4.500 4.500 0 0 1 .5 9z" />
+  </svg>
+);
+export const IconRain = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M7 15a4 4 0 0 1-.5-7.970A5.500 5.500 0 0 1 17 5.500a4.500 4.500 0 0 1 .5 9" />
+    <path d="m8 18-1 3M12 18l-1 3M16 18l-1 3" />
+  </svg>
+);
+export const IconStorm = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M7 15a4 4 0 0 1-.5-7.970A5.500 5.500 0 0 1 17 5.500a4.500 4.500 0 0 1 .5 9" />
+    <path d="m12 13-2 4h3l-2 4" />
+  </svg>
+);
+export const IconFog = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M7 13a4 4 0 0 1-.5-7.970A5.500 5.500 0 0 1 17 3.500a4.500 4.500 0 0 1 .5 9" />
+    <path d="M4 17h16M7 21h10" />
+  </svg>
+);
+export const IconTrash = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+  </svg>
+);
+export const IconBox = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 7.500 12 3l9 4.500v9L12 21l-9-4.500z" />
+    <path d="m3 7.500 9 4.500 9-4.500M12 12v9" />
+  </svg>
+);
+export const IconUsers = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="9" cy="8" r="3.500" />
+    <path d="M2.500 20c.6-3.500 3.200-5 6.500-5s5.900 1.500 6.500 5M16 5a3.500 3.500 0 0 1 0 6.500M18 15c2 .6 3.200 2.200 3.500 5" />
+  </svg>
+);
+export const IconDownload = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14" />
+  </svg>
+);
+export const IconWand = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m5 19 11-11M14 6l4 4M5 6V3M3.500 4.500h3M19 15v3M17.500 16.500h3M10 3v1.500" />
+  </svg>
+);
+export const IconUndo = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+  </svg>
+);

@@ -29,7 +29,7 @@ export default defineConfig({
       workbox: {
         // Só o "casco" do app fica em cache. Dados financeiros e sessão nunca passam pelo service worker.
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/share\//],
         globPatterns: ['**/*.{js,css,html,svg,png}'],
         runtimeCaching: [
           {
@@ -46,7 +46,11 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    proxy: { '/api': { target: 'http://127.0.0.1:3333', changeOrigin: false } },
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:3333', changeOrigin: false },
+      // Página de compartilhamento com Open Graph (prévia do link no WhatsApp).
+      '/share': { target: 'http://127.0.0.1:3333', changeOrigin: false },
+    },
   },
   build: { sourcemap: true },
   test: { environment: 'node' },

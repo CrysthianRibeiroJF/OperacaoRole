@@ -118,7 +118,8 @@ export function Ticket({
 }
 
 export function inviteUrl(code: string): string {
-  return `${window.location.origin}/c/${code}`;
+  // /share/:code entrega as tags Open Graph (prévia no WhatsApp) e redireciona para o convite.
+  return `${window.location.origin}/share/${code}`;
 }
 
 export function shareText(event: EventCard): string {

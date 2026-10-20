@@ -1,4 +1,4 @@
-import type { Action, Diet, EventStatus, Quota, RoleKey } from '@role/domain';
+import type { Action, Diet, EventStatus, Quota, RoleKey, SupplyCategory } from '@role/domain';
 
 /** Formatos das respostas da API. Datas em ISO 8601, dinheiro em centavos. */
 
@@ -99,6 +99,10 @@ export interface DepositConfig {
   openedAt: string | null;
 }
 
+export interface BudgetInfo {
+  fixedCostsCents: number | null;
+}
+
 export interface EventDetail {
   event: EventCard;
   me: MyContext;
@@ -106,6 +110,7 @@ export interface EventDetail {
   roles: RoleAssignment[];
   roster: RosterEntry[];
   deposit: DepositConfig;
+  budget: BudgetInfo;
 }
 
 export interface DepositQueueItem {
@@ -195,4 +200,61 @@ export interface OtpRequestResponse {
 
 export interface ApiError {
   error: { code: string; message: string; details?: unknown };
+}
+
+export interface SupplyItemDto {
+  id: string;
+  name: string;
+  category: SupplyCategory;
+  quantityLabel: string;
+  estPriceCents: number | null;
+  realPriceCents: number | null;
+  assignee: PublicUser | null;
+  done: boolean;
+  hasExpense: boolean;
+}
+
+export interface SuppliesDto {
+  items: SupplyItemDto[];
+  estimatedCents: number;
+  realCents: number;
+  doneCount: number;
+}
+
+export interface CargoDto {
+  id: string;
+  name: string;
+  vehicleId: string | null;
+}
+
+export interface VehicleDto {
+  id: string;
+  label: string;
+  driver: PublicUser;
+  departurePlace: string | null;
+  departureTime: string | null;
+  seats: number;
+  freeSeats: number;
+  cargoCapacity: number;
+  cargoNote: string | null;
+  passengers: PublicUser[];
+  cargo: CargoDto[];
+  overloaded: boolean;
+}
+
+export interface FleetDto {
+  vehicles: VehicleDto[];
+  /** Confirmados que ainda não têm lugar nem dirigem. */
+  seatless: PublicUser[];
+  unassignedCargo: CargoDto[];
+  myVehicleId: string | null;
+  iAmDriver: boolean;
+}
+
+export interface AccountExport {
+  exportedAt: string;
+  profile: ProfileDto;
+  events: { id: string; title: string; role: string; response: string }[];
+  expensesPaid: { eventId: string; description: string; amountCents: number; status: string }[];
+  notifications: { title: string; body: string; createdAt: string }[];
 }

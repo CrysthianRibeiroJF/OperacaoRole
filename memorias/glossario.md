@@ -31,3 +31,10 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Missão Pendente** | Alerta de cargo ou item sem responsável perto do rolê. |
 | **Pipoca** | Quem diz que vai e some no dia. |
 | **Calote** | Dívida não paga no acerto final. |
+| **Mercado** | Aba com a lista de compras do rolê, dividida por categoria. |
+| **Eu levo** | Microtarefa: a pessoa assume um item da lista. |
+| **Frota** | Conjunto de carros do rolê, cada um com lugares e bagagem. |
+| **Tralhas** | Itens grandes (cooler, guarda-sol, caixa de som) alocados a um carro. |
+| **Ordem nº** | Código curto do convite, exibido como número de série do bilhete. |
+| **Bilhete / Carimbo** | Elementos visuais do app: o bilhete representa um rolê ou saldo; o carimbo aparece só em decisões (Confirmado). |
+

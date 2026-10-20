@@ -55,7 +55,46 @@ function png(size) {
   ]);
 }
 
+// Imagem de compartilhamento 1200x630: tinta navy, sol e onda. Sem texto (o título vai nas tags Open Graph).
+function ogPng() {
+  const W = 1200;
+  const H = 630;
+  const bg = [14, 31, 61];
+  const sun = [255, 199, 44];
+  const wave = [224, 64, 42];
+  const slot = [255, 255, 255];
+  const raw = Buffer.alloc((W * 3 + 1) * H);
+  for (let y = 0; y < H; y++) {
+    raw[y * (W * 3 + 1)] = 0;
+    for (let x = 0; x < W; x++) {
+      let px = bg;
+      if ((x - 420) ** 2 + (y - 270) ** 2 < 150 ** 2) px = sun;
+      for (let i = 0; i < 3; i++) {
+        const cx = 760 + i * 120;
+        if ((x - cx) ** 2 + (y - 270) ** 2 < 44 ** 2) px = i < 2 ? sun : slot;
+      }
+      if (y > 470 + 18 * Math.sin(x / 55)) px = wave;
+      const o = y * (W * 3 + 1) + 1 + x * 3;
+      raw[o] = px[0];
+      raw[o + 1] = px[1];
+      raw[o + 2] = px[2];
+    }
+  }
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(W, 0);
+  ihdr.writeUInt32BE(H, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
 mkdirSync(new URL('../public/', import.meta.url), { recursive: true });
+writeFileSync(new URL('../public/og.png', import.meta.url), ogPng());
 for (const size of [192, 512]) {
   writeFileSync(new URL(`../public/icon-${size}.png`, import.meta.url), png(size));
 }

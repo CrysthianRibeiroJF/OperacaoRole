@@ -22,7 +22,7 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-11** O Tesoureiro define valor do sinal, chave Pix e prazo.
 - **RN-12** Só entra na lista de confirmados com sinal quem anexar comprovante aprovado pelo Tesoureiro.
 - **RN-13** Sem comprovante validado até o fim do prazo, o participante volta à lista de espera e a vaga passa ao próximo da fila.
-- **RN-14** Só quem tem sinal validado pode escolher cama ou vaga no carro. *(No MVP aplica-se ao rateio; cama e carro chegam na Fase 2.)*
+- **RN-14** Só quem tem sinal validado pode escolher cama ou vaga no carro. *(Já vale para o rateio e para os carros; a distribuição de quartos ainda não existe.)*
 - **RN-16** O Tesoureiro não paga sinal a si mesmo: aparece sempre como "aprovado".
 - **RN-17** Quem entra com a janela aberta nasce "pendente"; se o prazo já passou, nasce na fila de espera. Quem está na fila pode enviar comprovante e o Tesoureiro decide.
 - **RN-18** Comprovantes aceitam imagem (JPG, PNG, WebP) ou PDF até 5 MB, identificados pelo conteúdo do arquivo. Só o dono e o Tesoureiro os veem.
@@ -76,3 +76,27 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 | Missão pendente | Cargo vago a poucos dias do rolê |
 | Conta fechada | Ao fechar a conta |
 | Cobrança | D+3 e D+7 |
+
+## Mercado & Itens (Fase 2)
+
+- **RN-60** A lista de mercado só é editável com o rolê confirmado. Criar, editar, remover e montar a lista sugerida é do General de Suprimentos (ou do Idealizador, se o cargo estiver vago).
+- **RN-61** A lista sugerida usa quantas pessoas, quantos bebem, quantos são vegetarianos e quantos dias; só pode ser gerada com a lista vazia.
+- **RN-62** Qualquer confirmado assume um item livre ("eu levo"); um item tem um responsável.
+- **RN-63** Quem assumiu o item (ou o General) dá baixa. A baixa pode lançar a despesa paga por quem comprou, com a cota da categoria: churrasco = só quem come carne, vegetariano = só vegetarianos, bebida alcoólica = só quem bebe, o resto = todos.
+- **RN-64** Item que virou despesa não pode ser reaberto nem removido; a despesa é que se recusa.
+- **RN-65** Dois cliques na baixa nunca geram duas despesas.
+
+## Frotas & Caronas (Fase 2)
+
+- **RN-70** Cada pessoa cadastra no máximo um carro por rolê; quem dirige não ocupa lugar em outro carro.
+- **RN-71** Cada pessoa ocupa um único lugar por rolê; pegar outro carro libera o anterior. Carro lotado recusa.
+- **RN-72** Com sinal exigido, só quem está com o sinal aprovado escolhe lugar (vale também para o General alocar alguém).
+- **RN-73** Não se reduzem os lugares abaixo do número de passageiros. Remover o carro devolve os passageiros para "sem lugar" e desaloca a bagagem.
+- **RN-74** A bagagem é alocada pelo General da Frota; passar da capacidade de itens grandes do carro gera alerta.
+- **RN-75** Motorista (ou General da Frota) tira passageiros; o passageiro afetado é avisado.
+
+## Orçamento e conta
+
+- **RN-80** Custos fixos (casa, hospedagem) são informados pelo General da Base. O valor por pessoa estimado é (custos fixos + mercado estimado) ÷ confirmados, arredondado para cima.
+- **RN-81** Exportar os dados é direito da pessoa. Excluir a conta anonimiza o perfil e apaga comprovantes; é recusado se a pessoa organiza rolê ativo, está confirmada em rolê em andamento ou tem acerto pendente (D-022).
+

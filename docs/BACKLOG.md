@@ -11,7 +11,7 @@ Derivado do [PRD](PRD-Operacao-Role.md) v0.1. Fonte de verdade das regras: [memo
 
 **Resumo:** 13 épicos (E0 a E12) · 70 tickets · P0: 51 tickets (185 pts) · P1: 16 · P2: 3
 
-**Andamento do MVP (20/10/2026):** 37 tickets feitos ✅, 6 parciais 🟡, 27 a fazer. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), analytics (ROL-013), LGPD (ROL-121), termos de uso (ROL-123), beta fechado (ROL-124) e teste de carga e monitoramento (ROL-125). Todo o P1 (Fase 2) segue pendente.
+**Andamento (20/10/2026):** 47 tickets feitos ✅, 8 parciais 🟡, 15 a fazer. A Fase 2 (Mercado, Frotas, orçamento e clima) está no ar. Do P0 faltam: descoberta com usuários (ROL-001, 002, 004), analytics (ROL-013), termos de uso (ROL-123), beta fechado (ROL-124) e teste de carga e monitoramento (ROL-125). Do P1 faltam: central de notificações, fila com promoção automática, distribuição de quartos e transferência do Idealizador.
 
 | Épico | Tema | Fase | Prioridade |
 |---|---|---|---|
@@ -94,7 +94,7 @@ Nome e foto opcional; sem instalação.
 - [ ] Clicar em "Tô Dentro" pede login rápido e retorna à tela
 
 ### ROL-022 · Link compartilhável com pré-visualização para WhatsApp · P0 · 3 pts · Dep: ROL-030 · **Parcial 🟡**
-> Parcial: link compartilhável e botão de WhatsApp prontos; falta a prévia Open Graph (exige renderização no servidor).
+> Parcial: a página /share/:code entrega título, descrição e imagem Open Graph; falta uma imagem com o texto do rolê e depende de a API estar na mesma origem do app em produção.
 Open Graph com título, data, valor por pessoa e status.
 - [ ] Prévia correta no WhatsApp Android e iOS
 
@@ -176,8 +176,7 @@ Valor do sinal, chave Pix, prazo.
 ### ROL-053 · Expiração do prazo: devolução para lista de espera · P0 · 3 pts · Dep: ROL-052, ROL-014 · **Feito ✅**
 - [ ] Quem não paga volta para a espera automaticamente e é avisado
 
-### ROL-054 · Trava de benefícios: só com sinal validado escolhe vaga/cama · P0 · 2 pts · Dep: ROL-052 · **Parcial 🟡**
-> Parcial: o rateio já exclui quem não está quite; a escolha de cama/carro depende dos módulos da Fase 2.
+### ROL-054 · Trava de benefícios: só com sinal validado escolhe vaga/cama · P0 · 2 pts · Dep: ROL-052 · **Feito ✅**
 
 ### ROL-055 · Fila de espera com promoção automática · P1 · 3 pts · Dep: ROL-053 · **A fazer**
 
@@ -252,38 +251,40 @@ Quanto já gastei, notas lançadas, saldo atual, botão pagar/receber via Pix.
 
 ## E9 — Frotas & Caronas (Fase 2)
 
-### ROL-090 · Cadastro de carro (vitrine) · P1 · 3 pts · Dep: ROL-040 · **A fazer**
+### ROL-090 · Cadastro de carro (vitrine) · P1 · 3 pts · Dep: ROL-040 · **Feito ✅**
 Bairro, horário, assentos, capacidade de carga.
 
-### ROL-091 · Reserva de assento estilo mapa de avião · P1 · 5 pts · Dep: ROL-090, ROL-054 · **A fazer**
+### ROL-091 · Reserva de assento estilo mapa de avião · P1 · 5 pts · Dep: ROL-090, ROL-054 · **Feito ✅**
 
-### ROL-092 · Alocação de itens volumosos por veículo · P1 · 3 pts · Dep: ROL-090 · **A fazer**
+### ROL-092 · Alocação de itens volumosos por veículo · P1 · 3 pts · Dep: ROL-090 · **Feito ✅**
 - [ ] Alerta quando a carga alocada excede a capacidade informada
 
-### ROL-093 · Cota de Veículo automática (combustível, pedágio, isenção do motorista) · P1 · 5 pts · Dep: ROL-091, ROL-062 · **A fazer**
+### ROL-093 · Cota de Veículo automática (combustível, pedágio, isenção do motorista) · P1 · 5 pts · Dep: ROL-091, ROL-062 · **Parcial 🟡**
+> Parcial: o formulário de despesa oferece o atalho 'Ocupantes do carro' para a cota de veículo; combustível e pedágio ainda não são calculados sozinhos.
 
-### ROL-094 · Ponto de encontro e atalhos Waze/Google Maps · P1 · 2 pts · Dep: ROL-090 · **A fazer**
+### ROL-094 · Ponto de encontro e atalhos Waze/Google Maps · P1 · 2 pts · Dep: ROL-090 · **Parcial 🟡**
+> Parcial: o carro mostra ponto e horário de saída; faltam o ponto de encontro do grupo e os atalhos Waze e Google Maps.
 
 ---
 
 ## E10 — Mercado & Itens (Fase 2)
 
-### ROL-100 · Lista de compras por categoria · P1 · 5 pts · Dep: ROL-040 · **A fazer**
+### ROL-100 · Lista de compras por categoria · P1 · 5 pts · Dep: ROL-040 · **Feito ✅**
 Churrasco, bebidas alcoólicas e não alcoólicas, café da manhã, limpeza/descartáveis.
 
-### ROL-101 · Quantidade sugerida (pessoas × dias) · P1 · 3 pts · Dep: ROL-100 · **A fazer**
+### ROL-101 · Quantidade sugerida (pessoas × dias) · P1 · 3 pts · Dep: ROL-100 · **Feito ✅**
 
-### ROL-102 · Preço estimado vs. real pago e baixa de itens · P1 · 3 pts · Dep: ROL-100, ROL-060 · **A fazer**
+### ROL-102 · Preço estimado vs. real pago e baixa de itens · P1 · 3 pts · Dep: ROL-100, ROL-060 · **Feito ✅**
 
-### ROL-103 · Microtarefas "eu levo" · P1 · 2 pts · Dep: ROL-100 · **A fazer**
+### ROL-103 · Microtarefas "eu levo" · P1 · 2 pts · Dep: ROL-100 · **Feito ✅**
 
 ---
 
 ## E11 — Orçamento, clima e extras (Fase 2 e além)
 
-### ROL-110 · Simulador de orçamento ao vivo (valor por cabeça) · P1 · 3 pts · Dep: ROL-031 · **A fazer**
+### ROL-110 · Simulador de orçamento ao vivo (valor por cabeça) · P1 · 3 pts · Dep: ROL-031 · **Feito ✅**
 
-### ROL-111 · Previsão do tempo para as datas · P1 · 3 pts · Dep: ROL-031 · **A fazer**
+### ROL-111 · Previsão do tempo para as datas · P1 · 3 pts · Dep: ROL-031 · **Feito ✅**
 
 ### ROL-112 · Mural da Base fixo durante a viagem · P1 · 2 pts · Dep: ROL-081 · **A fazer**
 Wi-Fi, código do cadeado, check-out, regras críticas.
@@ -300,7 +301,8 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 
 ### ROL-120 · Suíte de testes de regras de negócio (quórum, rateio, permissões) · P0 · 5 pts · Dep: ROL-033, ROL-064, ROL-040 · **Feito ✅**
 
-### ROL-121 · LGPD: consentimento, minimização, retenção e exclusão · P0 · 5 pts · Dep: ROL-011 · **A fazer**
+### ROL-121 · LGPD: consentimento, minimização, retenção e exclusão · P0 · 5 pts · Dep: ROL-011 · **Parcial 🟡**
+> Parcial: há exportação dos dados e exclusão por anonimização; faltam consentimento no cadastro e retenção automática de comprovantes.
 - [ ] Comprovantes e notas com retenção definida e exclusão sob pedido
 
 ### ROL-122 · Segurança de acesso a comprovantes e dados financeiros · P0 · 3 pts · Dep: ROL-052 · **Parcial 🟡**

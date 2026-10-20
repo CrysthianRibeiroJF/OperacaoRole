@@ -2,7 +2,7 @@
 
 App que transforma "vamos marcar algo?" em rolê confirmado: decisão em grupo por **massa crítica** (as 3 andorinhas), tarefas divididas por **patentes** e contas fechadas com **rateio justo**, sem depender de unanimidade nem de discussão infinita no WhatsApp.
 
-**Estado atual:** MVP técnico funcionando (convite, quórum, cargos, sinal por Pix, despesas, rateio e acerto de contas). Ainda **não validado com usuários** e **não pronto para lançamento público** (ver "Antes de lançar").
+**Estado atual:** Funcionando de ponta a ponta: convite, quórum, cargos, sinal por Pix, despesas, rateio, acerto de contas, lista de mercado, carros e caronas, orçamento e previsão do tempo. Ainda **não validado com usuários** e **não pronto para lançamento público** (ver "Antes de lançar").
 
 ## Como rodar
 
@@ -20,7 +20,7 @@ Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealiz
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Sobe API e app com recarga automática |
-| `npm test` | 73 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
+| `npm test` | 99 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
 | `npm run typecheck` | TypeScript estrito em todos os pacotes |
 | `npm run lint` / `npm run format` | ESLint e Prettier |
 | `npm run check` | Typecheck + lint + testes (rode antes de enviar mudanças) |
@@ -62,17 +62,22 @@ Por que assim: as regras que mexem com dinheiro e permissão ficam em `packages/
 3. **Convite público por link:** abre sem login (modo Observador) e converte em "Tô dentro" com login por celular.
 4. **Cargos:** Base, Frota, Suprimentos e Tesouro, por voluntariado ou sorteio. O Idealizador cobre Base e Tesouro enquanto vagos.
 5. **Sinal por Pix (opcional):** janela com prazo, comprovante, aprovação do Tesoureiro, fila de espera automática.
-6. **QG do rolê:** Base & Roteiro (Wi-Fi, endereço com Waze e Maps, regras), Equipe e Cofre.
+6. **QG do rolê** com cinco abas: Base (Wi-Fi, endereço, previsão do tempo e simulador de orçamento), Equipe, Mercado, Frotas e Cofre.
 7. **Despesas e rateio:** cotas global, etílica, carne, vegetariana e por pessoas específicas; aprovação acima do limite; contestação em 72h; fechamento com o mínimo de transferências; baixa pelo credor.
 8. **"Chato Oficial":** avisos dentro do app para quórum, sinal, missão pendente e cobrança, sempre em privado e com silenciamento por rolê.
 
-Fica para a Fase 2: carros e caronas, lista de mercado, simulador de orçamento ao vivo, previsão do tempo e guia do entorno. Detalhes em [docs/BACKLOG.md](docs/BACKLOG.md).
+9. **Mercado & Itens:** lista sugerida por pessoas, consumo e dias; "eu levo"; baixa que vira despesa com a cota certa.
+10. **Frotas & Caronas:** carros com lugares estilo mapa de avião, bagagem por carro e trava de sinal para escolher lugar.
+11. **Orçamento e clima:** valor por pessoa caindo conforme entra gente, e previsão do tempo para os dias do rolê.
+12. **Seus dados:** exportação em JSON e exclusão de conta por anonimização.
+
+Ficam para depois: guia do entorno, distribuição de quartos, OCR de notas e conciliação de Pix. Detalhes em [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Antes de lançar
 
 - **Parecer jurídico** sobre registrar sinais por Pix (Q12 / ROL-004) e **termos de uso** (ROL-123).
 - **Provedor de SMS/WhatsApp:** em produção o envio do código de login falha de propósito até existir um `OtpSender` real (Q11).
-- **LGPD:** retenção e exclusão de comprovantes e notas (ROL-121).
+- **LGPD:** consentimento no cadastro e retenção automática de comprovantes (ROL-121; exportação e exclusão já existem).
 - **Validar com pessoas reais:** nenhuma meta do PRD foi testada ainda (ROL-001, ROL-124).
 - Analytics de produto (ROL-013), pipeline de CI (ROL-010) e notificações por push, e-mail ou WhatsApp (ROL-070).
 

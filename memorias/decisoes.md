@@ -93,3 +93,22 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 **Contexto:** a primeira versão (bege, verde-petróleo e coral) era a combinação genérica de app de viagem e não carregava a ideia do produto.
 **Decisão:** o rolê é tratado como uma operação. O **bilhete com picote** (número de série em mono) é o objeto central do feed, do convite e do saldo. A massa crítica é o **medidor de andorinhas** (vagas que se preenchem) e o momento memorável é o **carimbo "Confirmado"** que cai quando o quórum fecha. Paleta: tinta de carimbo (navy `#0e1f3d`), sol (`#ffc72c`, a única cor de ação), carimbo (`#e0402a`, só para o que é definitivo) e uma mesa azul-acinzentada. Tipografia: Big Shoulders Display (títulos condensados em caixa-alta), Instrument Sans (texto) e IBM Plex Mono (códigos, prazos e valores), todas hospedadas no próprio app. Botões de ação são "teclas" com espessura. Ícones em SVG próprio (sem emojis na interface). Modo escuro automático pelos mesmos tokens.
 **Consequências:** o amarelo só aparece na ação principal de cada tela. O carimbo e o bilhete não devem virar enfeite: carimbo só em decisões (confirmado), bilhete só para rolês e saldo. As cores vivem como tokens em `apps/web/src/styles.css`; nada de hex solto nos componentes.
+
+## D-020 · Fase 2 entra no ar: Mercado, Frotas, orçamento e clima · 20/10/2026 · Aceita
+**Contexto:** o MVP provava a tese (quórum, sinal, rateio), mas a operação do rolê (quem leva o quê, quem vai com quem) ainda era no WhatsApp.
+**Decisão:** o QG ganha as abas **Mercado** e **Frotas** (agora são cinco). A lista de mercado nasce de uma sugestão por pessoas, consumo e dias (`suggestSupplies`), tem "eu levo" para qualquer confirmado e a baixa pode virar despesa com a cota da categoria (carne só entre quem come carne, cerveja só entre quem bebe). Frotas tem carros com lugares estilo mapa de avião, bagagem por carro com alerta de excesso e alocação pelo General da Frota. O simulador de orçamento soma custos fixos + mercado e mostra o valor por pessoa caindo conforme entra gente. A previsão do tempo vem do Open-Meteo.
+**Consequências:** o fallback do Idealizador (D-014) agora cobre os quatro cargos enquanto vagos. Quem tem sinal pendente não escolhe lugar no carro (RN-14 passou a valer de verdade).
+
+## D-021 · Previsão do tempo chamada do navegador · 20/10/2026 · Aceita
+**Decisão:** o app consulta o Open-Meteo (sem chave) direto do navegador, só com o nome da cidade. Se falhar, o cartão some. Só existe previsão a até 16 dias do rolê; antes disso o cartão informa quando ela aparece.
+**Consequências:** nenhum dado de pessoa sai do app. Em produção, a política de segurança do site precisa liberar `geocoding-api.open-meteo.com` e `api.open-meteo.com`.
+
+## D-022 · Exclusão de conta por anonimização · 20/10/2026 · Aceita
+**Contexto:** LGPD pede que a pessoa possa levar e apagar seus dados, mas os lançamentos financeiros dos grupos dependem dela.
+**Decisão:** há exportação em JSON e exclusão por anonimização (nome, telefone, Pix e comprovantes somem; os valores dos rolês ficam sem identificação). A exclusão é recusada enquanto a pessoa organiza rolê ativo, está confirmada em rolê em andamento ou tem acerto pendente. Sessões de conta excluída deixam de valer na hora.
+**Consequências:** falta definir retenção automática de comprovantes e o consentimento no cadastro (ROL-121 segue parcial).
+
+## D-023 · Link compartilhado com prévia (Open Graph) · 20/10/2026 · Aceita
+**Decisão:** o botão de compartilhar usa `/share/:code`, uma página mínima com título, descrição e imagem Open Graph (WhatsApp lê só o HTML) que redireciona o humano para o convite. Só dados públicos do convite.
+**Consequências:** em produção, `/share` e `/api` precisam sair da mesma origem do app (proxy reverso). A imagem é a mesma para todos os rolês; uma imagem com o texto do rolê fica como evolução.
+

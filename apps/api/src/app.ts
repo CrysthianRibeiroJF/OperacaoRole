@@ -9,9 +9,13 @@ import type { AppContext } from './context';
 import { AppError } from './errors';
 import { SESSION_COOKIE } from './http';
 import { MAX_UPLOAD_BYTES } from './lib/sniff';
+import { accountRoutes } from './modules/auth/account.routes';
 import { authRoutes } from './modules/auth/auth.routes';
 import { depositsRoutes } from './modules/deposits/deposits.routes';
 import { eventRoutes } from './modules/events/event.routes';
+import { fleetRoutes } from './modules/fleet/fleet.routes';
+import { shareRoutes } from './modules/events/share.routes';
+import { suppliesRoutes } from './modules/supplies/supplies.routes';
 import { expensesRoutes } from './modules/expenses/expenses.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { rolesRoutes } from './modules/roles/roles.routes';
@@ -99,9 +103,15 @@ export async function buildApp(
       await api.register(expensesRoutes);
       await api.register(settlementRoutes);
       await api.register(notificationsRoutes);
+      await api.register(suppliesRoutes);
+      await api.register(fleetRoutes);
+      await api.register(accountRoutes);
     },
     { prefix: '/api' },
   );
+
+  // Fora de /api: o link compartilhado no WhatsApp precisa de metadados Open Graph.
+  await app.register(shareRoutes);
 
   return app;
 }

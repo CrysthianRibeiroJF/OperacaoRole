@@ -16,14 +16,13 @@ import { eventKeys, useAction } from '../../lib/queries';
 
 const ROLE_INFO: Record<
   RoleKey,
-  { icon: (p: { size?: number }) => React.ReactNode; duty: string; soon?: boolean }
+  { icon: (p: { size?: number }) => React.ReactNode; duty: string }
 > = {
   base: { icon: IconHome, duty: 'Garante o teto: endereço, Wi-Fi, regras da casa e quartos.' },
-  fleet: { icon: IconCar, duty: 'Cuida dos carros, caronas e bagagem.', soon: true },
+  fleet: { icon: IconCar, duty: 'Cuida dos carros, das caronas e da bagagem.' },
   supplies: {
     icon: IconCart,
-    duty: 'Cuida da lista de mercado e do que cada um leva.',
-    soon: true,
+    duty: 'Monta a lista de mercado e dá baixa no que foi comprado.',
   },
   treasury: { icon: IconWallet, duty: 'Valida o sinal e as notas, e fecha a conta no fim.' },
 };
@@ -97,10 +96,7 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="text-base">{ROLE_LABELS[r.role]}</h3>
-                <p className="text-sm text-muted">
-                  {info.duty}
-                  {info.soon && ' (módulo completo na Fase 2)'}
-                </p>
+                <p className="text-sm text-muted">{info.duty}</p>
                 {r.user ? (
                   <p className="mt-1.5 flex items-center gap-2 text-sm font-bold">
                     <Avatar user={r.user} size={24} /> {r.user.name}

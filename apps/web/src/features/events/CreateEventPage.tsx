@@ -3,12 +3,77 @@ import { QUORUM_DEFAULT, QUORUM_MAX, QUORUM_MIN } from '@role/domain';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
+import { IconArrowLeft } from '../../components/icons';
 import { Field, MoneyInput, Toggle } from '../../components/misc';
 import { api } from '../../lib/api';
-import { formatBRL } from '../../lib/format';
+import { formatBRL, formatEventDates } from '../../lib/format';
 import { keys, useAction, useSession } from '../../lib/queries';
+import { StatusTag, SwallowMeter, Ticket } from './shared';
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+/** O bilhete que o grupo vai receber, montado enquanto a pessoa digita. */
+function LivePreview({
+  title,
+  destination,
+  startDate,
+  endDate,
+  cost,
+  quorum,
+  deposit,
+}: {
+  title: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  cost: number | null;
+  quorum: number;
+  deposit: number | null;
+}) {
+  const empty = !title.trim();
+  return (
+    <div aria-label="Prévia do convite" role="group">
+      <p className="eyebrow mb-2">Prévia do convite</p>
+      <Ticket
+        night
+        top={
+          <div className="px-5 pb-6 pt-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="eyebrow !text-white/55">Ordem nº ········</span>
+              <StatusTag status="open" onDark />
+            </div>
+            <p
+              className={`font-display mt-3 text-[2.4rem] font-extrabold uppercase leading-[0.95] ${empty ? 'text-white/30' : ''}`}
+            >
+              {empty ? 'Seu rolê aqui' : title}
+            </p>
+            <p className="mt-2 font-bold text-sol">{destination.trim() || 'Destino'}</p>
+            <p className="text-sm text-white/70">
+              {startDate ? formatEventDates(startDate, endDate || null) : 'Data a definir'}
+            </p>
+          </div>
+        }
+        bottom={
+          <div className="space-y-3 px-5 pb-4 pt-5">
+            <SwallowMeter confirmed={1} quorum={quorum} size={32} />
+            <div className="flex items-end justify-between gap-3">
+              <span className="text-sm text-muted">Você já conta como a primeira</span>
+              <span className="mono whitespace-nowrap text-right text-sm font-semibold">
+                {cost !== null ? formatBRL(cost) : 'R$ —'}
+                <span className="font-normal text-muted"> /pessoa</span>
+              </span>
+            </div>
+            {deposit !== null && (
+              <p className="text-xs font-bold text-carimbo-dark">
+                Sinal de {formatBRL(deposit)} no Pix
+              </p>
+            )}
+          </div>
+        }
+      />
+    </div>
+  );
+}
 
 export function CreateEventPage() {
   const navigate = useNavigate();
@@ -57,15 +122,25 @@ export function CreateEventPage() {
   return (
     <div className="space-y-5">
       <header>
-        <Link to="/" className="text-sm font-bold text-navy-dark">
-          ← Voltar
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-bold text-navy-dark">
+          <IconArrowLeft size={16} /> Voltar
         </Link>
-        <h1 className="mt-1">Lançar um rolê</h1>
-        <p className="mt-1 text-muted">
+        <h1 className="mt-2">Lançar um rolê</h1>
+        <p className="mt-2 text-muted">
           Cartão fechado, sem enrolação: o grupo só precisa responder <strong>Tô dentro</strong> ou{' '}
           <strong>Passo</strong>.
         </p>
       </header>
+
+      <LivePreview
+        title={title}
+        destination={destination}
+        startDate={startDate}
+        endDate={endDate}
+        cost={cost}
+        quorum={quorum}
+        deposit={needsDeposit ? deposit : null}
+      />
 
       <form onSubmit={submit} className="card space-y-5 p-5">
         <Field label="Que rolê é esse?">
@@ -129,10 +204,10 @@ export function CreateEventPage() {
                   role="radio"
                   aria-checked={quorum === n}
                   onClick={() => setQuorum(n)}
-                  className={`size-12 rounded-xl border-2 text-lg font-extrabold ${
+                  className={`mono size-12 rounded-[10px] border-2 text-lg font-semibold transition-colors ${
                     quorum === n
-                      ? 'border-navy bg-navy text-white'
-                      : 'border-line bg-white text-ink'
+                      ? 'border-ink bg-ink text-surface'
+                      : 'border-line bg-surface text-ink'
                   }`}
                 >
                   {n}
@@ -159,7 +234,7 @@ export function CreateEventPage() {
           </select>
         </Field>
 
-        <div className="rounded-2xl bg-desk p-4">
+        <div className="rounded-[12px] bg-desk-deep p-4">
           <Toggle
             checked={needsDeposit}
             onChange={setNeedsDeposit}

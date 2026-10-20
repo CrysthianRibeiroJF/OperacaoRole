@@ -6,6 +6,9 @@ import { ConsoleOtpSender } from '../modules/auth/otp-sender';
 import { createEvent, respond } from '../modules/events/event.service';
 import { createExpense } from '../modules/expenses/expenses.service';
 import { claimRole } from '../modules/roles/roles.service';
+import { createVehicle, joinVehicle } from '../modules/fleet/fleet.service';
+import { suggestSupplyList } from '../modules/supplies/supplies.service';
+import { updateBudget } from '../modules/events/event.service';
 import { createDb } from './client';
 import { migrateToLatest } from './migrate';
 
@@ -54,6 +57,7 @@ for (const p of people) {
       name: p.name,
       pix_key: `${p.name.toLowerCase()}@pix.com`,
       created_at: new Date().toISOString(),
+      deleted_at: null,
     })
     .execute();
 }
@@ -109,6 +113,32 @@ await createExpense(ctx, caio, trip.id, {
   amountCents: 14000,
   quota: 'alcohol',
 });
+
+// Fase 2: custos fixos, lista de mercado sugerida e dois carros.
+await updateBudget(ctx, bia, trip.id, 180000);
+await suggestSupplyList(ctx, ana, trip.id);
+await createVehicle(ctx, bia, trip.id, {
+  label: 'Gol da Bia',
+  seats: 3,
+  cargoCapacity: 2,
+  departurePlace: 'Pinheiros',
+  departureTime: '07:30',
+  cargoNote: '1 cooler grande e 4 mochilas',
+});
+await createVehicle(ctx, caio, trip.id, {
+  label: 'Onix do Caio',
+  seats: 2,
+  cargoCapacity: 1,
+  departurePlace: 'Vila Madalena',
+  departureTime: '08:00',
+});
+const cars = await db
+  .selectFrom('vehicles')
+  .select(['id', 'driver_id'])
+  .where('event_id', '=', trip.id)
+  .execute();
+const biaCar = cars.find((c) => c.driver_id === bia);
+if (biaCar) await joinVehicle(ctx, ana, biaCar.id);
 
 console.log(
   'Seed aplicado. Entre com qualquer telefone abaixo (o código aparece no console da API):',

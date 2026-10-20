@@ -96,6 +96,7 @@ export async function verifyOtp(
       name: input.name!,
       pix_key: null,
       created_at: now.toISOString(),
+      deleted_at: null,
     };
     await ctx.db.insertInto('users').values(user).execute();
   }

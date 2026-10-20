@@ -14,6 +14,8 @@ import { Sheet } from '../../components/Sheet';
 import { api } from '../../lib/api';
 import { eventKeys, useAction } from '../../lib/queries';
 import { ShareButton } from '../events/shared';
+import { BudgetCard } from './BudgetCard';
+import { WeatherCard } from './WeatherCard';
 
 function Row({
   icon,
@@ -131,14 +133,13 @@ export function BaseTab({ detail }: { detail: EventDetail }) {
         </section>
       )}
 
+      <WeatherCard event={event} />
+      <BudgetCard detail={detail} />
+
       {(event.status === 'open' || event.status === 'confirmed') && (
-        <section className="card space-y-3 p-5">
-          <h2>Mais gente, rolê mais barato</h2>
-          <p className="text-muted">
-            Quanto mais confirmados, menor a parte de cada um nos custos fixos.
-          </p>
+        <div className="px-1">
           <ShareButton event={event} />
-        </section>
+        </div>
       )}
 
       <BaseSheet

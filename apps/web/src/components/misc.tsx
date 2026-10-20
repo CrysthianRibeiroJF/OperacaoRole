@@ -108,6 +108,21 @@ export function Spinner({ label = 'Carregando' }: { label?: string }) {
   );
 }
 
+/** Esqueleto de carregamento: mantém o layout no lugar enquanto os dados chegam. */
+export function Skeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div role="status" aria-label="Carregando" className="space-y-3">
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="card space-y-3 p-4">
+          <div className="h-4 w-2/5 animate-pulse rounded bg-desk-deep" />
+          <div className="h-3 w-4/5 animate-pulse rounded bg-desk-deep" />
+          <div className="h-3 w-3/5 animate-pulse rounded bg-desk-deep" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function EmptyState({
   emoji,
   title,

@@ -68,7 +68,7 @@ export class Client {
   }
 
   async call<T = any>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     payload?: unknown,
   ): Promise<Res<T>> {

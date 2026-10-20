@@ -5,6 +5,8 @@ import {
   IconArrowLeft,
   IconBell,
   IconBellOff,
+  IconCar,
+  IconCart,
   IconClock,
   IconHome,
   IconMedal,
@@ -17,12 +19,16 @@ import { formatEventDates } from '../../lib/format';
 import { useAction, useEventDetail } from '../../lib/queries';
 import { StatusTag } from '../events/shared';
 import { BaseTab } from './BaseTab';
+import { FleetTab } from './FleetTab';
+import { SuppliesTab } from './SuppliesTab';
 import { TeamTab } from './TeamTab';
 import { VaultTab } from './VaultTab';
 
 const TABS: { key: string; label: string; icon: ReactNode }[] = [
   { key: 'base', label: 'Base', icon: <IconHome size={18} /> },
   { key: 'equipe', label: 'Equipe', icon: <IconMedal size={18} /> },
+  { key: 'mercado', label: 'Mercado', icon: <IconCart size={18} /> },
+  { key: 'frotas', label: 'Frotas', icon: <IconCar size={18} /> },
   { key: 'cofre', label: 'Cofre', icon: <IconWallet size={18} /> },
 ];
 
@@ -67,7 +73,7 @@ export function HqPage() {
 
   return (
     <div className="space-y-4">
-      <header className="-mx-4 -mt-6 rounded-b-[28px] bg-night px-5 pb-7 pt-5 text-white">
+      <header className="-mx-4 -mt-6 rounded-b-[28px] bg-night px-5 pb-5 pt-4 text-white">
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -87,15 +93,17 @@ export function HqPage() {
           </button>
         </div>
 
-        <div className="mt-5 flex items-center justify-between gap-3">
+        <div className="mt-4 flex items-center justify-between gap-3">
           <span className="eyebrow !text-white/55">Ordem nº {event.code}</span>
           <StatusTag status={event.status} onDark />
         </div>
-        <h1 className="mt-3 text-[3rem]">{event.title}</h1>
-        <p className="mt-3 flex items-center gap-1.5 font-bold text-sol">
-          <IconPin size={17} /> {event.destination}
+        <h1 className="mt-2.5 text-[2.5rem]">{event.title}</h1>
+        <p className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+          <span className="inline-flex items-center gap-1.5 font-bold text-sol">
+            <IconPin size={16} /> {event.destination}
+          </span>
+          <span className="text-white/75">{formatEventDates(event.startDate, event.endDate)}</span>
         </p>
-        <p className="mt-0.5 text-white/75">{formatEventDates(event.startDate, event.endDate)}</p>
 
         {event.status === 'open' && (
           <p className="mt-4 flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-sm font-bold">
@@ -116,7 +124,7 @@ export function HqPage() {
         aria-label="Seções do QG"
         className="sticky top-0 z-30 -mx-4 bg-desk/90 px-4 py-2 backdrop-blur"
       >
-        <div className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface p-1">
+        <div className="grid grid-cols-5 gap-1 rounded-xl border border-line bg-surface p-1">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -125,7 +133,7 @@ export function HqPage() {
               aria-selected={tab === t.key}
               aria-controls={`panel-${t.key}`}
               onClick={() => setParams({ aba: t.key }, { replace: true })}
-              className={`flex min-h-11 items-center justify-center gap-1.5 rounded-[9px] px-2 text-sm font-extrabold transition-colors ${
+              className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-[9px] px-1 text-[11px] font-extrabold transition-colors ${
                 tab === t.key ? 'bg-ink text-surface' : 'text-muted hover:bg-desk-deep'
               }`}
             >
@@ -139,6 +147,8 @@ export function HqPage() {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="space-y-4">
         {tab === 'base' && <BaseTab detail={data} />}
         {tab === 'equipe' && <TeamTab detail={data} />}
+        {tab === 'mercado' && <SuppliesTab detail={data} />}
+        {tab === 'frotas' && <FleetTab detail={data} />}
         {tab === 'cofre' && <VaultTab detail={data} />}
       </div>
     </div>

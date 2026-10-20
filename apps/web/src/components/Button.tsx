@@ -44,7 +44,7 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center gap-2 rounded-[10px] font-bold tracking-[-0.005em] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${block ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-bold tracking-[-0.005em] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${block ? 'w-full' : ''} ${className}`}
       {...rest}
     >
       {loading && (

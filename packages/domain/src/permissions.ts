@@ -35,6 +35,11 @@ export const ACTIONS = [
   'expense.resolveContest',
   'settlement.close',
   'settlement.viewAll',
+  'supplies.edit',
+  'supplies.claim',
+  'fleet.edit',
+  'fleet.join',
+  'budget.edit',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
@@ -56,9 +61,16 @@ export function can(actor: Actor, action: Action): boolean {
       return confirmed || actor.isOrganizer;
     case 'roles.claim':
     case 'expense.create':
+    case 'supplies.claim':
+    case 'fleet.join':
       return confirmed;
     case 'base.edit':
+    case 'budget.edit':
       return holds(actor, 'base');
+    case 'supplies.edit':
+      return holds(actor, 'supplies');
+    case 'fleet.edit':
+      return holds(actor, 'fleet');
     case 'deposit.configure':
     case 'deposit.review':
     case 'expense.review':

@@ -29,13 +29,19 @@ export async function requireUser(req: FastifyRequest): Promise<string> {
   } catch {
     throw unauthorized();
   }
+  // Conta excluída (anonimizada) ou inexistente não mantém sessão, mesmo com cookie válido.
+  const row = await req.server.ctx.db
+    .selectFrom('users')
+    .select('deleted_at')
+    .where('id', '=', req.user.sub)
+    .executeTakeFirst();
+  if (!row || row.deleted_at) throw unauthorized();
   return req.user.sub;
 }
 
 export async function optionalUser(req: FastifyRequest): Promise<string | null> {
   try {
-    await req.jwtVerify({ onlyCookie: true });
-    return req.user.sub;
+    return await requireUser(req);
   } catch {
     return null;
   }

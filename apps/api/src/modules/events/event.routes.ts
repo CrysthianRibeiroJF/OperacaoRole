@@ -1,5 +1,6 @@
 import {
   baseInfoSchema,
+  budgetSchema,
   createEventSchema,
   preferencesSchema,
   respondSchema,
@@ -15,6 +16,7 @@ import {
   respond,
   setPreferences,
   updateBase,
+  updateBudget,
 } from './event.service';
 
 export async function eventRoutes(app: FastifyInstance) {
@@ -56,6 +58,13 @@ export async function eventRoutes(app: FastifyInstance) {
   app.post<{ Params: { id: string } }>('/events/:id/cancel', async (req) => {
     const userId = await requireUser(req);
     await cancelEvent(ctx, userId, req.params.id);
+    return { ok: true };
+  });
+
+  app.put<{ Params: { id: string } }>('/events/:id/budget', async (req) => {
+    const userId = await requireUser(req);
+    const { fixedCostsCents } = parse(budgetSchema, req.body);
+    await updateBudget(ctx, userId, req.params.id, fixedCostsCents);
     return { ok: true };
   });
 }

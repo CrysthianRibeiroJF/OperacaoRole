@@ -29,6 +29,7 @@ Visão de como o MVP é montado e por quê. As decisões estão em [memorias/dec
 - **deposit_proofs**: histórico de comprovantes; o último vale.
 - **expenses**, **expense_participants** (cota custom), **expense_contests** (uma por despesa).
 - **settlements**, **settlement_balances**, **settlement_transfers**: foto auditável do fechamento.
+- **supply_items** (lista de mercado, com vínculo opcional à despesa gerada), **vehicles**, **vehicle_passengers** (um lugar por pessoa por rolê) e **cargo_items** (bagagem por carro).
 - **notifications** (com chave de deduplicação), **event_mutes**.
 - **jobs**: agendamentos que sobrevivem a reinícios. **audit_log**: trilha de quem fez o quê.
 
@@ -61,11 +62,13 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 ## Limites conhecidos do MVP
 
 - **Uma única instância** da API (SQLite e runner de jobs em processo). Para escalar: PostgreSQL, `started_at` nos jobs e `SELECT ... FOR UPDATE SKIP LOCKED`.
-- **Sem prévia Open Graph** no link do convite (o app é uma SPA; exige renderização no servidor ou rota de metadados).
+- **Prévia do link** usa uma única imagem para todos os rolês (a rota `/share/:code` já entrega o texto). Em produção, `/share` e `/api` precisam estar na mesma origem do app.
+- **Previsão do tempo** é chamada do navegador ao Open-Meteo; a política de segurança do site precisa liberar os dois domínios (D-021).
 - **Notificações só dentro do app.** A tabela `notifications` já serve de fila de saída para push, e-mail e WhatsApp.
 - **Login por OTP sem provedor real** em produção (interface `OtpSender` pronta).
 - **Sem testes de interface automatizados** (o fluxo é coberto por testes de API; a interface foi verificada manualmente em visual mobile).
 - **Teto de despesa e de cargos fixos** (R$ 300 e 2): colunas já existem por rolê, falta a tela.
+- **Ordem de criação em empate de milissegundo** (carros, itens): a lista usa `created_at`; só os testes, com relógio fixo, expõem empates.
 
 ## Como evoluir
 
@@ -76,4 +79,4 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 | Trocar para PostgreSQL | dialeto em `db/client.ts`, tipos `INTEGER`/`TEXT` das migrations, `onConflict` já é portável |
 | Guardar arquivos em S3 | nova classe que implementa `FileStorage` |
 | Enviar SMS/WhatsApp | nova classe que implementa `OtpSender` e um consumidor da tabela `notifications` |
-| Fase 2 (carros, mercado) | novos módulos em `apps/api/src/modules`, novas abas no QG, cota `custom` já cobre o rateio de veículo |
+| Novo módulo do QG | pasta em `apps/api/src/modules`, tabela em nova migration, ação em `packages/domain/permissions.ts`, aba em `features/hq` |

@@ -82,6 +82,7 @@ export async function createEvent(
             base_checkout_time: null,
             base_house_rules: null,
             base_schedule: null,
+            fixed_costs_cents: null,
           })
           .execute();
         inserted = true;
@@ -516,6 +517,7 @@ export async function getEventDetail(
     }),
     roster,
     deposit: toDepositConfig(event),
+    budget: { fixedCostsCents: event.fixed_costs_cents },
   };
 }
 
@@ -599,5 +601,33 @@ export async function cancelEvent(ctx: AppContext, userId: string, eventId: stri
       entity: 'event',
       entityId: eventId,
     });
+  });
+}
+
+/** Custos fixos estimados (casa, hospedagem) que alimentam o simulador de orçamento. */
+export async function updateBudget(
+  ctx: AppContext,
+  userId: string,
+  eventId: string,
+  fixedCostsCents: number | null,
+): Promise<void> {
+  const event = await requireEvent(ctx.db, eventId);
+  const { actor } = await buildActor(ctx.db, event, userId);
+  if (!can(actor, 'budget.edit')) throw forbidden('Só o General da Base edita os custos fixos');
+  if (event.status !== 'open' && event.status !== 'confirmed') {
+    throw conflict('EVENT_NOT_ACTIVE', 'Este rolê não aceita mais alterações');
+  }
+  await ctx.db
+    .updateTable('events')
+    .set({ fixed_costs_cents: fixedCostsCents })
+    .where('id', '=', eventId)
+    .execute();
+  await audit(ctx.db, ctx.clock.now(), {
+    eventId,
+    actorId: userId,
+    action: 'budget.updated',
+    entity: 'event',
+    entityId: eventId,
+    data: { fixedCostsCents },
   });
 }

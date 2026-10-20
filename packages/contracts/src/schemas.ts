@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QUORUM_DEFAULT, QUORUM_MAX, QUORUM_MIN } from '@role/domain';
+import { QUORUM_DEFAULT, QUORUM_MAX, QUORUM_MIN, SUPPLY_CATEGORIES } from '@role/domain';
 
 /** Esquemas de entrada da API. A mesma fonte valida o servidor e tipa o front. */
 
@@ -123,6 +123,41 @@ export const resolveContestSchema = z.object({
   decision: z.enum(['keep', 'reject']),
   note: text(240).min(3),
 });
+
+export const budgetSchema = z.object({
+  fixedCostsCents: z.number().int().min(0).max(100_000_00).nullable(),
+});
+
+export const supplyCategorySchema = z.enum(SUPPLY_CATEGORIES);
+export const supplyCreateSchema = z.object({
+  name: text(80).min(2),
+  category: supplyCategorySchema,
+  quantityLabel: text(30).min(1),
+  estPriceCents: z.number().int().min(0).max(100_000_00).nullable().optional(),
+});
+export const supplyUpdateSchema = supplyCreateSchema.partial();
+export const supplyDoneSchema = z.object({
+  priceCents: z.number().int().min(1).max(100_000_00).optional(),
+  createExpense: z.boolean().default(false),
+});
+
+export const vehicleSchema = z.object({
+  label: text(60).min(2),
+  departurePlace: text(80).nullable().optional(),
+  departureTime: text(20).nullable().optional(),
+  seats: z.number().int().min(0).max(12),
+  cargoCapacity: z.number().int().min(0).max(20).default(0),
+  cargoNote: text(120).nullable().optional(),
+});
+export const vehicleUpdateSchema = vehicleSchema.partial();
+export const assignPassengerSchema = z.object({ userId: z.string().min(1) });
+export const cargoCreateSchema = z.object({
+  name: text(60).min(2),
+  vehicleId: z.string().nullable().optional(),
+});
+export const cargoMoveSchema = z.object({ vehicleId: z.string().nullable() });
+
+export const deleteAccountSchema = z.object({ confirm: z.literal('EXCLUIR') });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type RespondInput = z.infer<typeof respondSchema>;

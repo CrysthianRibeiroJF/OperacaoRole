@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import type {
   DepositQueueItem,
+  FleetDto,
+  SuppliesDto,
   EventDetail,
   ExpenseDto,
   FeedItem,
@@ -22,6 +24,8 @@ export const keys = {
   settlement: (id: string) => ['settlement', id] as const,
   vault: (id: string) => ['vault', id] as const,
   deposits: (id: string) => ['deposits', id] as const,
+  supplies: (id: string) => ['supplies', id] as const,
+  fleet: (id: string) => ['fleet', id] as const,
   notifications: ['notifications'] as const,
 };
 
@@ -73,6 +77,19 @@ export const useDepositQueue = (id: string, enabled: boolean) =>
     enabled,
   });
 
+export const useSupplies = (id: string) =>
+  useQuery({
+    queryKey: keys.supplies(id),
+    queryFn: () => api.get<SuppliesDto>(`/events/${id}/supplies`),
+  });
+
+export const useFleet = (id: string, enabled = true) =>
+  useQuery({
+    queryKey: keys.fleet(id),
+    queryFn: () => api.get<FleetDto>(`/events/${id}/fleet`),
+    enabled,
+  });
+
 export const useNotifications = () =>
   useQuery({
     queryKey: keys.notifications,
@@ -87,6 +104,8 @@ export const eventKeys = (id: string, code?: string): QueryKey[] => [
   keys.settlement(id),
   keys.vault(id),
   keys.deposits(id),
+  keys.supplies(id),
+  keys.fleet(id),
   keys.feed,
   keys.notifications,
   ...(code ? [keys.invite(code)] : []),

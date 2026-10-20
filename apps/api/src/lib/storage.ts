@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { newId } from '../ids';
@@ -8,6 +8,7 @@ import { newId } from '../ids';
 export interface FileStorage {
   save(scope: string, data: Buffer, extension: string): Promise<string>;
   open(key: string): Readable;
+  remove(key: string): Promise<void>;
 }
 
 export class LocalDiskStorage implements FileStorage {
@@ -30,6 +31,10 @@ export class LocalDiskStorage implements FileStorage {
     return createReadStream(this.resolveKey(key));
   }
 
+  async remove(key: string): Promise<void> {
+    await rm(this.resolveKey(key), { force: true });
+  }
+
   private resolveKey(key: string): string {
     const full = resolve(this.root, key);
     if (!full.startsWith(this.root + sep)) throw new Error('Chave de arquivo inválida');
@@ -45,6 +50,10 @@ export class MemoryStorage implements FileStorage {
     const key = `${scope}/${newId()}.${extension}`;
     this.files.set(key, data);
     return key;
+  }
+
+  async remove(key: string): Promise<void> {
+    this.files.delete(key);
   }
 
   open(key: string): Readable {

@@ -9,7 +9,7 @@ import { ReasonSheet } from '../../../components/ReasonSheet';
 import { Sheet } from '../../../components/Sheet';
 import { api } from '../../../lib/api';
 import { formatBRL, formatDateTime } from '../../../lib/format';
-import { eventKeys, useAction, useExpenses, useSession } from '../../../lib/queries';
+import { eventKeys, useAction, useExpenses, useFleet, useSession } from '../../../lib/queries';
 import { CATEGORY_LABELS, QUOTA_HINTS, QUOTA_LABELS } from './labels';
 
 export function ExpensesSection({ detail }: { detail: EventDetail }) {
@@ -63,6 +63,7 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
   const [amount, setAmount] = useState<number | null>(null);
   const [quota, setQuota] = useState<Quota>('global');
   const [people, setPeople] = useState<string[]>([]);
+  const fleet = useFleet(event.id, true);
   const [receipt, setReceipt] = useState<File | null>(null);
 
   const save = useAction(
@@ -155,6 +156,25 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
       {quota === 'custom' && (
         <fieldset>
           <legend className="label">Escolha as pessoas</legend>
+          {fleet.data && fleet.data.vehicles.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {fleet.data.vehicles.map((v) => {
+                const ids = [v.driver.id, ...v.passengers.map((p) => p.id)];
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    className="rounded-full bg-navy-soft px-3 py-1.5 text-xs font-bold text-navy-dark"
+                    onClick={() =>
+                      setPeople(ids.filter((id) => roster.some((m) => m.user.id === id)))
+                    }
+                  >
+                    Ocupantes: {v.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             {roster.map((m) => (
               <label

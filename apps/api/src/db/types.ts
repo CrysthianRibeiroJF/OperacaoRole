@@ -8,6 +8,7 @@ export interface UsersTable {
   name: string;
   pix_key: string | null;
   created_at: string;
+  deleted_at: string | null;
 }
 
 export interface OtpCodesTable {
@@ -50,6 +51,7 @@ export interface EventsTable {
   base_checkout_time: string | null;
   base_house_rules: string | null;
   base_schedule: string | null;
+  fixed_costs_cents: number | null;
 }
 
 export interface ParticipationsTable {
@@ -192,6 +194,52 @@ export interface AuditLogTable {
   created_at: string;
 }
 
+export type SupplyCategoryDb =
+  'meat' | 'veg' | 'drinks_alc' | 'drinks' | 'breakfast' | 'cleaning' | 'other';
+
+export interface SupplyItemsTable {
+  id: string;
+  event_id: string;
+  name: string;
+  category: SupplyCategoryDb;
+  quantity_label: string;
+  est_price_cents: number | null;
+  real_price_cents: number | null;
+  assignee_id: string | null;
+  done: number;
+  expense_id: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface VehiclesTable {
+  id: string;
+  event_id: string;
+  driver_id: string;
+  label: string;
+  departure_place: string | null;
+  departure_time: string | null;
+  seats: number;
+  cargo_capacity: number;
+  cargo_note: string | null;
+  created_at: string;
+}
+
+export interface VehiclePassengersTable {
+  vehicle_id: string;
+  event_id: string;
+  user_id: string;
+}
+
+export interface CargoItemsTable {
+  id: string;
+  event_id: string;
+  name: string;
+  vehicle_id: string | null;
+  created_by: string;
+  created_at: string;
+}
+
 export interface Database {
   users: UsersTable;
   otp_codes: OtpCodesTable;
@@ -210,4 +258,8 @@ export interface Database {
   event_mutes: EventMutesTable;
   jobs: JobsTable;
   audit_log: AuditLogTable;
+  supply_items: SupplyItemsTable;
+  vehicles: VehiclesTable;
+  vehicle_passengers: VehiclePassengersTable;
+  cargo_items: CargoItemsTable;
 }
