@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+apps/api/data
+apps/api/uploads
+package-lock.json
+*.md
+.claude
+*.webmanifest

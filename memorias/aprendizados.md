@@ -1,0 +1,29 @@
+# Aprendizados
+
+Evidências reais: entrevistas, testes de protótipo, beta e incidentes. Ainda **não há dados**: todas as metas do PRD são hipóteses.
+
+## Como registrar
+
+Uma entrada por fonte, com data, o que foi observado (fatos, não interpretação), o que isso muda e a ação gerada.
+
+```
+### AP-001 · <título curto> · AAAA-MM-DD · Fonte: <entrevista / teste / beta / incidente>
+**Observado:** ...
+**Implicação:** ... (afeta D-00X / RN-XX / ROL-XXX)
+**Ação:** ...
+```
+
+## Hipóteses a validar (fonte: PRD v0.1)
+
+| # | Hipótese | Como validar | Status |
+|---|---|---|---|
+| H1 | Organizadores sofrem com carga mental e cobrança em rolês de grupo | ROL-001 | Não validada |
+| H2 | 3 confirmados bastam para o resto do grupo decidir "ficar de fora" | ROL-002, beta | Não validada |
+| H3 | Pessoas pagam sinal por Pix antes do rolê se isso garante a vaga | ROL-001, beta | Não validada |
+| H4 | Um Tesoureiro aceita validar comprovantes manualmente | ROL-001 | Não validada |
+| H5 | Convidados respondem a um link sem instalar nada | Beta | Não validada |
+| H6 | Cobrança automática e impessoal é aceita, e preserva a amizade | Beta | Não validada |
+
+## Entradas
+
+*(nenhuma ainda)*

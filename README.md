@@ -1,0 +1,95 @@
+# Operação Rolê
+
+App que transforma "vamos marcar algo?" em rolê confirmado: decisão em grupo por **massa crítica** (as 3 andorinhas), tarefas divididas por **patentes** e contas fechadas com **rateio justo**, sem depender de unanimidade nem de discussão infinita no WhatsApp.
+
+**Estado atual:** MVP técnico funcionando (convite, quórum, cargos, sinal por Pix, despesas, rateio e acerto de contas). Ainda **não validado com usuários** e **não pronto para lançamento público** (ver "Antes de lançar").
+
+## Como rodar
+
+Pré-requisito: Node 22 ou superior (testado no 24).
+
+```bash
+npm install
+cp .env.example apps/api/.env   # já existe uma cópia de desenvolvimento em apps/api/.env
+npm run db:seed                  # opcional: dados de demonstração
+npm run dev                      # API em :3333 e app em http://localhost:5173
+```
+
+Entre com qualquer telefone do seed, por exemplo `(11) 99999-0001` (Ana, Idealizadora e Tesoureira do rolê de Ubatuba). Em desenvolvimento, o código de 6 dígitos aparece na tela de login e no console da API. Para abrir no celular, use o IP da sua máquina na porta 5173.
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Sobe API e app com recarga automática |
+| `npm test` | 73 testes (domínio, contratos, API de ponta a ponta e utilitários do app) |
+| `npm run typecheck` | TypeScript estrito em todos os pacotes |
+| `npm run lint` / `npm run format` | ESLint e Prettier |
+| `npm run check` | Typecheck + lint + testes (rode antes de enviar mudanças) |
+| `npm run build` | Build de produção da API (bundle em `apps/api/dist`) e do app (`apps/web/dist`, com PWA) |
+| `npm run db:migrate` / `npm run db:seed` | Migrations e dados de demonstração |
+
+## Estrutura
+
+```
+operacao-role/
+├── apps/
+│   ├── api/                 API Fastify (TypeScript)
+│   │   └── src/
+│   │       ├── modules/     um módulo por assunto: auth, events, roles, deposits,
+│   │       │                expenses, settlement, notifications, jobs
+│   │       │                (cada um: *.routes.ts finas + *.service.ts com a regra)
+│   │       ├── db/          schema, migrations, cliente Kysely, seed
+│   │       ├── lib/         armazenamento de arquivos, auditoria, formatação
+│   │       └── test/        testes de integração (fluxo completo, com relógio falso)
+│   └── web/                 PWA React + Vite + Tailwind
+│       └── src/
+│           ├── app/         rotas e casca (navegação inferior)
+│           ├── features/    auth, feed, events (convite, criação), hq (QG), notifications
+│           ├── components/  design system (Button, Sheet, Toast, campos...)
+│           └── lib/         cliente HTTP, hooks de dados (TanStack Query), formatação
+├── packages/
+│   ├── domain/              regras puras, sem I/O: quórum, permissões, sorteio, rateio
+│   └── contracts/           esquemas Zod de entrada e tipos de resposta da API
+├── docs/                    PRD, backlog e arquitetura
+└── memorias/                cérebro do app: decisões, regras, glossário, questões, aprendizados
+```
+
+Por que assim: as regras que mexem com dinheiro e permissão ficam em `packages/domain`, testáveis sem banco nem rede (inclusive com teste de invariante: a soma dos saldos é sempre zero). A API só orquestra e persiste. O mesmo esquema Zod valida o servidor e tipa o front.
+
+## O que o MVP faz
+
+1. **Proposta relâmpago:** cartão fechado (destino, data, teto por pessoa, prazo, quórum de 2 a 6).
+2. **Massa crítica:** ao atingir o quórum, o rolê vira oficial e a turma é avisada. Sem quórum no prazo, a proposta é arquivada.
+3. **Convite público por link:** abre sem login (modo Observador) e converte em "Tô dentro" com login por celular.
+4. **Cargos:** Base, Frota, Suprimentos e Tesouro, por voluntariado ou sorteio. O Idealizador cobre Base e Tesouro enquanto vagos.
+5. **Sinal por Pix (opcional):** janela com prazo, comprovante, aprovação do Tesoureiro, fila de espera automática.
+6. **QG do rolê:** Base & Roteiro (Wi-Fi, endereço com Waze e Maps, regras), Equipe e Cofre.
+7. **Despesas e rateio:** cotas global, etílica, carne, vegetariana e por pessoas específicas; aprovação acima do limite; contestação em 72h; fechamento com o mínimo de transferências; baixa pelo credor.
+8. **"Chato Oficial":** avisos dentro do app para quórum, sinal, missão pendente e cobrança, sempre em privado e com silenciamento por rolê.
+
+Fica para a Fase 2: carros e caronas, lista de mercado, simulador de orçamento ao vivo, previsão do tempo e guia do entorno. Detalhes em [docs/BACKLOG.md](docs/BACKLOG.md).
+
+## Antes de lançar
+
+- **Parecer jurídico** sobre registrar sinais por Pix (Q12 / ROL-004) e **termos de uso** (ROL-123).
+- **Provedor de SMS/WhatsApp:** em produção o envio do código de login falha de propósito até existir um `OtpSender` real (Q11).
+- **LGPD:** retenção e exclusão de comprovantes e notas (ROL-121).
+- **Validar com pessoas reais:** nenhuma meta do PRD foi testada ainda (ROL-001, ROL-124).
+- Analytics de produto (ROL-013), pipeline de CI (ROL-010) e notificações por push, e-mail ou WhatsApp (ROL-070).
+
+## Mapa da pasta de documentação
+
+| Arquivo | O que é |
+|---|---|
+| [docs/PRD-Operacao-Role.md](docs/PRD-Operacao-Role.md) | Requisitos, métricas, riscos |
+| [docs/BACKLOG.md](docs/BACKLOG.md) | 70 tickets com status por ticket |
+| [docs/arquitetura.md](docs/arquitetura.md) | Como o sistema é montado e por quê |
+| [memorias/](memorias/INDEX.md) | Decisões (D-xxx), regras (RN-xx), glossário, questões abertas, aprendizados |
+| [CLAUDE.md](CLAUDE.md) | Instruções para o Claude manter o cérebro atualizado |
+
+## Como trabalhar neste projeto
+
+1. Leia [memorias/INDEX.md](memorias/INDEX.md) antes de qualquer tarefa.
+2. Decidiu algo? Registre em [memorias/decisoes.md](memorias/decisoes.md) e tire a questão de [memorias/questoes-abertas.md](memorias/questoes-abertas.md).
+3. Mudou uma regra? Atualize [memorias/regras-de-negocio.md](memorias/regras-de-negocio.md), o código em `packages/domain` e o teste correspondente.
+4. Aprendeu algo com usuários ou testes? Registre em [memorias/aprendizados.md](memorias/aprendizados.md).
+5. Termos novos entram no [glossário](memorias/glossario.md). Status de tickets no [backlog](docs/BACKLOG.md).

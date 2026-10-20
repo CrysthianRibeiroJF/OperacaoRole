@@ -1,0 +1,198 @@
+import type { Action, Diet, EventStatus, Quota, RoleKey } from '@role/domain';
+
+/** Formatos das respostas da API. Datas em ISO 8601, dinheiro em centavos. */
+
+export type ParticipationState = 'in' | 'out' | 'none';
+export type DepositStatus =
+  | 'none' // rolê sem sinal ou janela ainda não aberta
+  | 'pending'
+  | 'submitted'
+  | 'approved'
+  | 'rejected'
+  | 'waitlisted';
+export type ExpenseStatus = 'pending' | 'approved' | 'rejected';
+export type ExpenseCategory =
+  'food' | 'drinks' | 'fuel' | 'toll' | 'lodging' | 'cleaning' | 'other';
+
+export interface PublicUser {
+  id: string;
+  name: string;
+}
+
+export interface ProfileDto extends PublicUser {
+  phone: string;
+  pixKey: string | null;
+}
+
+export interface EventCard {
+  id: string;
+  code: string;
+  title: string;
+  destination: string;
+  startDate: string;
+  endDate: string | null;
+  costCapCents: number;
+  quorum: number;
+  status: EventStatus;
+  responseDeadlineAt: string;
+  confirmedCount: number;
+  missing: number;
+  belowQuorum: boolean;
+  organizer: PublicUser;
+  requiresDeposit: boolean;
+  depositCents: number | null;
+  createdAt: string;
+  confirmedAt: string | null;
+}
+
+export interface FeedItem extends EventCard {
+  myState: ParticipationState;
+  isOrganizer: boolean;
+  myDepositStatus: DepositStatus;
+}
+
+export interface MyContext {
+  participation: ParticipationState;
+  isOrganizer: boolean;
+  roles: RoleKey[];
+  depositStatus: DepositStatus;
+  drinksAlcohol: boolean;
+  diet: Diet;
+  can: Record<Action, boolean>;
+}
+
+export interface InviteView {
+  event: EventCard;
+  confirmed: PublicUser[];
+  me: MyContext | null;
+}
+
+export interface BaseInfo {
+  address: string | null;
+  wifiName: string | null;
+  wifiPassword: string | null;
+  gateCode: string | null;
+  checkoutTime: string | null;
+  houseRules: string | null;
+  schedule: string | null;
+}
+
+export interface RoleAssignment {
+  role: RoleKey;
+  user: PublicUser | null;
+  drawn: boolean;
+}
+
+export interface RosterEntry {
+  user: PublicUser;
+  drinksAlcohol: boolean;
+  diet: Diet;
+  depositStatus: DepositStatus;
+  roles: RoleKey[];
+}
+
+export interface DepositConfig {
+  required: boolean;
+  amountCents: number | null;
+  pixKey: string | null;
+  deadlineAt: string | null;
+  openedAt: string | null;
+}
+
+export interface EventDetail {
+  event: EventCard;
+  me: MyContext;
+  base: BaseInfo;
+  roles: RoleAssignment[];
+  roster: RosterEntry[];
+  deposit: DepositConfig;
+}
+
+export interface DepositQueueItem {
+  user: PublicUser;
+  status: DepositStatus;
+  submittedAt: string | null;
+  rejectReason: string | null;
+  hasProof: boolean;
+}
+
+export interface ExpenseContest {
+  reason: string;
+  by: PublicUser;
+  at: string;
+  resolvedAt: string | null;
+  resolution: string | null;
+}
+
+export interface ExpenseDto {
+  id: string;
+  description: string;
+  category: ExpenseCategory;
+  amountCents: number;
+  quota: Quota;
+  customParticipants: PublicUser[];
+  paidBy: PublicUser;
+  status: ExpenseStatus;
+  rejectReason: string | null;
+  hasReceipt: boolean;
+  contest: ExpenseContest | null;
+  contestable: boolean;
+  createdAt: string;
+}
+
+export interface VaultDto {
+  paidByMeCents: number;
+  depositPaidCents: number;
+  projectedShareCents: number;
+  projectedNetCents: number;
+  pendingExpenses: number;
+  settled: boolean;
+}
+
+export interface BalanceDto {
+  user: PublicUser;
+  paidCents: number;
+  depositCents: number;
+  costCents: number;
+  heldDepositsCents: number;
+  netCents: number;
+}
+
+export interface TransferDto {
+  id: string;
+  from: PublicUser;
+  to: PublicUser;
+  amountCents: number;
+  toPixKey: string | null;
+  paidAt: string | null;
+}
+
+export interface SettlementDto {
+  closed: boolean;
+  closedAt: string | null;
+  totalExpensesCents: number;
+  /** Tesoureiro vê todos; os demais veem só o próprio saldo (RN: cobrança privada). */
+  balances: BalanceDto[];
+  transfers: TransferDto[];
+  issues: { expenseId: string; description: string; code: 'NO_BENEFICIARIES' | 'UNRESOLVED' }[];
+}
+
+export interface NotificationDto {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  eventId: string | null;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface OtpRequestResponse {
+  ok: true;
+  /** Só existe em desenvolvimento (OTP_DEV_ECHO). Nunca em produção. */
+  devCode?: string;
+}
+
+export interface ApiError {
+  error: { code: string; message: string; details?: unknown };
+}
