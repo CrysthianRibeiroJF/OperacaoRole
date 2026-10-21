@@ -23,12 +23,14 @@ import { expensesRoutes } from './modules/expenses/expenses.routes';
 import { crewsRoutes } from './modules/crews/crews.routes';
 import { memoriesRoutes } from './modules/memories/memories.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
+import { panelRoutes } from './modules/panel/panel.routes';
 import { pixRoutes } from './modules/pix/pix.routes';
 import { pollsRoutes } from './modules/polls/polls.routes';
 import { reportRoutes } from './modules/report/report.routes';
 import { rolesRoutes } from './modules/roles/roles.routes';
 import { roomsRoutes } from './modules/rooms/rooms.routes';
 import { settlementRoutes } from './modules/settlement/settlement.routes';
+import { transportRoutes } from './modules/transport/transport.routes';
 import { recordError } from './modules/telemetry/telemetry.service';
 import { telemetryRoutes } from './modules/telemetry/telemetry.routes';
 
@@ -181,6 +183,8 @@ export async function buildApp(
       await api.register(memoriesRoutes);
       await api.register(reportRoutes);
       await api.register(pixRoutes);
+      await api.register(transportRoutes);
+      await api.register(panelRoutes);
       await api.register(accountRoutes);
       await api.register(telemetryRoutes);
     },

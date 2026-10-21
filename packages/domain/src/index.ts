@@ -14,3 +14,4 @@ export * from './items';
 export * from './reliability';
 export * from './report';
 export * from './ics';
+export * from './panel';

@@ -23,6 +23,7 @@ Outros documentos: [PRD](../docs/PRD-Operacao-Role.md), [backlog](../docs/BACKLO
 - **Não validado ainda:** o problema e as metas numéricas (nenhuma pesquisa com usuários até agora).
 - **Pronto para produção técnica (D-027 a D-031):** um processo serve app e API, CI, termos provisórios com aceite, retenção de 90 dias, quartos e `npm run metrics`.
 - **Acesso interno (D-024 a D-026):** celular + senha, código de recuperação, aparelhos conectados, central da conta e avisos só dentro do app. Sem SMS, WhatsApp ou e-mail.
+- **Painéis por cargo (D-043, D-044):** aba Painel (Idealizador, Generals e andorinha), pontos de encontro e plano de transporte. Pendência: Q17 (casais e acompanhantes).
 - **Fase 3 no ar (D-037 a D-042):** enquete de data e local (com busca de lugares e previsão), Pix copia e cola, Relatório de Missão, repetir rolê, tropa, mural (fotos, bagagem, trilha), agenda .ics, conta por item e selo de confiança. Pendências: Q15 (selo e privacidade) e Q16 (retenção das fotos).
 - **Fase 2 no ar (D-020 a D-023):** Mercado, Frotas, orçamento, previsão do tempo, prévia de link e exclusão de conta.
 - **Decididas (D-009 a D-013):** sinal opcional, sem custódia, rolê confirmado não desconfirma, sorteio com teto de 2 cargos, PWA.

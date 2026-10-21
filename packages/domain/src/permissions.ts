@@ -44,6 +44,11 @@ export const ACTIONS = [
   'rooms.join',
   'photos.add',
   'tracks.add',
+  'panel.overview',
+  'panel.supplies',
+  'panel.fleet',
+  'panel.base',
+  'panel.treasury',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
@@ -60,7 +65,17 @@ export function can(actor: Actor, action: Action): boolean {
   switch (action) {
     case 'event.cancel':
     case 'roles.draw':
+    case 'panel.overview':
       return actor.isOrganizer;
+    // Painel do General: quem ocupa o cargo e o Idealizador (que vê tudo, mesmo com o cargo preenchido).
+    case 'panel.supplies':
+      return actor.isOrganizer || actor.roles.includes('supplies');
+    case 'panel.fleet':
+      return actor.isOrganizer || actor.roles.includes('fleet');
+    case 'panel.base':
+      return actor.isOrganizer || actor.roles.includes('base');
+    case 'panel.treasury':
+      return actor.isOrganizer || actor.roles.includes('treasury');
     case 'event.viewInternal':
       return confirmed || actor.isOrganizer;
     case 'roles.claim':

@@ -259,3 +259,11 @@ export const IconUndo = (p: IconProps) => (
     <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
   </svg>
 );
+
+export const IconGauge = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 17a8 8 0 1 1 16 0" />
+    <path d="m12 17 4-5" />
+    <path d="M12 6v1.5M6.3 8.3l1 1M17.7 8.3l-1 1" />
+  </svg>
+);

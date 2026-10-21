@@ -6,6 +6,7 @@ import { Avatar, EmptyState, ErrorState, Field, Skeleton } from '../../component
 import { Sheet } from '../../components/Sheet';
 import { api } from '../../lib/api';
 import { eventKeys, useAction, useFleet, useSession } from '../../lib/queries';
+import { TransportCard } from './TransportCard';
 
 /** Aba Frotas & Caronas: carros, lugares estilo mapa de avião e bagagem por veículo. */
 export function FleetTab({ detail }: { detail: EventDetail }) {
@@ -54,6 +55,7 @@ export function FleetTab({ detail }: { detail: EventDetail }) {
 
   return (
     <>
+      <TransportCard detail={detail} />
       <section className="card space-y-3 p-5">
         <div className="flex items-start justify-between gap-3">
           <div>

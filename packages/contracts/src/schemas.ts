@@ -8,6 +8,8 @@ import {
   POLL_MAX_OPTIONS,
   POLL_MIN_OPTIONS,
   QUORUM_DEFAULT,
+  RIDE_PLAN_MODES,
+  STOP_KINDS,
   QUORUM_MAX,
   QUORUM_MIN,
   SUPPLY_CATEGORIES,
@@ -299,6 +301,26 @@ export const repeatEventSchema = z
     path: ['endDate'],
     message: 'A data final não pode ser antes da inicial',
   });
+
+/** Pontos de encontro e paradas (General da Frota). Horário no formato HH:MM. */
+export const stopSchema = z.object({
+  kind: z.enum(STOP_KINDS),
+  name: text(60).min(2, 'Dê um nome ao ponto'),
+  address: text(160).nullable().optional(),
+  time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use o horário no formato HH:MM')
+    .nullable()
+    .optional(),
+  note: text(160).nullable().optional(),
+});
+export const stopUpdateSchema = stopSchema.partial();
+
+/** Como a pessoa vai quando não tem lugar no carro. `mode: null` limpa o plano. */
+export const ridePlanSchema = z.object({
+  mode: z.enum(RIDE_PLAN_MODES).nullable(),
+  estCents: z.number().int().min(0).max(100_000_00).nullable().optional(),
+});
 
 export const packingItemSchema = z.object({
   label: text(60).min(2, 'Escreva o item'),

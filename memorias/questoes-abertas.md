@@ -19,6 +19,7 @@ Nenhuma. Q1 a Q5 foram resolvidas em 20/10/2026 (ver "Resolvidas"). **Atenção:
 | Q14 | O limite que exige aprovação de despesa (hoje R$ 300) deve ser configurável por rolê? | Produto | Sim, na Fase 2 |
 | Q15 | O selo "Andorinha confiável" (histórico de sinal e acerto por pessoa, visível só ao Idealizador) cabe na base legal e na política de privacidade? | Jurídico | Manter só o lado positivo; incluir na revisão de privacidade (ROL-121) |
 | Q16 | Por quanto tempo guardar as fotos do mural? Hoje ficam até o autor apagar ou excluir a conta (não entram na limpeza de 90 dias). | Produto/Jurídico | Definir no beta, junto da retenção (D-029) |
+| Q17 | Acompanhantes: como tratar casal ou pessoa que leva alguém (cama de casal, mais de um casal por rolê, pagar em dobro)? Hoje cada confirmação é uma pessoa. | Produto | Acompanhante dentro da confirmação do responsável: conta como 1 andorinha no quórum, mas ocupa cama/lugar e paga a própria cota, tudo cobrado ao responsável; cama de casal para o par. Detalhes na conversa de 21/10/2026. |
 
 ## Resolvidas
 

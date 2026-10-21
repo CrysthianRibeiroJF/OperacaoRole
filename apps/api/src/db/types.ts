@@ -396,6 +396,27 @@ export interface ExpenseItemConsumersTable {
   user_id: string;
 }
 
+export interface MeetingPointsTable {
+  id: string;
+  event_id: string;
+  kind: 'meeting' | 'stop' | 'rideshare' | 'return';
+  name: string;
+  address: string | null;
+  /** "HH:MM". */
+  time: string | null;
+  note: string | null;
+  position: number;
+  created_at: string;
+}
+
+export interface RidePlansTable {
+  event_id: string;
+  user_id: string;
+  mode: 'app' | 'own';
+  est_cents: number | null;
+  updated_at: string;
+}
+
 export interface Database {
   users: UsersTable;
   events: EventsTable;
@@ -437,4 +458,6 @@ export interface Database {
   track_votes: TrackVotesTable;
   expense_items: ExpenseItemsTable;
   expense_item_consumers: ExpenseItemConsumersTable;
+  meeting_points: MeetingPointsTable;
+  ride_plans: RidePlansTable;
 }

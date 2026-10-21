@@ -48,3 +48,7 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Mural** | Aba do QG com fotos, bagagem, trilha, agenda e atalhos (relatório, repetir rolê). |
 | **Relatório de Missão** | Cartão compartilhável com os números do rolê, sem saldo individual. |
 | **Andorinha confiável** | Selo discreto, visível só ao Idealizador, para quem tem histórico limpo de sinal e acerto. |
+| **Painel** | Primeira aba do QG: visão do Idealizador, painel do General e acompanhamento da andorinha. |
+| **Meu acompanhamento** | O que falta para cada pessoa no rolê: sinal, transporte, cama, itens e bagagem. |
+| **Ponto de encontro** | Lugar e hora cadastrados pela Frota: encontro, parada, ponto para chamar o app ou volta. |
+| **Plano de transporte** | Declaração de quem não tem carro: app (Uber, 99, táxi) ou conta própria. |

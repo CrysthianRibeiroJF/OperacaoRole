@@ -3,9 +3,12 @@ import type {
   Diet,
   EventStatus,
   NotificationCategory,
+  PanelTab,
   Quota,
   Reliability,
+  RideMode,
   RoleKey,
+  StopKind,
   SupplyCategory,
 } from '@role/domain';
 
@@ -467,4 +470,180 @@ export interface MissionReportDto {
   topCategory: { category: string; cents: number } | null;
   categories: { category: string; cents: number }[];
   participants: PublicUser[];
+}
+
+/* ------------------------------ Transporte, pontos e painéis ------------------------------ */
+
+export interface StopDto {
+  id: string;
+  kind: StopKind;
+  name: string;
+  address: string | null;
+  /** HH:MM; nulo: sem hora marcada. */
+  time: string | null;
+  note: string | null;
+}
+
+export interface RidePlanDto {
+  mode: 'app' | 'own';
+  estCents: number | null;
+}
+
+export interface TransportDto {
+  /** Em ordem de horário. */
+  stops: StopDto[];
+  canEdit: boolean;
+  /** Como a pessoa chega: lugar no carro vale mais que o plano. */
+  myRide: RideMode;
+  myPlan: RidePlanDto | null;
+  /** Quem declarou app (Uber, 99, táxi) e quem vai por conta própria, entre os sem lugar no carro. */
+  appRiders: PublicUser[];
+  ownRiders: PublicUser[];
+}
+
+export interface PanelPart {
+  key: 'quorum' | 'deposit' | 'supplies' | 'fleet' | 'rooms' | 'base' | 'expenses';
+  label: string;
+  percent: number;
+  /** Quantas pendências faltam nessa área. */
+  pending: number;
+  hint: string;
+  tab: PanelTab;
+}
+
+export interface PanelAlert {
+  key: string;
+  tone: 'danger' | 'warn' | 'info';
+  text: string;
+  tab: PanelTab;
+}
+
+/** Visão geral do Idealizador: prontidão por área e o que precisa de atenção agora. */
+export interface OverviewPanel {
+  percent: number;
+  parts: PanelPart[];
+  alerts: PanelAlert[];
+  vacantRoles: RoleKey[];
+}
+
+export interface SuppliesPanel {
+  totalItems: number;
+  doneItems: number;
+  unassignedItems: number;
+  percentDone: number;
+  estCents: number;
+  realCents: number;
+  deviationCents: number;
+  perHeadEstCents: number | null;
+  byCategory: {
+    category: SupplyCategory;
+    total: number;
+    done: number;
+    unassigned: number;
+    estCents: number;
+    realCents: number;
+  }[];
+  load: { user: PublicUser; items: number; done: number }[];
+  /** Itens sem responsável, para o General distribuir (os primeiros). */
+  unassigned: { id: string; name: string; category: SupplyCategory; quantityLabel: string }[];
+}
+
+export interface FleetPanel {
+  headcount: number;
+  drivers: number;
+  passengers: number;
+  appRiders: number;
+  ownRiders: number;
+  undecided: number;
+  seatsTotal: number;
+  seatsFree: number;
+  seatShortfall: number;
+  percentCovered: number;
+  /** Soma das estimativas de corrida dos que vão de app (informativa). */
+  rideEstimateCents: number;
+  stops: StopDto[];
+  vehicles: {
+    id: string;
+    label: string;
+    driver: PublicUser;
+    departurePlace: string | null;
+    departureTime: string | null;
+    seats: number;
+    taken: number;
+  }[];
+  appRiderUsers: PublicUser[];
+  ownRiderUsers: PublicUser[];
+  undecidedUsers: PublicUser[];
+}
+
+export interface BasePanel {
+  percent: number;
+  info: { key: string; label: string; done: boolean }[];
+  rooms: { total: number; beds: number; occupied: number };
+  withoutBed: PublicUser[];
+}
+
+export interface TreasuryPanel {
+  deposit: {
+    required: boolean;
+    open: boolean;
+    amountCents: number | null;
+    approved: number;
+    submitted: number;
+    pending: number;
+    rejected: number;
+    waitlisted: number;
+    collectedCents: number;
+  };
+  expenses: {
+    count: number;
+    approvedCents: number;
+    pendingCount: number;
+    openContests: number;
+    perHeadCents: number | null;
+  };
+  settled: boolean;
+}
+
+export interface MyStepDto {
+  key: string;
+  label: string;
+  done: boolean;
+  tab: PanelTab;
+}
+
+/** Acompanhamento pessoal: o que já está resolvido e o que falta para esta pessoa. */
+export interface MyPanel {
+  percent: number;
+  steps: MyStepDto[];
+  deposit: {
+    required: boolean;
+    status: DepositStatus;
+    amountCents: number | null;
+    deadlineAt: string | null;
+  };
+  ride: {
+    mode: RideMode;
+    vehicleLabel: string | null;
+    departurePlace: string | null;
+    departureTime: string | null;
+  };
+  room: string | null;
+  items: { id: string; name: string; done: boolean }[];
+  packing: { done: number; total: number };
+  finance: { projectedShareCents: number; projectedNetCents: number; paidByMeCents: number };
+  stops: StopDto[];
+  checkoutTime: string | null;
+}
+
+export interface PanelDto {
+  isOrganizer: boolean;
+  roles: RoleKey[];
+  /** Cada seção só vem para quem pode vê-la (o servidor decide). */
+  overview: OverviewPanel | null;
+  supplies: SuppliesPanel | null;
+  fleet: FleetPanel | null;
+  base: BasePanel | null;
+  treasury: TreasuryPanel | null;
+  mine: MyPanel;
 }

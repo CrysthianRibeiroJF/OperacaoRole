@@ -348,6 +348,24 @@ RN-108 e RN-109. Teste de invariante com soma dos saldos igual a zero.
 
 ---
 
+## E14 — Painéis por cargo (D-043, D-044)
+
+### ROL-150 · Aba Painel: visão do Idealizador, painel do General e meu acompanhamento · P1 · 8 pts · Dep: ROL-040, ROL-081 · **Feito ✅**
+RN-116, RN-121 e RN-122.
+
+### ROL-151 · Painel do Mercado em detalhe (categoria, quem leva o quê, sem dono, desvio) · P1 · 3 pts · Dep: ROL-100 · **Feito ✅**
+
+### ROL-152 · Pontos de encontro, paradas e local para chamar o app · P1 · 3 pts · Dep: ROL-090 · **Feito ✅**
+RN-117 e RN-118. Substitui o que faltava em ROL-094.
+
+### ROL-153 · Plano de transporte (app ou conta própria) com estimativa informativa · P1 · 2 pts · Dep: ROL-091 · **Feito ✅**
+RN-119 e RN-120.
+
+### ROL-154 · Acompanhantes: casal, cama de casal e cota em dobro · P1 · 8 pts → quebrar · Dep: Q17 · **A fazer**
+Aguarda decisão sobre quórum, sinal e cotas (Q17). Toca rateio, quartos, carros e a invariante dos saldos.
+
+---
+
 ## E12 — Qualidade, segurança e lançamento
 
 ### ROL-120 · Suíte de testes de regras de negócio (quórum, rateio, permissões) · P0 · 5 pts · Dep: ROL-033, ROL-064, ROL-040 · **Feito ✅**

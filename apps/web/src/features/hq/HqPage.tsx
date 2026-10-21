@@ -6,6 +6,7 @@ import {
   IconBell,
   IconBellOff,
   IconCamera,
+  IconGauge,
   IconCar,
   IconCart,
   IconClock,
@@ -22,11 +23,13 @@ import { StatusTag } from '../events/shared';
 import { BaseTab } from './BaseTab';
 import { FleetTab } from './FleetTab';
 import { MuralTab } from './mural/MuralTab';
+import { PanelTab } from './panel/PanelTab';
 import { SuppliesTab } from './SuppliesTab';
 import { TeamTab } from './TeamTab';
 import { VaultTab } from './VaultTab';
 
 const TABS: { key: string; label: string; icon: ReactNode }[] = [
+  { key: 'painel', label: 'Painel', icon: <IconGauge size={18} /> },
   { key: 'base', label: 'Base', icon: <IconHome size={18} /> },
   { key: 'equipe', label: 'Equipe', icon: <IconMedal size={18} /> },
   { key: 'mercado', label: 'Mercado', icon: <IconCart size={18} /> },
@@ -71,7 +74,7 @@ export function HqPage() {
   }
 
   const { event } = data;
-  const tab = TABS.some((t) => t.key === params.get('aba')) ? params.get('aba')! : 'base';
+  const tab = TABS.some((t) => t.key === params.get('aba')) ? params.get('aba')! : 'painel';
   const muted = mute.data?.muted ?? false;
 
   return (
@@ -127,7 +130,7 @@ export function HqPage() {
         aria-label="Seções do QG"
         className="sticky top-0 z-30 -mx-4 bg-desk/90 px-4 py-2 backdrop-blur lg:mx-0 lg:px-0"
       >
-        <div className="grid grid-cols-6 gap-0.5 rounded-xl border border-line bg-surface p-1 sm:gap-1">
+        <div className="flex gap-0.5 overflow-x-auto rounded-xl border border-line bg-surface p-1 [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -136,7 +139,7 @@ export function HqPage() {
               aria-selected={tab === t.key}
               aria-controls={`panel-${t.key}`}
               onClick={() => setParams({ aba: t.key }, { replace: true })}
-              className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-[9px] px-1 text-[11px] font-extrabold transition-colors ${
+              className={`flex min-h-[3.25rem] min-w-[3.6rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-[9px] px-1 text-[11px] font-extrabold transition-colors ${
                 tab === t.key ? 'bg-ink text-surface' : 'text-muted hover:bg-desk-deep'
               }`}
             >
@@ -154,6 +157,7 @@ export function HqPage() {
         // Desktop: os cartões se distribuem em duas colunas, sem partir nenhum ao meio.
         className="space-y-4 lg:columns-2 lg:gap-4 lg:space-y-0 lg:[&>*]:mb-4 lg:[&>*]:break-inside-avoid"
       >
+        {tab === 'painel' && <PanelTab detail={data} />}
         {tab === 'base' && <BaseTab detail={data} />}
         {tab === 'equipe' && <TeamTab detail={data} />}
         {tab === 'mercado' && <SuppliesTab detail={data} />}

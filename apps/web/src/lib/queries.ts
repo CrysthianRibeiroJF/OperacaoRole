@@ -5,6 +5,7 @@ import type {
   DepositQueueItem,
   FleetDto,
   MissionReportDto,
+  PanelDto,
   MutedEventDto,
   PackingDto,
   PhotosDto,
@@ -12,6 +13,7 @@ import type {
   PollSummaryDto,
   RoomsDto,
   TracksDto,
+  TransportDto,
   NotificationPrefsDto,
   SecurityOverview,
   SuppliesDto,
@@ -44,6 +46,8 @@ export const keys = {
   packing: (id: string) => ['packing', id] as const,
   tracks: (id: string) => ['tracks', id] as const,
   report: (id: string) => ['report', id] as const,
+  panel: (id: string) => ['panel', id] as const,
+  transport: (id: string) => ['transport', id] as const,
   polls: ['polls'] as const,
   poll: (code: string) => ['poll', code] as const,
   crews: ['crews'] as const,
@@ -143,6 +147,20 @@ export const useReport = (id: string) =>
     retry: false,
   });
 
+export const usePanel = (id: string) =>
+  useQuery({
+    queryKey: keys.panel(id),
+    queryFn: () => api.get<PanelDto>(`/events/${id}/panel`),
+    refetchInterval: 30_000,
+    retry: false,
+  });
+
+export const useTransport = (id: string) =>
+  useQuery({
+    queryKey: keys.transport(id),
+    queryFn: () => api.get<TransportDto>(`/events/${id}/transport`),
+  });
+
 export const usePolls = () =>
   useQuery({ queryKey: keys.polls, queryFn: () => api.get<PollSummaryDto[]>('/polls') });
 
@@ -200,6 +218,8 @@ export const eventKeys = (id: string, code?: string): QueryKey[] => [
   keys.packing(id),
   keys.tracks(id),
   keys.report(id),
+  keys.panel(id),
+  keys.transport(id),
   keys.feed,
   keys.notifications,
   ...(code ? [keys.invite(code)] : []),

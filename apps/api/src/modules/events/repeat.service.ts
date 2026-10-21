@@ -111,6 +111,31 @@ export async function repeatEvent(
         .execute();
     }
 
+    const stops = await trx
+      .selectFrom('meeting_points')
+      .selectAll()
+      .where('event_id', '=', sourceId)
+      .orderBy('position')
+      .execute();
+    if (stops.length > 0) {
+      await trx
+        .insertInto('meeting_points')
+        .values(
+          stops.map((s, i) => ({
+            id: newId(),
+            event_id: card.id,
+            kind: s.kind,
+            name: s.name,
+            address: s.address,
+            time: s.time,
+            note: s.note,
+            position: i,
+            created_at: new Date(now.getTime() + i).toISOString(),
+          })),
+        )
+        .execute();
+    }
+
     await audit(trx, now, {
       eventId: card.id,
       actorId: userId,

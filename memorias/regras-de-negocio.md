@@ -145,3 +145,14 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-113** Selo de confiança: "confiável" = 2 ou mais rolês encerrados, nenhum sinal perdido e nenhum acerto atrasado (mais de 7 dias depois do fechamento); "primeira vez" = nenhum rolê encerrado. Só o Idealizador vê, nunca existe selo negativo.
 - **RN-114** Relatório de Missão: só confirmados veem; usa só despesas aprovadas; não expõe saldo de ninguém.
 - **RN-115** Ao excluir a conta somem as enquetes e tropas criadas, os votos, a bagagem pessoal, as músicas e as fotos da pessoa; os lançamentos financeiros (inclusive a conta por item) ficam.
+
+## Painéis, pontos de encontro e transporte (D-043, D-044)
+
+- **RN-116** O painel é montado no servidor e cada seção só vem para quem pode ver: visão geral e todos os painéis para o Idealizador; o painel do cargo para quem o ocupa; o acompanhamento pessoal para todo confirmado.
+- **RN-117** Só o General da Frota (ou o Idealizador, se vago) cria, edita e remove pontos de encontro, com o rolê aberto ou confirmado. Todo confirmado vê. Criar, ou mudar hora, local ou nome, avisa a turma (uma vez por mudança).
+- **RN-118** Horário dos pontos é HH:MM; a linha do tempo ordena por horário e deixa os sem horário no fim.
+- **RN-119** Quem não tem lugar no carro nem dirige pode declarar app ou conta própria, só com o rolê confirmado. Ter lugar (ou dirigir) vale mais que o plano. A estimativa da corrida é informativa e nunca entra no rateio.
+- **RN-120** Faltam lugares = pessoas sem transporte definido que não cabem nos assentos livres. A cobertura é quem tem carro, app ou conta própria sobre o total.
+- **RN-121** Prontidão de uma área é percentual de 0 a 100; sem nada a medir conta 0, não "pronto". A geral é a média das áreas. Com o rolê ainda aberto só se mede a confirmação.
+- **RN-122** Acompanhamento pessoal (rolê confirmado): sinal pago (se exigido), definir como vai, escolher cama (se houver quartos), assumir um item (se houver lista com item livre) e montar a bagagem. Rolê aberto não cobra passos.
+- **RN-123** Ao excluir a conta somem os planos de transporte da pessoa.
