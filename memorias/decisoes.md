@@ -163,3 +163,28 @@ Formato: **ID · título · data · status** → contexto, decisão, consequênc
 ## D-036 · Publicação no Render · 20/10/2026 · Aceita
 **Decisão:** um serviço web Node com disco persistente (SQLite e comprovantes em `/var/data`), descrito em `render.yaml`. Instância única; plano pago por causa do disco. Backup: snapshots do Render mais `npm run backup`.
 **Consequências:** sem escala horizontal enquanto for SQLite; migrar para Postgres antes disso. Guia: `docs/publicar-no-render.md`.
+
+## D-037 · Enquete de data e local antes da proposta · 21/10/2026 · Aceita
+**Contexto:** o rolê nasce como cartão fechado, mas muitos grupos ainda não sabem data nem lugar.
+**Decisão:** a Enquete (`/enquete/:code`) tem de 2 a 6 opções (lugar e datas); cada pessoa pode marcar **mais de uma** (aprovação, como numa enquete de datas). O Idealizador encerra: maioria clara vence sozinha; em empate (ou sem votos) ele escolhe entre as empatadas. A vencedora abre "Lançar um rolê" já preenchido e a proposta criada fica ligada à enquete, avisando quem votou. O link abre sem login (leitura); votar exige conta.
+**Consequências:** nova rota pública de leitura (`GET /api/polls/:code`, na lista de exceções do teste de guarda). O campo de lugar usa a busca de lugares e mostra a previsão do tempo por opção (D-021 estendida: geocodificação do Open-Meteo, a mesma da previsão; só o texto digitado sai do app).
+
+## D-038 · Pix copia e cola gerado no app, sem custódia · 21/10/2026 · Aceita
+**Decisão:** o app monta o código Pix (BR Code estático, CRC16) com a chave e o valor certos, para o acerto de contas (`GET /api/transfers/:id/pix`, só para quem paga) e para o sinal (`GET /api/events/:id/deposit/pix`). Nada de QR nem de pagamento dentro do app.
+**Consequências:** reforça D-003: o dinheiro sai direto do banco de quem paga para o de quem recebe; o app só entrega texto. Chaves digitadas com máscara são normalizadas (telefone vira +55, CPF só números). Se o credor não tem chave, o botão avisa e o combinado segue por fora.
+
+## D-039 · Tropa entra por consentimento · 21/10/2026 · Aceita
+**Decisão:** Tropa é um grupo fixo de amigos. Entra quem abre o link e aceita; ninguém é colocado por terceiros. "Chamar a tropa" é só um **aviso interno** com o link do convite, uma vez por rolê e só para quem ainda não respondeu. O dono não sai (exclui a tropa); só ele tira membros.
+**Consequências:** sem canal externo (D-024/D-025). Evita spam e cadastro de terceiros por número de celular.
+
+## D-040 · Selo "Andorinha confiável" só para o Idealizador · 21/10/2026 · Aceita (revisar no jurídico, Q15)
+**Decisão:** o Idealizador vê, na lista da tropa, "confiável" (2 ou mais rolês encerrados, nenhum sinal perdido, nenhum acerto atrasado) ou "primeira vez". **Não existe selo negativo** e os demais participantes nunca o recebem. Atraso = pagar depois de 7 dias do fechamento ou seguir devendo depois dele.
+**Consequências:** reduz pipoca sem expor ninguém (D-005). É um tratamento de dados novo (histórico por pessoa): precisa constar na revisão de privacidade antes do lançamento público (Q15).
+
+## D-041 · Conta por item · 21/10/2026 · Aceita
+**Decisão:** uma despesa pode ter itens (nome, valor, quem consumiu). A despesa continua guardada como "pessoas específicas"; as partes vêm dos itens: cada item divide só entre os consumidores e a sobra do total (taxa, gorjeta, item sem dono) é rateada na proporção do consumo (maior resto, sem perder centavo). Cada pessoa marca ou desmarca o próprio nome até a conta fechar; quem lançou (e o Tesoureiro) marca por outros. Item sem nenhum consumidor vira pendência que bloqueia o fechamento.
+**Consequências:** o motor de rateio ganhou o campo `shares` (partes exatas); a invariante "soma dos saldos = 0" segue valendo e tem teste. "Dividir só com quem participou" (outra ideia) já existia como a cota "Pessoas específicas".
+
+## D-042 · Mural do rolê (fotos, bagagem, trilha), agenda e relatório · 21/10/2026 · Aceita
+**Decisão:** nova aba **Mural** no QG. Fotos: só confirmados veem e postam, até 40 por rolê, só imagem, comprimidas no aparelho; o autor ou o Idealizador apaga. Bagagem: sugestões do General da Base para todos e lista pessoal que só o dono vê. Trilha: link da playlist (Base) e sugestões de música com voto. Agenda: arquivo `.ics` do rolê (aviso um dia antes). **Relatório de Missão:** totais, média por cabeça, quem mais adiantou, maior despesa e categoria líder, sem saldo individual; vira definitivo com a conta fechada; compartilhável como imagem. "Repetir esse rolê" cria proposta nova reaproveitando valor, quórum, sinal, Base, lista de compras, quartos e playlist (cargos, carros, despesas e respostas começam do zero).
+**Consequências:** as fotos do mural **não** entram na limpeza de 90 dias (RN-99) porque são o objetivo do mural; saem quando o autor apaga ou exclui a conta (Q16).

@@ -14,6 +14,8 @@ export interface NotifyInput {
    * Lembretes recorrentes incluem o "balde" de tempo na chave (ex.: o dia).
    */
   dedupeKey: string;
+  /** Rota do app para onde o aviso leva (ex.: /enquete/ABC). Sem ela, abre o QG do rolê. */
+  link?: string;
 }
 
 /**
@@ -63,6 +65,7 @@ export async function notify(db: Db, now: Date, input: NotifyInput): Promise<voi
         dedupe_key: input.dedupeKey,
         created_at: now.toISOString(),
         read_at: null,
+        link: input.link ?? null,
       })),
     )
     .onConflict((oc) => oc.columns(['user_id', 'dedupe_key']).doNothing())
@@ -100,6 +103,7 @@ export async function listNotifications(
       title: r.title,
       body: r.body,
       eventId: r.event_id,
+      link: r.link,
       createdAt: r.created_at,
       readAt: r.read_at,
     })),

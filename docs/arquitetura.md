@@ -31,7 +31,8 @@ Visão de como o MVP é montado e por quê. As decisões estão em [memorias/dec
 - **settlements**, **settlement_balances**, **settlement_transfers**: foto auditável do fechamento.
 - **rooms** e **room_occupants** (uma cama por pessoa por rolê).
 - **supply_items** (lista de mercado, com vínculo opcional à despesa gerada), **vehicles**, **vehicle_passengers** (um lugar por pessoa por rolê) e **cargo_items** (bagagem por carro).
-- **notifications** (com chave de deduplicação), **event_mutes**.
+- **notifications** (com chave de deduplicação e `link` opcional para a tela de destino), **event_mutes**.
+- **polls**, **poll_options**, **poll_votes** (enquete); **crews**, **crew_members** (tropa); **event_photos**, **packing_items**, **packing_checks**, **tracks**, **track_votes** (mural); **expense_items**, **expense_item_consumers** (conta por item). Migration 006.
 - **jobs**: agendamentos que sobrevivem a reinícios. **audit_log**: trilha de quem fez o quê.
 
 Convenções: ids UUID em TEXT; datas ISO-8601 UTC em TEXT; dinheiro em centavos inteiros (INTEGER); booleanos 0/1. Tudo portável para PostgreSQL.
@@ -79,6 +80,8 @@ Direção "ordem de missão" (D-019). Tokens de cor, tipografia e os componentes
 - **Avisos só dentro do app:** não há push, e-mail nem WhatsApp. A tabela `notifications` já serve de fila de saída para quando houver.
 - **Sem testes de interface automatizados** (o fluxo é coberto por testes de API; a interface foi verificada manualmente em visual mobile).
 - **Retenção:** um job apaga comprovantes e fotos de nota 90 dias depois do encerramento ou cancelamento; os valores ficam.
+- **Fotos do mural** ficam até o autor apagar ou excluir a conta: não entram na limpeza de 90 dias (Q16). Com disco no Render, 40 fotos de até 5 MB por rolê pesam no volume.
+- **Busca de lugares** e previsão do tempo saem do navegador direto para o Open-Meteo (mesmos domínios já liberados na política de segurança).
 - **Teto de despesa e de cargos fixos** (R$ 300 e 2): colunas já existem por rolê, falta a tela.
 - **Ordem de criação em empate de milissegundo** (carros, itens): a lista usa `created_at`; só os testes, com relógio fixo, expõem empates.
 

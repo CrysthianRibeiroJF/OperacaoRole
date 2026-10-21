@@ -7,6 +7,7 @@ export const NOTIFICATION_CATEGORIES = [
   'fleet',
   'expenses',
   'settlement',
+  'social',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
@@ -33,6 +34,10 @@ export const NOTIFICATION_CATEGORY_INFO: Record<
     label: 'Acerto de contas',
     hint: 'Conta fechada, lembretes de pagamento e baixas. Evita calote.',
   },
+  social: {
+    label: 'Enquetes e tropa',
+    hint: 'Enquete encerrada, convite da tropa e novidades do mural.',
+  },
 };
 
 /** Cada tipo de aviso pertence a uma categoria; tipos desconhecidos nunca são silenciados por engano. */
@@ -54,6 +59,10 @@ export function categoryOfKind(kind: string): NotificationCategory | null {
       return 'expenses';
     case 'settlement':
       return 'settlement';
+    case 'poll':
+    case 'crew':
+    case 'memory':
+      return 'social';
     default:
       return null;
   }

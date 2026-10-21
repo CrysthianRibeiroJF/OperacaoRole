@@ -48,6 +48,7 @@ export interface EventsTable {
   base_house_rules: string | null;
   base_schedule: string | null;
   fixed_costs_cents: number | null;
+  playlist_url: string | null;
 }
 
 export interface ParticipationsTable {
@@ -159,6 +160,8 @@ export interface NotificationsTable {
   dedupe_key: string;
   created_at: string;
   read_at: string | null;
+  /** Rota do app para onde o aviso leva (vazio: usa o rolê). */
+  link: string | null;
 }
 
 export interface EventMutesTable {
@@ -299,6 +302,100 @@ export interface DepositRefundsTable {
   marked_by: string;
 }
 
+export interface PollsTable {
+  id: string;
+  code: string;
+  organizer_id: string;
+  title: string;
+  status: 'open' | 'closed';
+  winner_option_id: string | null;
+  event_id: string | null;
+  created_at: string;
+  closed_at: string | null;
+}
+
+export interface PollOptionsTable {
+  id: string;
+  poll_id: string;
+  label: string;
+  destination: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  position: number;
+}
+
+export interface PollVotesTable {
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  voted_at: string;
+}
+
+export interface CrewsTable {
+  id: string;
+  code: string;
+  owner_id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface CrewMembersTable {
+  crew_id: string;
+  user_id: string;
+  joined_at: string;
+}
+
+export interface EventPhotosTable {
+  id: string;
+  event_id: string;
+  user_id: string;
+  file_key: string;
+  mime: string;
+  created_at: string;
+}
+
+export interface PackingItemsTable {
+  id: string;
+  event_id: string;
+  /** Nulo: sugestão do grupo, visível a todos os confirmados. */
+  owner_id: string | null;
+  label: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface PackingChecksTable {
+  item_id: string;
+  user_id: string;
+}
+
+export interface TracksTable {
+  id: string;
+  event_id: string;
+  user_id: string;
+  title: string;
+  url: string | null;
+  created_at: string;
+}
+
+export interface TrackVotesTable {
+  track_id: string;
+  user_id: string;
+}
+
+export interface ExpenseItemsTable {
+  id: string;
+  expense_id: string;
+  label: string;
+  amount_cents: number;
+  position: number;
+}
+
+export interface ExpenseItemConsumersTable {
+  item_id: string;
+  user_id: string;
+}
+
 export interface Database {
   users: UsersTable;
   events: EventsTable;
@@ -328,4 +425,16 @@ export interface Database {
   error_events: ErrorEventsTable;
   analytics_events: AnalyticsEventsTable;
   deposit_refunds: DepositRefundsTable;
+  polls: PollsTable;
+  poll_options: PollOptionsTable;
+  poll_votes: PollVotesTable;
+  crews: CrewsTable;
+  crew_members: CrewMembersTable;
+  event_photos: EventPhotosTable;
+  packing_items: PackingItemsTable;
+  packing_checks: PackingChecksTable;
+  tracks: TracksTable;
+  track_votes: TrackVotesTable;
+  expense_items: ExpenseItemsTable;
+  expense_item_consumers: ExpenseItemConsumersTable;
 }

@@ -111,7 +111,7 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 
 ## Avisos internos (D-025)
 
-- **RN-96** Cada aviso pertence a uma categoria (quórum, sinal, cargos, mercado, carros, despesas, acerto). Quem desligou a categoria na central da conta não recebe os avisos dela, além do silenciamento por rolê (RN-51).
+- **RN-96** Cada aviso pertence a uma categoria (quórum, sinal, cargos, mercado, carros, despesas, acerto e, desde D-037, enquetes e tropa). Quem desligou a categoria na central da conta não recebe os avisos dela, além do silenciamento por rolê (RN-51).
 - **RN-97** Todas as categorias começam ligadas. Avisos de tipo desconhecido nunca são silenciados por engano.
 
 ## Quartos (D-030)
@@ -128,3 +128,20 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 
 - **RN-100** Rolê cancelado com janela de sinal aberta: cada sinal aprovado (exceto o do Tesoureiro) aparece como "a devolver" até o Tesoureiro marcar como devolvido. O app não movimenta dinheiro. Cada pessoa vê só a própria linha; marcar é idempotente e avisa a pessoa.
 - **RN-101** Só o Idealizador transfere o comando, a um participante confirmado, e só com o rolê aberto ou confirmado. Não pode transferir para si mesmo.
+
+## Enquete, tropa, Pix e mural (D-037 a D-042)
+
+- **RN-102** Enquete tem de 2 a 6 opções. Cada pessoa marca quantas quiser; refazer o voto troca o anterior. Só o Idealizador encerra, e depois ninguém mais vota.
+- **RN-103** Maioria clara vence sozinha e não pode ser contrariada. Empate: o Idealizador escolhe entre as empatadas. Sem votos: escolhe qualquer opção.
+- **RN-104** Ao criar o rolê a partir da enquete encerrada (só o dono dela), as duas ficam ligadas e quem votou recebe o aviso com o link do convite. Enquete ainda aberta ou de outra pessoa não é ligada.
+- **RN-105** O código Pix copia e cola leva a chave de quem recebe e o valor exato em centavos; só quem paga o acerto o recebe, e só enquanto não foi pago. Sem chave cadastrada, o app avisa e não gera código. O app nunca move dinheiro.
+- **RN-106** Tropa: entra só quem abre o link. O dono não sai e é o único que tira gente ou exclui. "Chamar a tropa" avisa uma vez por rolê quem ainda não respondeu e não confirma ninguém.
+- **RN-107** Repetir o rolê é só do Idealizador: cria proposta aberta com valor, quórum, sinal, Base, lista de compras, quartos e playlist copiados; não copia cargos, carros, despesas, respostas nem quem já pegou item.
+- **RN-108** Conta por item: cada item é dividido só entre os consumidores que estão no rateio; a sobra do valor da despesa é rateada pelo consumo (maior resto, desempate pelo id). A soma das partes é sempre o valor da despesa. Item sem consumidor bloqueia o fechamento.
+- **RN-109** Marcar "eu consumi" vale até o rolê ser fechado; por outra pessoa, só quem lançou a despesa ou o Tesoureiro. Só confirmados entram.
+- **RN-110** Mural de fotos: só confirmados veem e postam, rolê confirmado ou fechado, até 40 fotos (JPG, PNG ou WebP). Apaga o autor ou o Idealizador.
+- **RN-111** Bagagem: itens do grupo só o General da Base (ou o Idealizador, se vago) cria; itens pessoais e as marcações só a própria pessoa vê.
+- **RN-112** Trilha: só confirmados sugerem e votam, com o rolê aberto ou confirmado. Links só `http(s)`. Quem sugere já vota na própria música.
+- **RN-113** Selo de confiança: "confiável" = 2 ou mais rolês encerrados, nenhum sinal perdido e nenhum acerto atrasado (mais de 7 dias depois do fechamento); "primeira vez" = nenhum rolê encerrado. Só o Idealizador vê, nunca existe selo negativo.
+- **RN-114** Relatório de Missão: só confirmados veem; usa só despesas aprovadas; não expõe saldo de ninguém.
+- **RN-115** Ao excluir a conta somem as enquetes e tropas criadas, os votos, a bagagem pessoal, as músicas e as fotos da pessoa; os lançamentos financeiros (inclusive a conta por item) ficam.

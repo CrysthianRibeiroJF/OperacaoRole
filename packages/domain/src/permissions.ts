@@ -42,6 +42,8 @@ export const ACTIONS = [
   'budget.edit',
   'rooms.edit',
   'rooms.join',
+  'photos.add',
+  'tracks.add',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
@@ -66,6 +68,8 @@ export function can(actor: Actor, action: Action): boolean {
     case 'supplies.claim':
     case 'fleet.join':
     case 'rooms.join':
+    case 'photos.add':
+    case 'tracks.add':
       return confirmed;
     case 'base.edit':
     case 'budget.edit':

@@ -13,6 +13,21 @@ const CreateEventPage = lazy(() =>
   import('../features/events/CreateEventPage').then((m) => ({ default: m.CreateEventPage })),
 );
 const HqPage = lazy(() => import('../features/hq/HqPage').then((m) => ({ default: m.HqPage })));
+const ReportPage = lazy(() =>
+  import('../features/hq/ReportPage').then((m) => ({ default: m.ReportPage })),
+);
+const CreatePollPage = lazy(() =>
+  import('../features/polls/CreatePollPage').then((m) => ({ default: m.CreatePollPage })),
+);
+const PollPage = lazy(() =>
+  import('../features/polls/PollPage').then((m) => ({ default: m.PollPage })),
+);
+const CrewsPage = lazy(() =>
+  import('../features/crews/CrewsPage').then((m) => ({ default: m.CrewsPage })),
+);
+const CrewJoinPage = lazy(() =>
+  import('../features/crews/CrewJoinPage').then((m) => ({ default: m.CrewJoinPage })),
+);
 const NotificationsPage = lazy(() =>
   import('../features/notifications/NotificationsPage').then((m) => ({
     default: m.NotificationsPage,
@@ -44,12 +59,18 @@ export function App() {
         {/* O convite é público: abre sem login, em modo Observador. */}
         <Route element={<AppShell />}>
           <Route path="/c/:code" element={<InvitePage />} />
+          {/* Enquete e tropa também abrem em modo leitura; votar e entrar pedem conta. */}
+          <Route path="/enquete/:code" element={<PollPage />} />
+          <Route path="/tropa/:code" element={<CrewJoinPage />} />
           <Route path="/termos" element={<TermsPage />} />
           <Route path="/privacidade" element={<PrivacyPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/" element={<FeedPage />} />
             <Route path="/novo" element={<CreateEventPage />} />
+            <Route path="/enquete/nova" element={<CreatePollPage />} />
+            <Route path="/tropas" element={<CrewsPage />} />
             <Route path="/role/:id" element={<HqPage />} />
+            <Route path="/role/:id/relatorio" element={<ReportPage />} />
             <Route path="/avisos" element={<NotificationsPage />} />
             <Route path="/perfil" element={<AccountHub />} />
             <Route path="/perfil/dados" element={<ProfileData />} />

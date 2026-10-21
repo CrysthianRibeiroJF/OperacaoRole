@@ -3,6 +3,7 @@ import {
   createExpenseSchema,
   expenseReviewSchema,
   resolveContestSchema,
+  toggleItemConsumerSchema,
 } from '@role/contracts';
 import type { FastifyInstance } from 'fastify';
 import { parse, readUpload, requireUser, sendFile } from '../../http';
@@ -14,6 +15,7 @@ import {
   openReceipt,
   resolveContest,
   reviewExpense,
+  toggleItemConsumer,
 } from './expenses.service';
 
 export async function expensesRoutes(app: FastifyInstance) {
@@ -43,6 +45,13 @@ export async function expensesRoutes(app: FastifyInstance) {
   app.get<{ Params: { id: string } }>('/expenses/:id/receipt', async (req, reply) => {
     const userId = await requireUser(req);
     return sendFile(reply, await openReceipt(ctx, userId, req.params.id));
+  });
+
+  app.post<{ Params: { id: string } }>('/expense-items/:id/consume', async (req) => {
+    const userId = await requireUser(req);
+    const { userId: target } = parse(toggleItemConsumerSchema, req.body);
+    await toggleItemConsumer(ctx, userId, req.params.id, target);
+    return { ok: true };
   });
 
   app.post<{ Params: { id: string } }>('/expenses/:id/review', async (req) => {

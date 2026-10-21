@@ -3,6 +3,7 @@ import {
   can,
   computeSettlement,
   settlementReminderTimes,
+  splitByItems,
   type Balance,
   type SettlementResult,
 } from '@role/domain';
@@ -76,6 +77,46 @@ async function compute(db: Db, event: EventRow): Promise<Computed> {
         .execute()
     : [];
 
+  // Conta por item: cada item é dividido só entre quem o consumiu; a sobra (taxa, gorjeta) é rateada
+  // na proporção do consumo. Só quem está no rateio paga (mesma regra das demais cotas).
+  const itemRows = expenses.length
+    ? await db
+        .selectFrom('expense_items')
+        .selectAll()
+        .where(
+          'expense_id',
+          'in',
+          expenses.map((e) => e.id),
+        )
+        .execute()
+    : [];
+  const consumerRows = itemRows.length
+    ? await db
+        .selectFrom('expense_item_consumers')
+        .selectAll()
+        .where(
+          'item_id',
+          'in',
+          itemRows.map((i) => i.id),
+        )
+        .execute()
+    : [];
+  const eligible = new Set(roster.map((m) => m.userId));
+  const sharesFor = (expenseId: string, amountCents: number) => {
+    const items = itemRows.filter((i) => i.expense_id === expenseId);
+    if (items.length === 0) return undefined;
+    return (
+      splitByItems(
+        amountCents,
+        items.map((i) => ({
+          amountCents: i.amount_cents,
+          consumerIds: consumerRows.filter((c) => c.item_id === i.id).map((c) => c.user_id),
+        })),
+        eligible,
+      ) ?? {}
+    );
+  };
+
   const result = computeSettlement({
     roster,
     treasurerId,
@@ -86,6 +127,7 @@ async function compute(db: Db, event: EventRow): Promise<Computed> {
       amountCents: e.amount_cents,
       quota: e.quota,
       customParticipantIds: custom.filter((c) => c.expense_id === e.id).map((c) => c.user_id),
+      shares: sharesFor(e.id, e.amount_cents),
     })),
   });
   const descriptions = new Map(expenses.map((e) => [e.id, e.description]));

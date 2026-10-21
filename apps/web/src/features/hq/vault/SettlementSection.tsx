@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { IconCheck } from '../../../components/icons';
 import { Button } from '../../../components/Button';
 import { Badge, CopyButton, Spinner } from '../../../components/misc';
+import { PixPayButton } from '../../../components/PixPayButton';
 import { Sheet } from '../../../components/Sheet';
 import { api, ApiError } from '../../../lib/api';
 import { formatBRL, formatDateTime } from '../../../lib/format';
@@ -113,8 +114,9 @@ function TransferRow({
           <div className="flex flex-wrap items-center gap-2">
             {iPay && t.toPixKey && (
               <>
+                <PixPayButton path={`/transfers/${t.id}/pix`} />
                 <code className="rounded-lg bg-desk px-2 py-1 text-sm font-bold">{t.toPixKey}</code>
-                <CopyButton value={t.toPixKey} label="Copiar Pix" />
+                <CopyButton value={t.toPixKey} label="Copiar chave" />
               </>
             )}
             {iPay && !t.toPixKey && (

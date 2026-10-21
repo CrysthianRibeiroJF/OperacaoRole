@@ -34,6 +34,8 @@ export async function createExpense(
     amountCents: number;
     quota: 'global' | 'alcohol' | 'meat' | 'vegetarian' | 'custom';
     customParticipantIds?: string[] | undefined;
+    /** Conta por item: vale no lugar da cota (a despesa é guardada como "pessoas específicas"). */
+    items?: { label: string; amountCents: number; consumerIds: string[] }[] | undefined;
   },
 ): Promise<ExpenseDto> {
   const id = newId();
@@ -44,9 +46,16 @@ export async function createExpense(
     const { actor } = await buildActor(trx, event, userId);
     if (!can(actor, 'expense.create')) throw forbidden('Só quem confirmou presença lança despesas');
 
+    const byItem = !!input.items?.length;
+    const quota = byItem ? 'custom' : input.quota;
+    const members = new Set(await confirmedUserIds(trx, eventId));
     let participantIds: string[] = [];
-    if (input.quota === 'custom') {
-      const members = new Set(await confirmedUserIds(trx, eventId));
+    if (byItem) {
+      const consumers = input.items!.flatMap((i) => i.consumerIds);
+      if (consumers.some((p) => !members.has(p))) {
+        throw unprocessable('INVALID_PARTICIPANTS', 'Só dá para dividir entre quem está no rolê');
+      }
+    } else if (input.quota === 'custom') {
       participantIds = [...new Set(input.customParticipantIds ?? [])];
       if (participantIds.some((p) => !members.has(p))) {
         throw unprocessable('INVALID_PARTICIPANTS', 'Só dá para dividir entre quem está no rolê');
@@ -66,7 +75,7 @@ export async function createExpense(
         description: input.description,
         category: input.category,
         amount_cents: input.amountCents,
-        quota: input.quota,
+        quota,
         status: needsApproval ? 'pending' : 'approved',
         reject_reason: null,
         reviewed_by: null,
@@ -80,6 +89,30 @@ export async function createExpense(
         .insertInto('expense_participants')
         .values(participantIds.map((p) => ({ expense_id: id, user_id: p })))
         .execute();
+    }
+    if (byItem) {
+      for (const [position, item] of input.items!.entries()) {
+        const itemId = newId();
+        await trx
+          .insertInto('expense_items')
+          .values({
+            id: itemId,
+            expense_id: id,
+            label: item.label,
+            amount_cents: item.amountCents,
+            position,
+          })
+          .execute();
+        const consumers = [...new Set(item.consumerIds)];
+        if (consumers.length > 0) {
+          await trx
+            .insertInto('expense_item_consumers')
+            .values(
+              consumers.map((userIdOfConsumer) => ({ item_id: itemId, user_id: userIdOfConsumer })),
+            )
+            .execute();
+        }
+      }
     }
 
     if (needsApproval) {
@@ -99,7 +132,7 @@ export async function createExpense(
       action: 'expense.created',
       entity: 'expense',
       entityId: id,
-      data: { amountCents: input.amountCents, quota: input.quota, needsApproval },
+      data: { amountCents: input.amountCents, quota, byItem, needsApproval },
     });
   });
 
@@ -151,6 +184,71 @@ export async function openReceipt(
   return { stream: ctx.storage.open(expense.receipt_key), mime: expense.receipt_mime };
 }
 
+/**
+ * "Eu consumi isto": cada um marca (ou desmarca) o próprio nome num item da conta por item. Quem
+ * lançou a despesa e o Tesoureiro também marcam por outras pessoas. Vale até a conta fechar.
+ */
+export async function toggleItemConsumer(
+  ctx: AppContext,
+  userId: string,
+  itemId: string,
+  targetId: string | undefined,
+): Promise<void> {
+  const item = await ctx.db
+    .selectFrom('expense_items')
+    .innerJoin('expenses', 'expenses.id', 'expense_items.expense_id')
+    .select([
+      'expense_items.id as id',
+      'expenses.event_id as event_id',
+      'expenses.paid_by as paid_by',
+      'expenses.status as status',
+    ])
+    .where('expense_items.id', '=', itemId)
+    .executeTakeFirst();
+  if (!item) throw notFound('Item não encontrado');
+  const event = await requireEvent(ctx.db, item.event_id);
+  assertOpenForExpenses(event);
+  if (item.status === 'rejected') throw conflict('EXPENSE_REJECTED', 'Essa despesa foi recusada');
+
+  const { actor } = await buildActor(ctx.db, event, userId);
+  if (!can(actor, 'expense.create'))
+    throw forbidden('Só quem confirmou presença marca o que consumiu');
+  const target = targetId ?? userId;
+  if (target !== userId && item.paid_by !== userId && !can(actor, 'expense.review')) {
+    throw forbidden('Só quem lançou a despesa marca por outra pessoa');
+  }
+  if (!(await confirmedUserIds(ctx.db, item.event_id)).includes(target)) {
+    throw unprocessable('INVALID_PARTICIPANTS', 'Só dá para dividir entre quem está no rolê');
+  }
+
+  const existing = await ctx.db
+    .selectFrom('expense_item_consumers')
+    .select('user_id')
+    .where('item_id', '=', itemId)
+    .where('user_id', '=', target)
+    .executeTakeFirst();
+  if (existing) {
+    await ctx.db
+      .deleteFrom('expense_item_consumers')
+      .where('item_id', '=', itemId)
+      .where('user_id', '=', target)
+      .execute();
+  } else {
+    await ctx.db
+      .insertInto('expense_item_consumers')
+      .values({ item_id: itemId, user_id: target })
+      .execute();
+  }
+  await audit(ctx.db, ctx.clock.now(), {
+    eventId: item.event_id,
+    actorId: userId,
+    action: existing ? 'expense.item_unmarked' : 'expense.item_marked',
+    entity: 'expense_item',
+    entityId: itemId,
+    data: { userId: target },
+  });
+}
+
 export async function listExpenses(
   ctx: AppContext,
   userId: string,
@@ -171,6 +269,25 @@ export async function listExpenses(
   if (only) rows = rows.filter((r) => only.has(r.id));
 
   const ids = rows.map((r) => r.id);
+  const items = ids.length
+    ? await ctx.db
+        .selectFrom('expense_items')
+        .selectAll()
+        .where('expense_id', 'in', ids)
+        .orderBy('position')
+        .execute()
+    : [];
+  const consumers = items.length
+    ? await ctx.db
+        .selectFrom('expense_item_consumers')
+        .selectAll()
+        .where(
+          'item_id',
+          'in',
+          items.map((i) => i.id),
+        )
+        .execute()
+    : [];
   const [parts, contests] = await Promise.all([
     ids.length
       ? ctx.db
@@ -186,6 +303,7 @@ export async function listExpenses(
   const users = await usersById(ctx.db, [
     ...rows.map((r) => r.paid_by),
     ...parts.map((p) => p.user_id),
+    ...consumers.map((c) => c.user_id),
     ...contests.map((c) => c.by_user),
   ]);
   const user = (id: string) => users.get(id) ?? { id, name: '—' };
@@ -199,6 +317,14 @@ export async function listExpenses(
       amountCents: r.amount_cents,
       quota: r.quota,
       customParticipants: parts.filter((p) => p.expense_id === r.id).map((p) => user(p.user_id)),
+      items: items
+        .filter((i) => i.expense_id === r.id)
+        .map((i) => ({
+          id: i.id,
+          label: i.label,
+          amountCents: i.amount_cents,
+          consumers: consumers.filter((c) => c.item_id === i.id).map((c) => user(c.user_id)),
+        })),
       paidBy: user(r.paid_by),
       status: r.status,
       rejectReason: r.reject_reason,

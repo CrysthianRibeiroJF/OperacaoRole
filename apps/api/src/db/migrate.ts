@@ -4,6 +4,7 @@ import { phase2002 } from './migrations/002_phase2';
 import { internalAuth003 } from './migrations/003_internal_auth';
 import { legalRooms004 } from './migrations/004_legal_rooms';
 import { telemetryRefunds005 } from './migrations/005_telemetry_refunds';
+import { social006 } from './migrations/006_social';
 import type { Database } from './types';
 
 /** Lista estática: funciona igual em dev (tsx) e no bundle de produção (tsup). */
@@ -15,6 +16,7 @@ const provider: MigrationProvider = {
       '003_internal_auth': internalAuth003,
       '004_legal_rooms': legalRooms004,
       '005_telemetry_refunds': telemetryRefunds005,
+      '006_social': social006,
     };
   },
 };

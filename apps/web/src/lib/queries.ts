@@ -1,9 +1,17 @@
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import type {
+  CrewDto,
+  CrewPreview,
   DepositQueueItem,
   FleetDto,
+  MissionReportDto,
   MutedEventDto,
+  PackingDto,
+  PhotosDto,
+  PollDto,
+  PollSummaryDto,
   RoomsDto,
+  TracksDto,
   NotificationPrefsDto,
   SecurityOverview,
   SuppliesDto,
@@ -32,6 +40,14 @@ export const keys = {
   supplies: (id: string) => ['supplies', id] as const,
   fleet: (id: string) => ['fleet', id] as const,
   rooms: (id: string) => ['rooms', id] as const,
+  photos: (id: string) => ['photos', id] as const,
+  packing: (id: string) => ['packing', id] as const,
+  tracks: (id: string) => ['tracks', id] as const,
+  report: (id: string) => ['report', id] as const,
+  polls: ['polls'] as const,
+  poll: (code: string) => ['poll', code] as const,
+  crews: ['crews'] as const,
+  crewPreview: (code: string) => ['crew-preview', code] as const,
   notifications: ['notifications'] as const,
   security: ['security'] as const,
   notifPrefs: ['notif-prefs'] as const,
@@ -102,6 +118,52 @@ export const useFleet = (id: string, enabled = true) =>
 export const useRooms = (id: string) =>
   useQuery({ queryKey: keys.rooms(id), queryFn: () => api.get<RoomsDto>(`/events/${id}/rooms`) });
 
+export const usePhotos = (id: string) =>
+  useQuery({
+    queryKey: keys.photos(id),
+    queryFn: () => api.get<PhotosDto>(`/events/${id}/photos`),
+  });
+
+export const usePacking = (id: string) =>
+  useQuery({
+    queryKey: keys.packing(id),
+    queryFn: () => api.get<PackingDto>(`/events/${id}/packing`),
+  });
+
+export const useTracks = (id: string) =>
+  useQuery({
+    queryKey: keys.tracks(id),
+    queryFn: () => api.get<TracksDto>(`/events/${id}/tracks`),
+  });
+
+export const useReport = (id: string) =>
+  useQuery({
+    queryKey: keys.report(id),
+    queryFn: () => api.get<MissionReportDto>(`/events/${id}/report`),
+    retry: false,
+  });
+
+export const usePolls = () =>
+  useQuery({ queryKey: keys.polls, queryFn: () => api.get<PollSummaryDto[]>('/polls') });
+
+export const usePoll = (code: string) =>
+  useQuery({
+    queryKey: keys.poll(code),
+    queryFn: () => api.get<PollDto>(`/polls/${code}`),
+    refetchInterval: 15_000,
+    retry: false,
+  });
+
+export const useCrews = () =>
+  useQuery({ queryKey: keys.crews, queryFn: () => api.get<CrewDto[]>('/crews') });
+
+export const useCrewPreview = (code: string) =>
+  useQuery({
+    queryKey: keys.crewPreview(code),
+    queryFn: () => api.get<CrewPreview>(`/crews/code/${code}`),
+    retry: false,
+  });
+
 export const useSecurity = () =>
   useQuery({ queryKey: keys.security, queryFn: () => api.get<SecurityOverview>('/me/security') });
 
@@ -134,6 +196,10 @@ export const eventKeys = (id: string, code?: string): QueryKey[] => [
   keys.supplies(id),
   keys.fleet(id),
   keys.rooms(id),
+  keys.photos(id),
+  keys.packing(id),
+  keys.tracks(id),
+  keys.report(id),
   keys.feed,
   keys.notifications,
   ...(code ? [keys.invite(code)] : []),

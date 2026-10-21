@@ -23,6 +23,11 @@ export interface SettlementExpense {
   quota: Quota;
   /** Obrigatório quando quota === 'custom'. */
   customParticipantIds?: readonly string[];
+  /**
+   * Conta por item: custo exato de cada pessoa (veja `splitByItems`). Quando presente, vale no lugar
+   * da cota e a soma deve ser o valor da despesa.
+   */
+  shares?: Readonly<Record<string, Cents>> | null;
 }
 
 export interface SettlementDeposit {
@@ -116,6 +121,29 @@ export function computeSettlement(input: SettlementInput): SettlementResult {
 
   for (const expense of expenses) {
     assertCents(expense.amountCents, `despesa ${expense.id}`);
+
+    if (expense.shares) {
+      const inRoster = new Set(roster.map((m) => m.userId));
+      const owed = Object.entries(expense.shares).filter(([id, c]) => c > 0 && inRoster.has(id));
+      if (owed.length === 0) {
+        issues.push({ expenseId: expense.id, code: 'NO_BENEFICIARIES' });
+        continue;
+      }
+      let assigned = 0;
+      for (const [userId, cents] of owed) {
+        assertCents(cents, `parte em ${expense.id}`);
+        entry(userId).costCents += cents;
+        assigned += cents;
+      }
+      if (assigned > expense.amountCents) {
+        throw new RangeError(`as partes de ${expense.id} passam do valor da despesa`);
+      }
+      totalExpensesCents += expense.amountCents;
+      entry(expense.payerId).paidCents += expense.amountCents;
+      entry(treasurerId).costCents += expense.amountCents - assigned; // RN-37 (normalmente 0)
+      continue;
+    }
+
     const beneficiaries = resolveBeneficiaries(expense, roster);
     if (beneficiaries.length === 0) {
       issues.push({ expenseId: expense.id, code: 'NO_BENEFICIARIES' });

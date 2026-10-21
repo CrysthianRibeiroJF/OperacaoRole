@@ -8,13 +8,21 @@ import type {
   RespondInput,
   RosterEntry,
 } from '@role/contracts';
-import { evaluateQuorum, can, ROLE_KEYS, vacantRoleAlertTime } from '@role/domain';
+import {
+  evaluateQuorum,
+  can,
+  ROLE_KEYS,
+  vacantRoleAlertTime,
+  type Reliability,
+} from '@role/domain';
 import type { AppContext, Db } from '../../context';
 import { AppError, conflict, forbidden, notFound, unprocessable } from '../../errors';
 import { newId, newInviteCode } from '../../ids';
 import { audit } from '../../lib/audit';
 import { openDepositWindowIfReady, toDepositConfig } from '../deposits/deposits.service';
 import { scheduleJob } from '../jobs/schedule';
+import { linkPollToEvent } from '../polls/polls.service';
+import { reliabilityFor } from '../report/reliability.service';
 import { scheduleFilePurge } from './retention.service';
 import { dayBucket, notify } from '../notifications/notifications.service';
 import {
@@ -125,7 +133,15 @@ export async function createEvent(
     });
   });
 
-  return toEventCard(ctx.db, await requireEvent(ctx.db, id));
+  const card = await toEventCard(ctx.db, await requireEvent(ctx.db, id));
+  if (input.pollId) {
+    await linkPollToEvent(ctx.db, now, userId, input.pollId, {
+      id,
+      code: card.code,
+      title: card.title,
+    });
+  }
+  return card;
 }
 
 /* -------------------------------------------------------------------------------------------- */
@@ -490,12 +506,22 @@ export async function getEventDetail(
     ...roleRows.map((r) => r.user_id),
   ]);
 
+  // O selo de confiança é só do Idealizador: os demais nunca o recebem (D-005).
+  const badges = me.isOrganizer
+    ? await reliabilityFor(
+        ctx.db,
+        ctx.clock.now(),
+        parts.map((p) => p.user_id),
+      )
+    : new Map<string, Reliability>();
+
   const roster: RosterEntry[] = parts.map((p) => ({
     user: users.get(p.user_id) ?? { id: p.user_id, name: '—' },
     drinksAlcohol: p.drinks_alcohol === 1,
     diet: p.diet,
     depositStatus: effectiveDepositStatus(event, p, treasurerId),
     roles: roleRows.filter((r) => r.user_id === p.user_id).map((r) => r.role),
+    reliability: p.user_id === userId ? null : (badges.get(p.user_id) ?? null),
   }));
 
   const base: BaseInfo = {

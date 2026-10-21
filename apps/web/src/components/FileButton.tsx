@@ -16,6 +16,7 @@ export function FileButton({
   variant = 'secondary',
   size = 'md',
   block,
+  accept = 'image/*,application/pdf',
 }: {
   label: ReactNode;
   onFile: (file: File) => void;
@@ -23,6 +24,8 @@ export function FileButton({
   variant?: 'primary' | 'secondary' | 'soft' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   block?: boolean;
+  /** Tipos aceitos pelo seletor de arquivos (padrão: foto ou PDF; o mural usa só foto). */
+  accept?: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -33,7 +36,7 @@ export function FileButton({
       <input
         ref={input}
         type="file"
-        accept="image/*,application/pdf"
+        accept={accept}
         className="sr-only"
         tabIndex={-1}
         onChange={async (e) => {

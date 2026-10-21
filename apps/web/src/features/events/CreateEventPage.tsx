@@ -1,11 +1,14 @@
 import type { EventCard } from '@role/contracts';
 import { QUORUM_DEFAULT, QUORUM_MAX, QUORUM_MIN } from '@role/domain';
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/Button';
+import { ForecastStrip } from '../../components/ForecastStrip';
 import { IconArrowLeft } from '../../components/icons';
 import { Field, MoneyInput, Toggle } from '../../components/misc';
+import { PlaceInput } from '../../components/PlaceInput';
 import { api } from '../../lib/api';
+import type { Place } from '../../lib/places';
 import { formatBRL, formatEventDates } from '../../lib/format';
 import { keys, useAction, useSession } from '../../lib/queries';
 import { StatusTag, SwallowMeter, Ticket } from './shared';
@@ -78,11 +81,15 @@ function LivePreview({
 export function CreateEventPage() {
   const navigate = useNavigate();
   const { data: session } = useSession();
+  // Vindo de uma enquete encerrada, o cartão já chega preenchido com a opção vencedora.
+  const [params] = useSearchParams();
+  const pollId = params.get('enquete');
 
-  const [title, setTitle] = useState('');
-  const [destination, setDestination] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [title, setTitle] = useState(params.get('titulo') ?? '');
+  const [destination, setDestination] = useState(params.get('destino') ?? '');
+  const [place, setPlace] = useState<Place | null>(null);
+  const [startDate, setStartDate] = useState(params.get('inicio') ?? '');
+  const [endDate, setEndDate] = useState(params.get('fim') ?? '');
   const [cost, setCost] = useState<number | null>(null);
   const [quorum, setQuorum] = useState(QUORUM_DEFAULT);
   const [hours, setHours] = useState(48);
@@ -91,7 +98,7 @@ export function CreateEventPage() {
   const [pix, setPix] = useState(session?.profile?.pixKey ?? '');
 
   const create = useAction((body: object) => api.post<EventCard>('/events', body), {
-    invalidate: [keys.feed],
+    invalidate: [keys.feed, keys.polls],
     onSuccess: (card) => navigate(`/c/${card.code}?novo=1`, { replace: true }),
   });
 
@@ -116,6 +123,7 @@ export function CreateEventPage() {
       responseHours: hours,
       requiresDeposit: needsDeposit,
       ...(needsDeposit && deposit !== null ? { depositCents: deposit, pixKey: pix.trim() } : {}),
+      ...(pollId ? { pollId } : {}),
     });
   }
 
@@ -156,13 +164,12 @@ export function CreateEventPage() {
               required
             />
           </Field>
-          <Field label="Destino">
-            <input
-              className="field"
+          <Field label="Destino" hint="Busque a cidade: a previsão do tempo aparece logo abaixo.">
+            <PlaceInput
               value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="Maresias, SP"
-              maxLength={120}
+              onChange={setDestination}
+              onPick={setPlace}
+              placeholder="Maresias, São Paulo"
               required
             />
           </Field>
@@ -188,6 +195,13 @@ export function CreateEventPage() {
               />
             </Field>
           </div>
+
+          <ForecastStrip
+            destination={destination}
+            startDate={startDate}
+            endDate={endDate || null}
+            coords={place}
+          />
 
           <Field
             label="Teto de gasto por pessoa"

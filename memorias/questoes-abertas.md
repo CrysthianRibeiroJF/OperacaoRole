@@ -17,6 +17,8 @@ Nenhuma. Q1 a Q5 foram resolvidas em 20/10/2026 (ver "Resolvidas"). **Atenção:
 | Q12 | Parecer jurídico: o app pode ser enquadrado como intermediador de pagamento ao registrar sinais? Qual a regra de reembolso? (herdada de Q2) | Jurídico | Manter sem custódia e só orientar |
 | Q13 | Quem bebe, mas não pagou o sinal, deve ficar fora do rateio de bebida? (hoje fica: roster = quite com o sinal) | Produto | Manter; revisar com dados do beta |
 | Q14 | O limite que exige aprovação de despesa (hoje R$ 300) deve ser configurável por rolê? | Produto | Sim, na Fase 2 |
+| Q15 | O selo "Andorinha confiável" (histórico de sinal e acerto por pessoa, visível só ao Idealizador) cabe na base legal e na política de privacidade? | Jurídico | Manter só o lado positivo; incluir na revisão de privacidade (ROL-121) |
+| Q16 | Por quanto tempo guardar as fotos do mural? Hoje ficam até o autor apagar ou excluir a conta (não entram na limpeza de 90 dias). | Produto/Jurídico | Definir no beta, junto da retenção (D-029) |
 
 ## Resolvidas
 

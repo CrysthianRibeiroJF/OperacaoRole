@@ -1,10 +1,10 @@
-import type { EventDetail, ExpenseCategory, ExpenseDto } from '@role/contracts';
+import type { EventDetail, ExpenseCategory, ExpenseDto, PublicUser } from '@role/contracts';
 import type { Quota } from '@role/domain';
 import { IconCamera, IconReceipt } from '../../../components/icons';
 import { useState, type FormEvent } from 'react';
 import { Button } from '../../../components/Button';
 import { FileButton } from '../../../components/FileButton';
-import { Badge, EmptyState, Field, MoneyInput, Spinner } from '../../../components/misc';
+import { Badge, EmptyState, Field, MoneyInput, Spinner, Toggle } from '../../../components/misc';
 import { ReasonSheet } from '../../../components/ReasonSheet';
 import { Sheet } from '../../../components/Sheet';
 import { api } from '../../../lib/api';
@@ -65,6 +65,9 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
   const [people, setPeople] = useState<string[]>([]);
   const fleet = useFleet(event.id, true);
   const [receipt, setReceipt] = useState<File | null>(null);
+  // Conta por item ("a conta do bar"): cada item é dividido só entre quem consumiu.
+  const [byItem, setByItem] = useState(false);
+  const [items, setItems] = useState<DraftItem[]>(() => [newItem()]);
 
   const save = useAction(
     async () => {
@@ -72,8 +75,19 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
         description: description.trim(),
         category,
         amountCents: amount,
-        quota,
-        ...(quota === 'custom' ? { customParticipantIds: people } : {}),
+        ...(byItem
+          ? {
+              quota: 'custom',
+              items: items.map((i) => ({
+                label: i.label.trim(),
+                amountCents: i.amount,
+                consumerIds: i.consumers,
+              })),
+            }
+          : {
+              quota,
+              ...(quota === 'custom' ? { customParticipantIds: people } : {}),
+            }),
       });
       // A despesa já existe; se a foto falhar, dá para anexar depois sem perder o lançamento.
       if (receipt)
@@ -87,11 +101,18 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
     },
   );
 
+  const itemsTotal = items.reduce((sum, i) => sum + (i.amount ?? 0), 0);
+  const itemsOk =
+    !byItem ||
+    (items.length > 0 &&
+      items.every((i) => i.label.trim().length > 0 && (i.amount ?? 0) > 0) &&
+      itemsTotal <= (amount ?? 0));
   const valid =
     description.trim().length >= 2 &&
     amount !== null &&
     amount > 0 &&
-    (quota !== 'custom' || people.length > 0);
+    itemsOk &&
+    (byItem || quota !== 'custom' || people.length > 0);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -129,7 +150,26 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
         </Field>
       </div>
 
-      <fieldset>
+      <div className="rounded-[12px] bg-desk-deep px-4 py-1">
+        <Toggle
+          checked={byItem}
+          onChange={setByItem}
+          label="Dividir por item"
+          hint="Conta do bar ou restaurante: cada um paga só o que consumiu."
+        />
+      </div>
+
+      {byItem && (
+        <ItemsEditor
+          items={items}
+          setItems={setItems}
+          roster={roster.map((m) => m.user)}
+          total={amount}
+          itemsTotal={itemsTotal}
+        />
+      )}
+
+      <fieldset className={byItem ? 'hidden' : ''}>
         <legend className="label">Quem divide essa conta?</legend>
         <div className="space-y-2">
           {(Object.keys(QUOTA_LABELS) as Quota[]).map((q) => (
@@ -153,7 +193,7 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
         </div>
       </fieldset>
 
-      {quota === 'custom' && (
+      {!byItem && quota === 'custom' && (
         <fieldset>
           <legend className="label">Escolha as pessoas</legend>
           {fleet.data && fleet.data.vehicles.length > 0 && (
@@ -218,6 +258,102 @@ function ExpenseForm({ detail, onDone }: { detail: EventDetail; onDone: () => vo
   );
 }
 
+interface DraftItem {
+  key: number;
+  label: string;
+  amount: number | null;
+  consumers: string[];
+}
+
+let draftKey = 0;
+const newItem = (): DraftItem => ({ key: draftKey++, label: '', amount: null, consumers: [] });
+
+/** Itens da conta: nome, valor e quem consumiu. O que sobrar do total (taxa, gorjeta) é rateado pelo consumo. */
+function ItemsEditor({
+  items,
+  setItems,
+  roster,
+  total,
+  itemsTotal,
+}: {
+  items: DraftItem[];
+  setItems: (update: (list: DraftItem[]) => DraftItem[]) => void;
+  roster: PublicUser[];
+  total: number | null;
+  itemsTotal: number;
+}) {
+  const patch = (key: number, change: Partial<DraftItem>) =>
+    setItems((list) => list.map((i) => (i.key === key ? { ...i, ...change } : i)));
+  const extra = (total ?? 0) - itemsTotal;
+
+  return (
+    <fieldset className="space-y-3">
+      <legend className="label">Itens da conta</legend>
+      {items.map((item, index) => (
+        <div key={item.key} className="space-y-2.5 rounded-xl border border-line p-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_7.5rem] gap-2">
+            <input
+              className="field"
+              value={item.label}
+              onChange={(e) => patch(item.key, { label: e.target.value })}
+              placeholder={`Item ${index + 1} (ex.: Picanha)`}
+              maxLength={60}
+              aria-label={`Nome do item ${index + 1}`}
+            />
+            <MoneyInput value={item.amount} onChange={(amount) => patch(item.key, { amount })} />
+          </div>
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="group"
+            aria-label={`Quem consumiu o item ${index + 1}`}
+          >
+            {roster.map((p) => {
+              const on = item.consumers.includes(p.id);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    patch(item.key, {
+                      consumers: on
+                        ? item.consumers.filter((id) => id !== p.id)
+                        : [...item.consumers, p.id],
+                    })
+                  }
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${on ? 'bg-ink text-surface' : 'bg-desk-deep text-muted'}`}
+                >
+                  {p.name.split(' ')[0]}
+                </button>
+              );
+            })}
+          </div>
+          {items.length > 1 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setItems((list) => list.filter((i) => i.key !== item.key))}
+            >
+              Remover item
+            </Button>
+          )}
+        </div>
+      ))}
+      <Button size="sm" variant="soft" onClick={() => setItems((list) => [...list, newItem()])}>
+        ＋ Item
+      </Button>
+      <p className={`text-sm ${extra < 0 ? 'font-bold text-danger' : 'text-muted'}`}>
+        {extra < 0
+          ? 'Os itens passam do valor da despesa.'
+          : extra > 0
+            ? `Sobram ${formatBRL(extra)} (taxa, gorjeta): rateados na proporção do que cada um consumiu.`
+            : 'Os itens fecham o valor da despesa.'}{' '}
+        Quem não marcou o item ainda pode marcar depois, na lista de despesas.
+      </p>
+    </fieldset>
+  );
+}
+
 const statusBadge = {
   approved: <Badge tone="ok">Aprovada</Badge>,
   pending: <Badge tone="warn">Aguardando Tesoureiro</Badge>,
@@ -250,6 +386,9 @@ function ExpenseItem({ expense: e, detail }: { expense: ExpenseDto; detail: Even
     invalidate,
     success: 'Nota anexada',
   });
+  const consume = useAction((itemId: string) => api.post(`/expense-items/${itemId}/consume`), {
+    invalidate,
+  });
 
   const active = event.status === 'confirmed';
   const openContest = e.contest && !e.contest.resolvedAt;
@@ -261,13 +400,49 @@ function ExpenseItem({ expense: e, detail }: { expense: ExpenseDto; detail: Even
           <p className="font-bold">{e.description}</p>
           <p className="text-sm text-muted">
             {e.paidBy.name} pagou · {CATEGORY_LABELS[e.category]} · divide:{' '}
-            {QUOTA_LABELS[e.quota].toLowerCase()}
-            {e.quota === 'custom' &&
+            {e.items.length > 0 ? 'por item' : QUOTA_LABELS[e.quota].toLowerCase()}
+            {e.items.length === 0 &&
+              e.quota === 'custom' &&
               ` (${e.customParticipants.map((p) => p.name.split(' ')[0]).join(', ')})`}
           </p>
         </div>
         <p className="shrink-0 text-lg font-extrabold">{formatBRL(e.amountCents)}</p>
       </div>
+
+      {e.items.length > 0 && (
+        <ul className="space-y-1.5 rounded-xl bg-desk p-3" aria-label="Itens da conta">
+          {e.items.map((item) => {
+            const mine = !!meId && item.consumers.some((c) => c.id === meId);
+            return (
+              <li key={item.id} className="flex items-center justify-between gap-2 text-sm">
+                <span className="min-w-0">
+                  <strong>{item.label}</strong> · {formatBRL(item.amountCents)}
+                  <span className="block truncate text-xs text-muted">
+                    {item.consumers.length > 0
+                      ? item.consumers.map((c) => c.name.split(' ')[0]).join(', ')
+                      : 'ninguém marcou ainda'}
+                  </span>
+                </span>
+                {active && e.status !== 'rejected' && me.can['expense.create'] && (
+                  <Button
+                    size="sm"
+                    variant={mine ? 'ghost' : 'soft'}
+                    onClick={() => consume.mutate(item.id)}
+                  >
+                    {mine ? 'Tirar meu nome' : 'Eu consumi'}
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+          {e.amountCents > e.items.reduce((s, i) => s + i.amountCents, 0) && (
+            <li className="text-xs text-muted">
+              Sobra de {formatBRL(e.amountCents - e.items.reduce((s, i) => s + i.amountCents, 0))}{' '}
+              (taxa, gorjeta) rateada pelo consumo.
+            </li>
+          )}
+        </ul>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {statusBadge[e.status]}

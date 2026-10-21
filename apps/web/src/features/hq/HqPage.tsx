@@ -5,6 +5,7 @@ import {
   IconArrowLeft,
   IconBell,
   IconBellOff,
+  IconCamera,
   IconCar,
   IconCart,
   IconClock,
@@ -20,6 +21,7 @@ import { useAction, useEventDetail } from '../../lib/queries';
 import { StatusTag } from '../events/shared';
 import { BaseTab } from './BaseTab';
 import { FleetTab } from './FleetTab';
+import { MuralTab } from './mural/MuralTab';
 import { SuppliesTab } from './SuppliesTab';
 import { TeamTab } from './TeamTab';
 import { VaultTab } from './VaultTab';
@@ -30,6 +32,7 @@ const TABS: { key: string; label: string; icon: ReactNode }[] = [
   { key: 'mercado', label: 'Mercado', icon: <IconCart size={18} /> },
   { key: 'frotas', label: 'Frotas', icon: <IconCar size={18} /> },
   { key: 'cofre', label: 'Cofre', icon: <IconWallet size={18} /> },
+  { key: 'mural', label: 'Mural', icon: <IconCamera size={18} /> },
 ];
 
 /** Quartel-General do Rolê: o dashboard de quem confirmou presença. */
@@ -124,7 +127,7 @@ export function HqPage() {
         aria-label="Seções do QG"
         className="sticky top-0 z-30 -mx-4 bg-desk/90 px-4 py-2 backdrop-blur lg:mx-0 lg:px-0"
       >
-        <div className="grid grid-cols-5 gap-1 rounded-xl border border-line bg-surface p-1">
+        <div className="grid grid-cols-6 gap-0.5 rounded-xl border border-line bg-surface p-1 sm:gap-1">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -156,6 +159,7 @@ export function HqPage() {
         {tab === 'mercado' && <SuppliesTab detail={data} />}
         {tab === 'frotas' && <FleetTab detail={data} />}
         {tab === 'cofre' && <VaultTab detail={data} />}
+        {tab === 'mural' && <MuralTab detail={data} />}
       </div>
     </div>
   );

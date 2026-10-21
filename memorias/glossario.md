@@ -41,3 +41,10 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Aparelho conectado** | Uma sessão ativa da conta (ex.: "Chrome no Android"), que a pessoa pode desconectar. |
 | **Central da conta** | Área `/perfil`: dados pessoais, avisos, segurança e privacidade. |
 | **Quarto / Cama** | Espaço da casa com camas; cada confirmado pega uma, com a trava do sinal. |
+| **Enquete** | Votação de datas e lugares antes da proposta; a opção vencedora vira o rolê. |
+| **Tropa** | Grupo fixo de amigos que o Idealizador chama de uma vez para um rolê novo. |
+| **Pix copia e cola** | Código gerado pelo app com chave e valor certos; o pagamento acontece no banco, fora do app. |
+| **Conta por item** | Despesa dividida item a item, só entre quem consumiu. |
+| **Mural** | Aba do QG com fotos, bagagem, trilha, agenda e atalhos (relatório, repetir rolê). |
+| **Relatório de Missão** | Cartão compartilhável com os números do rolê, sem saldo individual. |
+| **Andorinha confiável** | Selo discreto, visível só ao Idealizador, para quem tem histórico limpo de sinal e acerto. |

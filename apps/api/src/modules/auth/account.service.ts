@@ -2,6 +2,7 @@ import type { AccountExport } from '@role/contracts';
 import type { AppContext } from '../../context';
 import { conflict } from '../../errors';
 import { audit } from '../../lib/audit';
+import { removeUserPhotos } from '../memories/memories.service';
 import { getProfile } from './auth.service';
 
 /** LGPD: tudo o que o app guarda sobre a pessoa, em formato legível por máquina. */
@@ -124,8 +125,19 @@ export async function deleteAccount(ctx: AppContext, userId: string): Promise<vo
     .where('user_id', '=', userId)
     .execute();
   for (const p of proofs) await ctx.storage.remove(p.file_key).catch(() => undefined);
+  await removeUserPhotos(ctx, userId);
 
   await ctx.db.transaction().execute(async (trx) => {
+    // Vida social do app: enquetes e tropas que a pessoa criou somem; votos, bagagem pessoal e
+    // sugestões de música saem junto. Os lançamentos financeiros (inclusive conta por item) ficam.
+    await trx.deleteFrom('poll_votes').where('user_id', '=', userId).execute();
+    await trx.deleteFrom('polls').where('organizer_id', '=', userId).execute();
+    await trx.deleteFrom('crews').where('owner_id', '=', userId).execute();
+    await trx.deleteFrom('crew_members').where('user_id', '=', userId).execute();
+    await trx.deleteFrom('packing_checks').where('user_id', '=', userId).execute();
+    await trx.deleteFrom('packing_items').where('owner_id', '=', userId).execute();
+    await trx.deleteFrom('track_votes').where('user_id', '=', userId).execute();
+    await trx.deleteFrom('tracks').where('user_id', '=', userId).execute();
     await trx.deleteFrom('deposit_proofs').where('user_id', '=', userId).execute();
     await trx.deleteFrom('notifications').where('user_id', '=', userId).execute();
     await trx.deleteFrom('event_mutes').where('user_id', '=', userId).execute();

@@ -4,6 +4,7 @@ import type {
   EventStatus,
   NotificationCategory,
   Quota,
+  Reliability,
   RoleKey,
   SupplyCategory,
 } from '@role/domain';
@@ -97,6 +98,8 @@ export interface RosterEntry {
   diet: Diet;
   depositStatus: DepositStatus;
   roles: RoleKey[];
+  /** "Andorinha confiável" ou "primeira vez": só o Idealizador recebe (nos demais é sempre nulo). */
+  reliability: Reliability;
 }
 
 export interface DepositConfig {
@@ -137,6 +140,13 @@ export interface ExpenseContest {
   resolution: string | null;
 }
 
+export interface ExpenseItemDto {
+  id: string;
+  label: string;
+  amountCents: number;
+  consumers: PublicUser[];
+}
+
 export interface ExpenseDto {
   id: string;
   description: string;
@@ -144,6 +154,8 @@ export interface ExpenseDto {
   amountCents: number;
   quota: Quota;
   customParticipants: PublicUser[];
+  /** Conta por item (vazio nas demais despesas). */
+  items: ExpenseItemDto[];
   paidBy: PublicUser;
   status: ExpenseStatus;
   rejectReason: string | null;
@@ -196,6 +208,8 @@ export interface NotificationDto {
   title: string;
   body: string;
   eventId: string | null;
+  /** Rota do app para onde o aviso leva; nulo: abre o QG do rolê (ou nada). */
+  link: string | null;
   createdAt: string;
   readAt: string | null;
 }
@@ -316,4 +330,141 @@ export interface RefundsDto {
   /** O Tesoureiro vê todos; os demais veem só a própria linha. */
   canManage: boolean;
   items: RefundDto[];
+}
+
+/* ------------------------------- Enquetes, tropa e mural ------------------------------- */
+
+export interface PollOptionDto {
+  id: string;
+  label: string;
+  destination: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  votes: number;
+  votedByMe: boolean;
+  /** Só para quem está logado. */
+  voters: PublicUser[];
+}
+
+export interface PollDto {
+  id: string;
+  code: string;
+  title: string;
+  status: 'open' | 'closed';
+  organizer: PublicUser;
+  options: PollOptionDto[];
+  winnerOptionId: string | null;
+  /** Opções na frente (mais de uma: empate). */
+  leaderOptionIds: string[];
+  totalVoters: number;
+  isOrganizer: boolean;
+  loggedIn: boolean;
+  /** Proposta criada a partir da enquete. */
+  event: { id: string; code: string } | null;
+  createdAt: string;
+  closedAt: string | null;
+}
+
+export interface PollSummaryDto {
+  id: string;
+  code: string;
+  title: string;
+  status: 'open' | 'closed';
+  totalVoters: number;
+  isOrganizer: boolean;
+  votedByMe: boolean;
+}
+
+export interface CrewDto {
+  id: string;
+  code: string;
+  name: string;
+  owner: PublicUser;
+  members: PublicUser[];
+  isOwner: boolean;
+}
+
+export interface CrewPreview {
+  code: string;
+  name: string;
+  owner: PublicUser;
+  memberCount: number;
+  /** Nulo se a pessoa não está logada. */
+  joined: boolean | null;
+}
+
+export interface PhotoDto {
+  id: string;
+  by: PublicUser;
+  createdAt: string;
+  mine: boolean;
+  canDelete: boolean;
+}
+
+export interface PhotosDto {
+  photos: PhotoDto[];
+  canAdd: boolean;
+  max: number;
+}
+
+export interface PackingItemDto {
+  id: string;
+  label: string;
+  scope: 'group' | 'mine';
+  checked: boolean;
+  canDelete: boolean;
+}
+
+export interface PackingDto {
+  items: PackingItemDto[];
+  doneCount: number;
+  canSuggest: boolean;
+}
+
+export interface TrackDto {
+  id: string;
+  title: string;
+  url: string | null;
+  by: PublicUser;
+  votes: number;
+  votedByMe: boolean;
+  canDelete: boolean;
+}
+
+export interface TracksDto {
+  playlistUrl: string | null;
+  canEditPlaylist: boolean;
+  tracks: TrackDto[];
+}
+
+export interface PixPaymentDto {
+  /** Texto do Pix copia e cola, já com o valor. */
+  payload: string;
+  amountCents: number;
+  payee: PublicUser;
+  /** Chave como cadastrada (para conferir antes de pagar). */
+  key: string;
+}
+
+export interface MissionReportDto {
+  event: {
+    id: string;
+    title: string;
+    destination: string;
+    startDate: string;
+    endDate: string | null;
+  };
+  /** A conta já foi fechada: os números não mudam mais. */
+  final: boolean;
+  days: number;
+  headcount: number;
+  totalCents: number;
+  perHeadCents: number;
+  perDayPerHeadCents: number;
+  expenseCount: number;
+  topPayer: { user: PublicUser; amountCents: number } | null;
+  biggestExpense: { description: string; amountCents: number } | null;
+  topCategory: { category: string; cents: number } | null;
+  categories: { category: string; cents: number }[];
+  participants: PublicUser[];
 }

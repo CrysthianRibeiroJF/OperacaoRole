@@ -2,7 +2,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
-import { IconBell, IconKey, IconReceipt, IconUser, Swallow } from '../../components/icons';
+import {
+  IconBell,
+  IconKey,
+  IconReceipt,
+  IconUser,
+  IconUsers,
+  Swallow,
+} from '../../components/icons';
 import { Avatar, Skeleton } from '../../components/misc';
 import { api } from '../../lib/api';
 import { formatPhone } from '../../lib/format';
@@ -98,6 +105,12 @@ export function AccountHub() {
           icon={<IconUser size={20} />}
           title="Dados pessoais"
           hint={profile.pixKey ? 'Nome e chave Pix cadastrada' : 'Cadastre sua chave Pix'}
+        />
+        <Row
+          to="/tropas"
+          icon={<IconUsers size={20} />}
+          title="Minhas tropas"
+          hint="Grupos fixos de amigos para chamar de uma vez"
         />
         <Row
           to="/perfil/avisos"

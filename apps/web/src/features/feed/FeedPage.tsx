@@ -1,9 +1,9 @@
-import type { FeedItem } from '@role/contracts';
+import type { FeedItem, PollSummaryDto } from '@role/contracts';
 import { Link } from 'react-router-dom';
-import { IconClock, IconPlus, Swallow } from '../../components/icons';
-import { Countdown, EmptyState, ErrorState, Spinner } from '../../components/misc';
+import { IconClock, IconPlus, IconUsers, Swallow } from '../../components/icons';
+import { Badge, Countdown, EmptyState, ErrorState, Spinner } from '../../components/misc';
 import { formatBRL, formatEventDates } from '../../lib/format';
-import { useFeed, useSession } from '../../lib/queries';
+import { useFeed, usePolls, useSession } from '../../lib/queries';
 import { InstallBanner } from '../../components/InstallBanner';
 import { StatusTag, SwallowMeter, Ticket } from '../events/shared';
 
@@ -111,9 +111,52 @@ function Section({ title, items }: { title: string; items: FeedItem[] }) {
   );
 }
 
+/** Enquetes em andamento (ou encerradas e ainda sem proposta): o próximo passo de cada uma está à vista. */
+function PollsSection({ polls }: { polls: PollSummaryDto[] }) {
+  if (polls.length === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="eyebrow flex items-center gap-2 !font-medium !text-ink">
+        Enquetes
+        <span className="mono rounded-full bg-ink px-1.5 text-[11px] leading-5 text-surface">
+          {polls.length}
+        </span>
+      </h2>
+      <ul className="space-y-2">
+        {polls.map((p) => (
+          <li key={p.id}>
+            <Link
+              to={`/enquete/${p.code}`}
+              className="card flex items-center justify-between gap-3 p-4 transition-transform active:translate-y-px"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-bold">{p.title}</p>
+                <p className="text-sm text-muted">
+                  {p.totalVoters === 0
+                    ? 'Ninguém votou ainda'
+                    : `${p.totalVoters} ${p.totalVoters === 1 ? 'voto' : 'votos'}`}
+                  {p.isOrganizer && ' · você criou'}
+                </p>
+              </div>
+              {p.status === 'closed' ? (
+                <Badge tone="ok">Lançar proposta</Badge>
+              ) : p.votedByMe || p.isOrganizer ? (
+                <Badge tone="info">Aberta</Badge>
+              ) : (
+                <Badge tone="sun">Falta votar</Badge>
+              )}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function FeedPage() {
   const { data: session } = useSession();
   const { data, isPending, isError, refetch } = useFeed();
+  const polls = usePolls();
 
   return (
     <div className="space-y-7">
@@ -135,7 +178,24 @@ export function FeedPage() {
         </Link>
       </header>
 
+      <nav aria-label="Atalhos" className="-mt-3 flex flex-wrap gap-2">
+        <Link
+          to="/enquete/nova"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-navy-soft px-3 text-sm font-bold text-navy-dark hover:brightness-95"
+        >
+          Criar enquete
+        </Link>
+        <Link
+          to="/tropas"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-navy-soft px-3 text-sm font-bold text-navy-dark hover:brightness-95"
+        >
+          <IconUsers size={16} /> Minhas tropas
+        </Link>
+      </nav>
+
       <InstallBanner />
+
+      {polls.data && <PollsSection polls={polls.data} />}
 
       {isPending && <Spinner />}
       {isError && (

@@ -3,6 +3,7 @@ import {
   budgetSchema,
   createEventSchema,
   preferencesSchema,
+  repeatEventSchema,
   respondSchema,
   transferOrganizerSchema,
 } from '@role/contracts';
@@ -20,9 +21,16 @@ import {
   transferOrganizer,
   updateBudget,
 } from './event.service';
+import { repeatEvent } from './repeat.service';
 
 export async function eventRoutes(app: FastifyInstance) {
   const { ctx } = app;
+
+  app.post<{ Params: { id: string } }>('/events/:id/repeat', async (req, reply) => {
+    const userId = await requireUser(req);
+    const card = await repeatEvent(ctx, userId, req.params.id, parse(repeatEventSchema, req.body));
+    return reply.code(201).send(card);
+  });
 
   app.post('/events', async (req, reply) => {
     const userId = await requireUser(req);

@@ -2,6 +2,7 @@ import type { EventDetail } from '@role/contracts';
 import { CopyButton, Countdown } from '../../../components/misc';
 import { IconCheck, IconClip, IconClock } from '../../../components/icons';
 import { FileButton } from '../../../components/FileButton';
+import { PixPayButton } from '../../../components/PixPayButton';
 import { api } from '../../../lib/api';
 import { formatBRL, formatDateTime } from '../../../lib/format';
 import { eventKeys, useAction } from '../../../lib/queries';
@@ -80,12 +81,18 @@ export function DepositSection({ detail }: { detail: EventDetail }) {
             Pix e anexe o comprovante para garantir cama e lugar no carro.
           </p>
           {deposit.pixKey && (
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-desk p-3">
-              <div className="min-w-0">
-                <p className="text-xs font-extrabold uppercase text-muted">Chave Pix</p>
-                <p className="truncate font-bold">{deposit.pixKey}</p>
+            <div className="space-y-2.5 rounded-xl bg-desk p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-extrabold uppercase text-muted">Chave Pix</p>
+                  <p className="truncate font-bold">{deposit.pixKey}</p>
+                </div>
+                <CopyButton value={deposit.pixKey} label="Copiar chave" />
               </div>
-              <CopyButton value={deposit.pixKey} label="Copiar" />
+              <PixPayButton
+                path={`/events/${event.id}/deposit/pix`}
+                label="Pix com o valor pronto"
+              />
             </div>
           )}
           {deposit.deadlineAt && (

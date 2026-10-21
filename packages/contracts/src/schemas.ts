@@ -5,6 +5,8 @@ import {
   NOTIFICATION_CATEGORIES,
   PASSWORD_MAX,
   PASSWORD_PROBLEM_MESSAGES,
+  POLL_MAX_OPTIONS,
+  POLL_MIN_OPTIONS,
   QUORUM_DEFAULT,
   QUORUM_MAX,
   QUORUM_MIN,
@@ -109,6 +111,8 @@ export const createEventSchema = z
     requiresDeposit: z.boolean().default(false),
     depositCents: cents.optional(),
     pixKey: text(140).min(3).optional(),
+    /** Enquete encerrada que originou a proposta: avisa os votantes e liga os dois. */
+    pollId: z.string().min(1).optional(),
   })
   .refine((v) => !v.endDate || v.endDate >= v.startDate, {
     path: ['endDate'],
@@ -168,6 +172,13 @@ export const expenseCategorySchema = z.enum([
   'other',
 ]);
 
+/** Item da conta por item: o que foi pedido, quanto custou e quem consumiu. */
+export const expenseItemInputSchema = z.object({
+  label: text(60).min(1, 'Dê um nome ao item'),
+  amountCents: cents,
+  consumerIds: z.array(z.string()).max(50).default([]),
+});
+
 export const createExpenseSchema = z
   .object({
     description: text(120).min(2),
@@ -175,11 +186,19 @@ export const createExpenseSchema = z
     amountCents: cents,
     quota: quotaSchema,
     customParticipantIds: z.array(z.string()).max(50).optional(),
+    /** Conta por item. Vale no lugar da cota: o servidor guarda a despesa como "pessoas específicas". */
+    items: z.array(expenseItemInputSchema).min(1).max(30).optional(),
   })
-  .refine((v) => v.quota !== 'custom' || (v.customParticipantIds?.length ?? 0) > 0, {
+  .refine((v) => v.items || v.quota !== 'custom' || (v.customParticipantIds?.length ?? 0) > 0, {
     path: ['customParticipantIds'],
     message: 'Escolha quem divide esta despesa',
+  })
+  .refine((v) => !v.items || v.items.reduce((s, i) => s + i.amountCents, 0) <= v.amountCents, {
+    path: ['items'],
+    message: 'Os itens passam do valor da despesa',
   });
+
+export const toggleItemConsumerSchema = z.object({ userId: z.string().min(1).optional() });
 
 export const expenseReviewSchema = z
   .object({ decision: z.enum(['approve', 'reject']), reason: text(240).optional() })
@@ -234,6 +253,63 @@ export const roomSchema = z.object({
 export const roomUpdateSchema = roomSchema.partial();
 
 export const transferOrganizerSchema = z.object({ userId: z.string().min(1) });
+
+const httpUrl = z
+  .string()
+  .trim()
+  .max(300)
+  .url('Informe um link válido')
+  .refine((u) => /^https?:\/\//i.test(u), 'O link precisa começar com http:// ou https://');
+
+export const pollOptionSchema = z
+  .object({
+    label: text(60).min(2, 'Dê um nome à opção'),
+    destination: text(120).min(2).optional(),
+    startDate: isoDate.optional(),
+    endDate: isoDate.optional(),
+  })
+  .refine((v) => !v.endDate || (!!v.startDate && v.endDate >= v.startDate), {
+    path: ['endDate'],
+    message: 'A data final não pode ser antes da inicial',
+  });
+export const createPollSchema = z.object({
+  title: text(80).min(3, 'Dê um título à enquete'),
+  options: z
+    .array(pollOptionSchema)
+    .min(POLL_MIN_OPTIONS, 'Coloque ao menos 2 opções')
+    .max(POLL_MAX_OPTIONS, `No máximo ${POLL_MAX_OPTIONS} opções`),
+});
+export const pollVoteSchema = z.object({
+  optionIds: z.array(z.string().min(1)).max(POLL_MAX_OPTIONS),
+});
+export const pollCloseSchema = z.object({ optionId: z.string().min(1).optional() });
+
+export const crewSchema = z.object({ name: text(40).min(2, 'Dê um nome à tropa') });
+export const inviteCrewSchema = z.object({ crewId: z.string().min(1) });
+
+export const repeatEventSchema = z
+  .object({
+    startDate: isoDate,
+    endDate: isoDate.optional(),
+    title: text(80).min(3).optional(),
+    responseHours: z.number().int().min(1).max(168).default(48),
+    crewId: z.string().min(1).optional(),
+  })
+  .refine((v) => !v.endDate || v.endDate >= v.startDate, {
+    path: ['endDate'],
+    message: 'A data final não pode ser antes da inicial',
+  });
+
+export const packingItemSchema = z.object({
+  label: text(60).min(2, 'Escreva o item'),
+  scope: z.enum(['group', 'mine']),
+});
+export const packingCheckSchema = z.object({ checked: z.boolean() });
+export const trackSchema = z.object({
+  title: text(80).min(2, 'Informe a música'),
+  url: httpUrl.optional(),
+});
+export const playlistSchema = z.object({ url: httpUrl.nullable() });
 
 export const TRACKED_EVENTS = [
   'invite_viewed',

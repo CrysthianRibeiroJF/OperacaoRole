@@ -1,6 +1,6 @@
 # Cérebro da Operação Rolê
 
-Última atualização: 20/10/2026 · Fase: MVP e Fase 2 implementados; descoberta com usuários pendente
+Última atualização: 21/10/2026 · Fase: MVP, Fase 2 e Fase 3 (social e retenção) implementados; descoberta com usuários pendente
 
 Esta pasta guarda o que o projeto **sabe e decidiu**. Leia aqui antes de mexer no PRD ou no backlog.
 
@@ -23,6 +23,7 @@ Outros documentos: [PRD](../docs/PRD-Operacao-Role.md), [backlog](../docs/BACKLO
 - **Não validado ainda:** o problema e as metas numéricas (nenhuma pesquisa com usuários até agora).
 - **Pronto para produção técnica (D-027 a D-031):** um processo serve app e API, CI, termos provisórios com aceite, retenção de 90 dias, quartos e `npm run metrics`.
 - **Acesso interno (D-024 a D-026):** celular + senha, código de recuperação, aparelhos conectados, central da conta e avisos só dentro do app. Sem SMS, WhatsApp ou e-mail.
+- **Fase 3 no ar (D-037 a D-042):** enquete de data e local (com busca de lugares e previsão), Pix copia e cola, Relatório de Missão, repetir rolê, tropa, mural (fotos, bagagem, trilha), agenda .ics, conta por item e selo de confiança. Pendências: Q15 (selo e privacidade) e Q16 (retenção das fotos).
 - **Fase 2 no ar (D-020 a D-023):** Mercado, Frotas, orçamento, previsão do tempo, prévia de link e exclusão de conta.
 - **Decididas (D-009 a D-013):** sinal opcional, sem custódia, rolê confirmado não desconfirma, sorteio com teto de 2 cargos, PWA.
 - **Pendências que bloqueiam um lançamento público:** parecer jurídico do sinal e revisão dos termos (Q12 / ROL-004 / ROL-123) e contatos de privacidade.

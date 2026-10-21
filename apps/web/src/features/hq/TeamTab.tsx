@@ -1,6 +1,7 @@
 import type { EventDetail } from '@role/contracts';
 import { ROLE_LABELS, type RoleKey } from '@role/domain';
 import {
+  Swallow,
   IconBeer,
   IconCar,
   IconCart,
@@ -158,6 +159,22 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
                   {m.user.id === event.organizer.id && (
                     <span className="ml-1.5 text-xs font-extrabold text-navy-dark">
                       Idealizador
+                    </span>
+                  )}
+                  {m.reliability === 'trusted' && (
+                    <span
+                      className="ml-1.5 inline-flex items-center gap-1 rounded-md bg-ok-soft px-1.5 py-0.5 align-middle text-[11px] font-extrabold text-ok"
+                      title="Já foi a mais de um rolê, pagou o sinal e os acertos no prazo. Só você vê isso."
+                    >
+                      <Swallow size={11} /> confiável
+                    </span>
+                  )}
+                  {m.reliability === 'newcomer' && (
+                    <span
+                      className="ml-1.5 rounded-md bg-desk-deep px-1.5 py-0.5 align-middle text-[11px] font-extrabold text-muted"
+                      title="Primeiro rolê dessa pessoa no app. Só você vê isso."
+                    >
+                      primeira vez
                     </span>
                   )}
                 </p>

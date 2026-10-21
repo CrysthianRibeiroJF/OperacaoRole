@@ -66,8 +66,10 @@ type Daily = {
   wind_speed_10m_max?: number[];
 };
 
-export async function fetchForecast(
-  destination: string,
+/** Previsão por coordenadas (já sabemos o lugar: veio da busca de lugares). */
+export async function fetchForecastAt(
+  latitude: number,
+  longitude: number,
   start: string,
   end: string | null,
   signal?: AbortSignal,
@@ -77,18 +79,8 @@ export async function fetchForecast(
   const init: RequestInit = signal ? { signal } : {};
 
   try {
-    const city = destination.split(',')[0]!.trim();
-    const geo = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=pt&countryCode=BR`,
-      init,
-    );
-    if (!geo.ok) return { status: 'unavailable' };
-    const place = ((await geo.json()) as { results?: { latitude: number; longitude: number }[] })
-      .results?.[0];
-    if (!place) return { status: 'unavailable' };
-
     const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}` +
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
       `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max` +
       `&timezone=America%2FSao_Paulo&start_date=${window.from}&end_date=${window.to}`;
     const res = await fetch(url, init);
@@ -111,6 +103,33 @@ export async function fetchForecast(
         };
       }),
     };
+  } catch {
+    return { status: 'unavailable' };
+  }
+}
+
+/** Previsão a partir do nome do destino ("Maresias, SP"): geocodifica a cidade e consulta o provedor. */
+export async function fetchForecast(
+  destination: string,
+  start: string,
+  end: string | null,
+  signal?: AbortSignal,
+): Promise<Forecast> {
+  const window = forecastWindow(start, end, new Date());
+  if ('status' in window) return window;
+  const init: RequestInit = signal ? { signal } : {};
+
+  try {
+    const city = destination.split(',')[0]!.trim();
+    const geo = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=pt&countryCode=BR`,
+      init,
+    );
+    if (!geo.ok) return { status: 'unavailable' };
+    const place = ((await geo.json()) as { results?: { latitude: number; longitude: number }[] })
+      .results?.[0];
+    if (!place) return { status: 'unavailable' };
+    return fetchForecastAt(place.latitude, place.longitude, start, end, signal);
   } catch {
     return { status: 'unavailable' };
   }

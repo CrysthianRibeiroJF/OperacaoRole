@@ -26,4 +26,6 @@ Uma entrada por fonte, com data, o que foi observado (fatos, não interpretaçã
 
 ## Entradas
 
-*(nenhuma ainda)*
+### AP-001 · Local da enquete deve usar a busca e mostrar o tempo · 2026-10-21 · Fonte: feedback do dono do produto
+**Observado:** ao descrever a enquete, o pedido foi que, ao escolher o local, já houvesse a busca de lugares e a previsão do tempo na hora, e não só depois do rolê criado.
+**Implicação:** o campo de destino ganhou autocomplete (Open-Meteo) e a previsão aparece ao lado das datas, na enquete, em "Lançar um rolê" e em "Repetir esse rolê" (D-037). Vale testar com usuários se a previsão realmente pesa na escolha.

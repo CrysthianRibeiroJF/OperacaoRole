@@ -17,6 +17,7 @@ import {
   IconCheck,
   IconMedal,
   IconReceipt,
+  IconUsers,
   IconWallet,
   Swallow,
 } from '../../components/icons';
@@ -33,6 +34,7 @@ const CATEGORY_ICON: Record<NotificationCategory, ReactNode> = {
   fleet: <IconCar size={20} />,
   expenses: <IconReceipt size={20} />,
   settlement: <IconCheck size={20} />,
+  social: <IconUsers size={20} />,
 };
 
 type FilterKey = 'all' | 'unread' | NotificationCategory;
@@ -180,6 +182,14 @@ function NotificationItem({ n, onOpen }: { n: NotificationDto; onOpen: () => voi
       </div>
     </div>
   );
+  // Avisos de enquete e tropa levam à própria tela; os demais, à aba certa do QG.
+  if (n.link) {
+    return (
+      <Link to={n.link} onClick={onOpen}>
+        {body}
+      </Link>
+    );
+  }
   if (!n.eventId) return <div onClick={onOpen}>{body}</div>;
   return (
     <Link to={`/role/${n.eventId}?aba=${tabForKind(n.kind)}`} onClick={onOpen}>

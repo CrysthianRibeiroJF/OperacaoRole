@@ -23,11 +23,16 @@ afterEach(async () => {
   await env.ctx.db.destroy();
 });
 
-/** Rotas que precisam responder sem sessão (convite público, entrada, telemetria, saúde). */
+/**
+ * Rotas que precisam responder sem sessão (convite, enquete e prévia da tropa em modo leitura,
+ * entrada, telemetria, saúde). Votar, entrar na tropa e criar continuam exigindo conta.
+ */
 const PUBLIC = new Set([
   'GET /api/health',
   'GET /api/session',
   'GET /api/invites/:code',
+  'GET /api/polls/:code',
+  'GET /api/crews/code/:code',
   'POST /api/auth/register',
   'POST /api/auth/login',
   'POST /api/auth/recover',

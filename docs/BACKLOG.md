@@ -309,6 +309,45 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 
 ---
 
+## E13 — Social e retenção (D-037 a D-042)
+
+### ROL-130 · Enquete de data e local com previsão do tempo · P1 · 5 pts · Dep: ROL-030, ROL-111 · **Feito ✅**
+Busca de lugares com autocomplete, previsão por opção, voto múltiplo, desempate do Idealizador e proposta já preenchida. RN-102 a RN-104.
+
+### ROL-131 · Pix copia e cola com o valor do acerto e do sinal · P1 · 3 pts · Dep: ROL-065, ROL-051 · **Feito ✅**
+BR Code com CRC16 validado contra o exemplo oficial do Banco Central. RN-105.
+
+### ROL-132 · Relatório de Missão compartilhável · P1 · 3 pts · Dep: ROL-065 · **Feito ✅**
+Cartão na tela e imagem PNG para compartilhar. RN-114.
+
+### ROL-133 · Repetir esse rolê · P1 · 3 pts · Dep: ROL-030, ROL-100, ROL-083 · **Feito ✅**
+RN-107.
+
+### ROL-134 · Tropa (grupo fixo) e "chamar a tropa" · P1 · 3 pts · Dep: ROL-070 · **Feito ✅**
+Entrada por link, com consentimento. RN-106.
+
+### ROL-135 · Mural de fotos · P1 · 3 pts · Dep: ROL-122 · **Feito ✅**
+RN-110. Pendente: política de retenção das fotos (Q16).
+
+### ROL-136 · Bagagem pessoal e do grupo · P2 · 2 pts · Dep: ROL-081 · **Feito ✅**
+RN-111.
+
+### ROL-137 · Trilha do rolê (playlist e votação) · P2 · 2 pts · Dep: ROL-081 · **Feito ✅**
+RN-112.
+
+### ROL-138 · Agenda (.ics) · P2 · 1 pt · Dep: ROL-033 · **Feito ✅**
+
+### ROL-139 · Selo "Andorinha confiável" (só Idealizador) · P2 · 3 pts · Dep: ROL-053, ROL-065 · **Feito ✅**
+RN-113. Depende da revisão de privacidade (Q15).
+
+### ROL-140 · Conta por item · P1 · 5 pts · Dep: ROL-062, ROL-064 · **Feito ✅**
+RN-108 e RN-109. Teste de invariante com soma dos saldos igual a zero.
+
+### ROL-141 · Dividir só com quem participou · P1 · 0 pt · **Já existia ✅**
+É a cota "Pessoas específicas" (ROL-062), com atalho por ocupantes do carro.
+
+---
+
 ## E12 — Qualidade, segurança e lançamento
 
 ### ROL-120 · Suíte de testes de regras de negócio (quórum, rateio, permissões) · P0 · 5 pts · Dep: ROL-033, ROL-064, ROL-040 · **Feito ✅**
@@ -346,5 +385,6 @@ Wi-Fi, código do cadeado, check-out, regras críticas.
 | S7 | QG e qualidade | ROL-080 a 082, ROL-120 a 125 |
 | Beta | Lançamento fechado | ROL-124 |
 | Fase 2 | P1 | E9, E10, E11 e ROL-055, 074, 083 |
+| Fase 3 | Social e retenção | E13 (ROL-130 a 141) |
 
 **Caminho crítico:** ROL-003/004 → ROL-011 → ROL-030 → ROL-033 → ROL-050 → ROL-052 → ROL-062 → ROL-065. Qualquer atraso em Q1, Q2 ou Q3 trava a cadeia de sinal, rateio e cancelamento.
