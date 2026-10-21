@@ -5,6 +5,9 @@ import {
   NOTIFICATION_CATEGORIES,
   PASSWORD_MAX,
   PASSWORD_PROBLEM_MESSAGES,
+  MAX_ADULT_COMPANIONS,
+  MAX_CAPACITY,
+  MAX_CHILDREN_HARD,
   POLL_MAX_OPTIONS,
   POLL_MIN_OPTIONS,
   QUORUM_DEFAULT,
@@ -248,11 +251,18 @@ export const cargoCreateSchema = z.object({
 });
 export const cargoMoveSchema = z.object({ vehicleId: z.string().nullable() });
 
-export const roomSchema = z.object({
+const roomBase = z.object({
   name: text(40).min(2, 'Dê um nome ao quarto'),
-  beds: z.number().int().min(1).max(12),
+  /** Camas de solteiro. */
+  beds: z.number().int().min(0).max(12),
+  /** Camas de casal: só um par de adultos da mesma confirmação ocupa. */
+  doubleBeds: z.number().int().min(0).max(6).default(0),
 });
-export const roomUpdateSchema = roomSchema.partial();
+export const roomSchema = roomBase.refine((v) => v.beds + v.doubleBeds >= 1, {
+  path: ['beds'],
+  message: 'O quarto precisa de ao menos uma cama',
+});
+export const roomUpdateSchema = roomBase.partial();
 
 export const transferOrganizerSchema = z.object({ userId: z.string().min(1) });
 
@@ -320,6 +330,22 @@ export const stopUpdateSchema = stopSchema.partial();
 export const ridePlanSchema = z.object({
   mode: z.enum(RIDE_PLAN_MODES).nullable(),
   estCents: z.number().int().min(0).max(100_000_00).nullable().optional(),
+});
+
+/** Acompanhante: só para este rolê, sem conta. Criança não bebe e é isenta. */
+export const companionInputSchema = z.object({
+  name: text(40).min(1, 'Informe o nome'),
+  kind: z.enum(['adult', 'child']),
+  drinksAlcohol: z.boolean().default(false),
+  diet: z.enum(['omnivore', 'vegetarian']).default('omnivore'),
+});
+export const setCompanionsSchema = z.object({
+  companions: z.array(companionInputSchema).max(MAX_ADULT_COMPANIONS + MAX_CHILDREN_HARD),
+});
+export const partyRulesSchema = z.object({
+  allowCompanions: z.boolean(),
+  maxChildren: z.number().int().min(0).max(MAX_CHILDREN_HARD),
+  capacity: z.number().int().min(1).max(MAX_CAPACITY).nullable(),
 });
 
 export const packingItemSchema = z.object({

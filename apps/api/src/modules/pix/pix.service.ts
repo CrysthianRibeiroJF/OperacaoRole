@@ -2,7 +2,14 @@ import type { PixPaymentDto } from '@role/contracts';
 import { buildPixPayload, can } from '@role/domain';
 import type { AppContext } from '../../context';
 import { conflict, forbidden, notFound } from '../../errors';
-import { buildActor, getTreasurerId, requireEvent, usersById } from '../events/event.queries';
+import {
+  buildActor,
+  getTreasurerId,
+  loadParties,
+  partyOf,
+  requireEvent,
+  usersById,
+} from '../events/event.queries';
 
 /** Cidade do BR Code: o trecho do destino antes da vírgula ("Maresias, SP" vira "Maresias"). */
 const cityOf = (destination: string) => destination.split(',')[0] ?? destination;
@@ -72,6 +79,9 @@ export async function getDepositPix(
     throw conflict('NO_DEPOSIT', 'Este rolê não tem sinal');
   }
   const treasurerId = await getTreasurerId(ctx.db, event);
+  // O sinal é por cota: quem leva acompanhante adulto paga por dois.
+  const units = partyOf(await loadParties(ctx.db, eventId), userId).units;
+  const amountCents = event.deposit_cents * units;
   const payee = (await usersById(ctx.db, [treasurerId])).get(treasurerId) ?? {
     id: treasurerId,
     name: 'Tesoureiro',
@@ -81,10 +91,10 @@ export async function getDepositPix(
       key: event.deposit_pix_key,
       merchantName: payee.name,
       merchantCity: cityOf(event.destination),
-      amountCents: event.deposit_cents,
+      amountCents,
       txid: `SINAL${event.code}`,
     }),
-    amountCents: event.deposit_cents,
+    amountCents,
     payee,
     key: event.deposit_pix_key,
   };

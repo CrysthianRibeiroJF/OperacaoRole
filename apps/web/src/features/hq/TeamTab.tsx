@@ -17,6 +17,8 @@ import { useState } from 'react';
 import type { PublicUser } from '@role/contracts';
 import { api } from '../../lib/api';
 import { eventKeys, useAction } from '../../lib/queries';
+import { CompanionsCard } from './party/CompanionsCard';
+import { PartyRulesCard } from './party/PartyRulesCard';
 
 const ROLE_INFO: Record<
   RoleKey,
@@ -147,8 +149,14 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
         })}
       </section>
 
+      {me.participation === 'in' && <CompanionsCard detail={detail} />}
+      {me.isOrganizer && <PartyRulesCard detail={detail} />}
+
       <section className="space-y-3">
-        <h2>A tropa ({roster.length})</h2>
+        <h2>
+          A tropa ({roster.length}
+          {event.peopleCount > roster.length && ` · ${event.peopleCount} pessoas`})
+        </h2>
         <ul className="card divide-y divide-line">
           {roster.map((m) => (
             <li key={m.user.id} className="flex items-center gap-3 p-3.5">
@@ -178,6 +186,14 @@ export function TeamTab({ detail }: { detail: EventDetail }) {
                     </span>
                   )}
                 </p>
+                {m.companions.length > 0 && (
+                  <p className="text-xs text-muted">
+                    com{' '}
+                    {m.companions
+                      .map((c) => (c.kind === 'child' ? `${c.name} (criança)` : c.name))
+                      .join(', ')}
+                  </p>
+                )}
                 <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
                   {m.roles.map((role) => (
                     <span key={role} className="inline-flex items-center gap-1">

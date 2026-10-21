@@ -361,8 +361,8 @@ RN-117 e RN-118. Substitui o que faltava em ROL-094.
 ### ROL-153 · Plano de transporte (app ou conta própria) com estimativa informativa · P1 · 2 pts · Dep: ROL-091 · **Feito ✅**
 RN-119 e RN-120.
 
-### ROL-154 · Acompanhantes: casal, cama de casal e cota em dobro · P1 · 8 pts → quebrar · Dep: Q17 · **A fazer**
-Aguarda decisão sobre quórum, sinal e cotas (Q17). Toca rateio, quartos, carros e a invariante dos saldos.
+### ROL-154 · Acompanhantes: casal, crianças, cota em dobro e cama de casal · P1 · 8 pts → quebrar · Dep: Q17 · **Feito ✅**
+D-045 e RN-124 a RN-130. Rateio por cota (invariante dos saldos testada em 300 cenários), sinal por cota com trava, limites e capacidade da casa, lugares nos carros e camas de casal. Pendente: Q18 (dados de crianças).
 
 ---
 

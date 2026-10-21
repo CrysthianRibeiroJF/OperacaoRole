@@ -10,11 +10,27 @@ import {
   effectiveDepositStatus,
   getParticipation,
   getTreasurerId,
+  loadParties,
+  partyOf,
   requireEvent,
   usersById,
   type EventRow,
+  type PartyInfo,
 } from '../events/event.queries';
 import { notify } from '../notifications/notifications.service';
+
+/**
+ * Lugares ocupados num carro: cada passageiro com os acompanhantes dele (criança também ocupa lugar)
+ * e os acompanhantes do motorista. O próprio motorista não conta: `seats` são os lugares de passageiro.
+ */
+export function occupiedSeats(
+  driverId: string,
+  passengerIds: readonly string[],
+  parties: ReadonlyMap<string, PartyInfo>,
+): number {
+  const driverCompanions = partyOf(parties, driverId).companions.length;
+  return passengerIds.reduce((sum, id) => sum + partyOf(parties, id).heads, driverCompanions);
+}
 
 function assertActive(event: EventRow) {
   if (event.status !== 'confirmed') {
@@ -72,6 +88,7 @@ export async function getFleet(
       .execute(),
     confirmedUserIds(ctx.db, eventId),
   ]);
+  const parties = await loadParties(ctx.db, eventId);
   const users = await usersById(ctx.db, [
     ...vehicles.map((v) => v.driver_id),
     ...passengers.map((p) => p.user_id),
@@ -94,10 +111,22 @@ export async function getFleet(
       departurePlace: v.departure_place,
       departureTime: v.departure_time,
       seats: v.seats,
-      freeSeats: Math.max(0, v.seats - pax.length),
+      freeSeats: Math.max(
+        0,
+        v.seats -
+          occupiedSeats(
+            v.driver_id,
+            pax.map((p) => p.user_id),
+            parties,
+          ),
+      ),
+      driverCompanions: partyOf(parties, v.driver_id).companions.length,
       cargoCapacity: v.cargo_capacity,
       cargoNote: v.cargo_note,
-      passengers: pax.map((p) => user(p.user_id)),
+      passengers: pax.map((p) => ({
+        ...user(p.user_id),
+        companions: partyOf(parties, p.user_id).companions.length,
+      })),
       cargo: load.map(toCargo),
       overloaded: load.length > v.cargo_capacity,
     };
@@ -146,6 +175,14 @@ export async function createVehicle(
       .where('driver_id', '=', userId)
       .executeTakeFirst();
     if (existing) throw conflict('ALREADY_DRIVER', 'Você já cadastrou um carro neste rolê');
+
+    const mine = partyOf(await loadParties(trx, eventId), userId).companions.length;
+    if (input.seats < mine) {
+      throw conflict(
+        'SEATS_TOO_FEW',
+        `Seus ${mine} acompanhante(s) ocupam lugares do carro: informe ao menos ${mine} lugar(es).`,
+      );
+    }
 
     // Quem passa a dirigir deixa o assento de passageiro.
     await trx
@@ -197,15 +234,20 @@ export async function updateVehicle(
     throw forbidden('Só o motorista (ou o General da Frota) edita o carro');
   }
   if (patch.seats !== undefined) {
-    const count = await ctx.db
+    const riders = await ctx.db
       .selectFrom('vehicle_passengers')
-      .select((eb) => eb.fn.countAll<number>().as('n'))
+      .select('user_id')
       .where('vehicle_id', '=', vehicleId)
-      .executeTakeFirstOrThrow();
-    if (patch.seats < Number(count.n)) {
+      .execute();
+    const used = occupiedSeats(
+      vehicle.driver_id,
+      riders.map((r) => r.user_id),
+      await loadParties(ctx.db, event.id),
+    );
+    if (patch.seats < used) {
       throw conflict(
         'SEATS_TOO_FEW',
-        `Já há ${count.n} passageiro(s). Remova alguém antes de reduzir os lugares.`,
+        `Já há ${used} lugar(es) ocupado(s). Remova alguém antes de reduzir os lugares.`,
       );
     }
   }
@@ -282,12 +324,21 @@ async function seatUser(
       .executeTakeFirst();
     if (already?.vehicle_id === vehicleId) return; // idempotente
 
-    const taken = await trx
+    const riders = await trx
       .selectFrom('vehicle_passengers')
-      .select((eb) => eb.fn.countAll<number>().as('n'))
+      .select('user_id')
       .where('vehicle_id', '=', vehicleId)
-      .executeTakeFirstOrThrow();
-    if (Number(taken.n) >= vehicle.seats) throw conflict('NO_SEATS', 'Esse carro está lotado');
+      .execute();
+    const parties = await loadParties(trx, event.id);
+    const used = occupiedSeats(
+      vehicle.driver_id,
+      riders.map((r) => r.user_id),
+      parties,
+    );
+    // Quem tem acompanhante ocupa um lugar por pessoa (criança inclusa).
+    if (used + partyOf(parties, targetId).heads > vehicle.seats) {
+      throw conflict('NO_SEATS', 'Esse carro está lotado para a sua turma');
+    }
 
     // Troca de carro: libera o assento anterior.
     await trx

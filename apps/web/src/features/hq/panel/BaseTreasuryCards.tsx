@@ -37,7 +37,8 @@ export function BasePanelCard({ data }: { data: BasePanel }) {
           <h3 className="text-base">Quartos</h3>
           <p className="text-sm text-muted">
             {data.rooms.total} {data.rooms.total === 1 ? 'quarto' : 'quartos'}, {data.rooms.beds}{' '}
-            camas, {data.rooms.occupied} ocupadas.
+            camas de solteiro{data.rooms.doubleBeds > 0 && ` e ${data.rooms.doubleBeds} de casal`},{' '}
+            {data.rooms.occupied} confirmações alocadas.
           </p>
           {data.withoutBed.length > 0 && (
             <p className="text-sm">

@@ -13,6 +13,8 @@ import { audit } from '../../lib/audit';
 import {
   buildActor,
   confirmedUserIds,
+  loadParties,
+  partyOf,
   requireEvent,
   usersById,
   type EventRow,
@@ -297,18 +299,27 @@ export async function suggestSupplyList(
 
   const members = await ctx.db
     .selectFrom('participations')
-    .select(['drinks_alcohol', 'diet'])
+    .select(['user_id', 'drinks_alcohol', 'diet'])
     .where('event_id', '=', eventId)
     .where('response', '=', 'in')
     .execute();
+  // Cada pessoa conta: acompanhante adulto tem o próprio consumo e criança entra nas cabeças.
+  const parties = await loadParties(ctx.db, eventId);
+  const eaters = members.flatMap((m) => [
+    { drinks: m.drinks_alcohol === 1, diet: m.diet },
+    ...partyOf(parties, m.user_id)
+      .companions.filter((c) => c.kind === 'adult')
+      .map((c) => ({ drinks: c.drinks_alcohol === 1, diet: c.diet })),
+  ]);
+  const heads = members.reduce((sum, m) => sum + partyOf(parties, m.user_id).heads, 0);
   const start = new Date(`${event.start_date}T12:00:00Z`).getTime();
   const end = new Date(`${event.end_date ?? event.start_date}T12:00:00Z`).getTime();
   const days = Math.max(1, Math.round((end - start) / 86_400_000) + 1);
 
   const suggestions = suggestSupplies({
-    people: members.length,
-    drinkers: members.filter((m) => m.drinks_alcohol === 1).length,
-    vegetarians: members.filter((m) => m.diet === 'vegetarian').length,
+    people: heads,
+    drinkers: eaters.filter((e) => e.drinks).length,
+    vegetarians: eaters.filter((e) => e.diet === 'vegetarian').length,
     days,
   });
   const now = ctx.clock.now();

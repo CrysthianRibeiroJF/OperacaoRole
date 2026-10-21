@@ -118,8 +118,9 @@ export function RoomsCard({ detail }: { detail: EventDetail }) {
                     >
                       <Avatar user={p} size={42} />
                     </button>
-                    <span className="max-w-14 truncate text-[11px] font-bold">
+                    <span className="max-w-16 truncate text-[11px] font-bold">
                       {p.name.split(' ')[0]}
+                      {p.companions > 0 && ` +${p.companions}`}
                     </span>
                   </li>
                 ))}
@@ -132,10 +133,19 @@ export function RoomsCard({ detail }: { detail: EventDetail }) {
                     <span className="text-[11px] text-muted">Livre</span>
                   </li>
                 ))}
+                {Array.from({ length: r.freeDoubleBeds }, (_, i) => (
+                  <li key={`free-double-${i}`} className="flex flex-col items-center gap-1">
+                    <span
+                      className="h-[42px] w-[68px] rounded-xl border-2 border-dashed border-navy/50"
+                      aria-label="Cama de casal livre"
+                    />
+                    <span className="text-[11px] text-muted">Casal</span>
+                  </li>
+                ))}
               </ul>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {canJoin && !mine && r.freeBeds > 0 && (
+                {canJoin && !mine && (r.freeBeds > 0 || r.freeDoubleBeds > 0) && (
                   <Button
                     size="sm"
                     disabled={locked}
@@ -155,7 +165,7 @@ export function RoomsCard({ detail }: { detail: EventDetail }) {
                     Sair do quarto
                   </Button>
                 )}
-                {canManage && unassigned.length > 0 && r.freeBeds > 0 && (
+                {canManage && unassigned.length > 0 && (r.freeBeds > 0 || r.freeDoubleBeds > 0) && (
                   <AssignPicker
                     unassigned={unassigned}
                     onAssign={(userId) => assign.mutate({ id: r.id, userId })}
@@ -245,10 +255,11 @@ function RoomForm({
 }) {
   const [name, setName] = useState(room?.name ?? '');
   const [beds, setBeds] = useState(room?.beds ?? 2);
+  const [doubleBeds, setDoubleBeds] = useState(room?.doubleBeds ?? 0);
 
   const save = useAction(
     () => {
-      const body = { name: name.trim(), beds };
+      const body = { name: name.trim(), beds, doubleBeds };
       return room
         ? api.patch(`/rooms/${room.id}`, body)
         : api.post(`/events/${eventId}/rooms`, body);
@@ -277,13 +288,13 @@ function RoomForm({
           autoFocus
         />
       </Field>
-      <Field label="Quantas camas?">
+      <Field label="Camas de solteiro">
         <div className="flex items-center gap-3">
           <button
             type="button"
             className="grid size-11 place-items-center rounded-[10px] border-[1.5px] border-line text-xl font-bold"
             aria-label="Menos camas"
-            onClick={() => setBeds((b) => Math.max(1, b - 1))}
+            onClick={() => setBeds((b) => Math.max(0, b - 1))}
           >
             −
           </button>
@@ -298,7 +309,36 @@ function RoomForm({
           </button>
         </div>
       </Field>
-      <Button type="submit" block loading={save.isPending} disabled={name.trim().length < 2}>
+      <Field
+        label="Camas de casal"
+        hint="Só um casal (a mesma confirmação) ocupa. Sem cama de casal, o par usa duas de solteiro."
+      >
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="grid size-11 place-items-center rounded-[10px] border-[1.5px] border-line text-xl font-bold"
+            aria-label="Menos camas de casal"
+            onClick={() => setDoubleBeds((b) => Math.max(0, b - 1))}
+          >
+            −
+          </button>
+          <span className="mono w-8 text-center text-xl font-semibold">{doubleBeds}</span>
+          <button
+            type="button"
+            className="grid size-11 place-items-center rounded-[10px] border-[1.5px] border-line text-xl font-bold"
+            aria-label="Mais camas de casal"
+            onClick={() => setDoubleBeds((b) => Math.min(6, b + 1))}
+          >
+            +
+          </button>
+        </div>
+      </Field>
+      <Button
+        type="submit"
+        block
+        loading={save.isPending}
+        disabled={name.trim().length < 2 || beds + doubleBeds < 1}
+      >
         Salvar quarto
       </Button>
     </form>

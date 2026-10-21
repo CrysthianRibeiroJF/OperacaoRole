@@ -24,6 +24,7 @@ import { crewsRoutes } from './modules/crews/crews.routes';
 import { memoriesRoutes } from './modules/memories/memories.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { panelRoutes } from './modules/panel/panel.routes';
+import { partyRoutes } from './modules/party/party.routes';
 import { pixRoutes } from './modules/pix/pix.routes';
 import { pollsRoutes } from './modules/polls/polls.routes';
 import { reportRoutes } from './modules/report/report.routes';
@@ -185,6 +186,7 @@ export async function buildApp(
       await api.register(pixRoutes);
       await api.register(transportRoutes);
       await api.register(panelRoutes);
+      await api.register(partyRoutes);
       await api.register(accountRoutes);
       await api.register(telemetryRoutes);
     },

@@ -150,8 +150,8 @@ const biaCar = cars.find((c) => c.driver_id === bia);
 if (biaCar) await joinVehicle(ctx, ana, biaCar.id);
 
 // Quartos da Base (a Bia é a General da Base).
-await createRoom(ctx, bia, trip.id, { name: 'Suíte', beds: 2 });
-await createRoom(ctx, bia, trip.id, { name: 'Quarto do beliche', beds: 4 });
+await createRoom(ctx, bia, trip.id, { name: 'Suíte', beds: 2, doubleBeds: 0 });
+await createRoom(ctx, bia, trip.id, { name: 'Quarto do beliche', beds: 4, doubleBeds: 0 });
 const suite = await db
   .selectFrom('rooms')
   .select('id')

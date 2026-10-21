@@ -109,6 +109,9 @@ export function HqPage() {
             <IconPin size={16} /> {event.destination}
           </span>
           <span className="text-white/75">{formatEventDates(event.startDate, event.endDate)}</span>
+          {event.peopleCount > event.confirmedCount && (
+            <span className="text-white/75">{event.peopleCount} pessoas</span>
+          )}
         </p>
 
         {event.status === 'open' && (

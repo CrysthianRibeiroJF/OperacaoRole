@@ -24,7 +24,8 @@ export function DepositSection({ detail }: { detail: EventDetail }) {
         <h2>Sinal por Pix</h2>
         <p className="mt-2 text-muted">
           Este rolê vai pedir {deposit.amountCents ? formatBRL(deposit.amountCents) : 'um sinal'}{' '}
-          para garantir a vaga. A janela de pagamento abre quando o rolê for confirmado.
+          por pessoa (acompanhante adulto também paga; criança é isenta) para garantir a vaga. A
+          janela de pagamento abre quando o rolê for confirmado.
         </p>
       </section>
     );
@@ -77,8 +78,12 @@ export function DepositSection({ detail }: { detail: EventDetail }) {
             </p>
           )}
           <p className="text-muted">
-            Pague <strong className="text-ink">{formatBRL(deposit.amountCents ?? 0)}</strong> por
-            Pix e anexe o comprovante para garantir cama e lugar no carro.
+            Pague{' '}
+            <strong className="text-ink">
+              {formatBRL((deposit.amountCents ?? 0) * me.payingUnits)}
+            </strong>
+            {me.payingUnits > 1 && ` (${me.payingUnits} pessoas)`} por Pix e anexe o comprovante
+            para garantir cama e lugar no carro.
           </p>
           {deposit.pixKey && (
             <div className="space-y-2.5 rounded-xl bg-desk p-3">

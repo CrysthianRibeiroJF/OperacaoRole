@@ -3,7 +3,14 @@ import { buildIcs, buildMissionReport, can } from '@role/domain';
 import type { AppContext } from '../../context';
 import { conflict, forbidden } from '../../errors';
 import { formatBRL } from '../../lib/format';
-import { buildActor, confirmedUserIds, requireEvent, usersById } from '../events/event.queries';
+import {
+  buildActor,
+  confirmedUserIds,
+  loadParties,
+  partyTotals,
+  requireEvent,
+  usersById,
+} from '../events/event.queries';
 
 /**
  * Relatório de Missão: totais e curiosidades do rolê, sem saldo individual. Fica disponível com o
@@ -30,10 +37,12 @@ export async function getMissionReport(
       .execute(),
     confirmedUserIds(ctx.db, eventId),
   ]);
+  // O custo por cabeça divide pelas cotas que pagam (criança é isenta); "pessoas" mostra as cabeças.
+  const { heads, units } = partyTotals(memberIds, await loadParties(ctx.db, eventId));
   const report = buildMissionReport({
     startDate: event.start_date,
     endDate: event.end_date,
-    headcount: memberIds.length,
+    headcount: units,
     expenses: expenses.map((e) => ({
       description: e.description,
       category: e.category,
@@ -57,7 +66,8 @@ export async function getMissionReport(
     },
     final: event.status === 'closed',
     days: report.days,
-    headcount: report.headcount,
+    headcount: heads,
+    payingCount: report.headcount,
     totalCents: report.totalCents,
     perHeadCents: report.perHeadCents,
     perDayPerHeadCents: report.perDayPerHeadCents,

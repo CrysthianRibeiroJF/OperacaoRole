@@ -19,6 +19,8 @@ import {
   buildActor,
   effectiveDepositStatus,
   getTreasurerId,
+  loadParties,
+  partyOf,
   requireEvent,
   usersById,
   type EventRow,
@@ -47,16 +49,31 @@ async function compute(db: Db, event: EventRow): Promise<Computed> {
     .where('response', '=', 'in')
     .execute();
 
+  // Acompanhante adulto é mais uma cota, cobrada do responsável; criança é isenta (RN-124).
+  const parties = await loadParties(db, event.id);
   const windowOpen = !!event.deposit_opened_at;
   const roster = parts
     .filter((p) => !windowOpen || effectiveDepositStatus(event, p, treasurerId) === 'approved')
-    .map((p) => ({ userId: p.user_id, drinksAlcohol: p.drinks_alcohol === 1, diet: p.diet }));
+    .map((p) => ({
+      userId: p.user_id,
+      drinksAlcohol: p.drinks_alcohol === 1,
+      diet: p.diet,
+      companions: partyOf(parties, p.user_id).companions.map((c) => ({
+        kind: c.kind,
+        drinksAlcohol: c.drinks_alcohol === 1,
+        diet: c.diet,
+      })),
+    }));
 
+  // O sinal também é por cota: o responsável pagou por si e pelo acompanhante adulto.
   const deposits =
     windowOpen && event.deposit_cents
       ? parts
           .filter((p) => p.deposit_status === 'approved' && p.user_id !== treasurerId)
-          .map((p) => ({ userId: p.user_id, amountCents: event.deposit_cents! }))
+          .map((p) => ({
+            userId: p.user_id,
+            amountCents: event.deposit_cents! * partyOf(parties, p.user_id).units,
+          }))
       : [];
 
   const expenses = await db
@@ -102,6 +119,7 @@ async function compute(db: Db, event: EventRow): Promise<Computed> {
         .execute()
     : [];
   const eligible = new Set(roster.map((m) => m.userId));
+  const weights = new Map(roster.map((m) => [m.userId, partyOf(parties, m.userId).units]));
   const sharesFor = (expenseId: string, amountCents: number) => {
     const items = itemRows.filter((i) => i.expense_id === expenseId);
     if (items.length === 0) return undefined;
@@ -113,6 +131,7 @@ async function compute(db: Db, event: EventRow): Promise<Computed> {
           consumerIds: consumerRows.filter((c) => c.item_id === i.id).map((c) => c.user_id),
         })),
         eligible,
+        weights,
       ) ?? {}
     );
   };

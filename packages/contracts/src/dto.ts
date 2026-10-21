@@ -31,6 +31,20 @@ export interface PublicUser {
   name: string;
 }
 
+/** Acompanhante: só deste rolê, sem conta. O responsável paga pelo adulto; criança é isenta. */
+export interface CompanionDto {
+  id: string;
+  name: string;
+  kind: 'adult' | 'child';
+  drinksAlcohol: boolean;
+  diet: Diet;
+}
+
+/** Quem ocupa lugar ou cama, com os acompanhantes que vão junto. */
+export interface WithCompanions extends PublicUser {
+  companions: number;
+}
+
 export interface ProfileDto extends PublicUser {
   phone: string;
   pixKey: string | null;
@@ -55,6 +69,12 @@ export interface EventCard {
   depositCents: number | null;
   createdAt: string;
   confirmedAt: string | null;
+  /** Cabeças no rolê: confirmados mais acompanhantes. O quórum conta só os confirmados. */
+  peopleCount: number;
+  /** Cotas que pagam (responsável e acompanhante adulto); criança é isenta. */
+  payingCount: number;
+  /** Capacidade da casa em pessoas; nulo = sem limite. */
+  capacity: number | null;
 }
 
 export interface FeedItem extends EventCard {
@@ -70,6 +90,8 @@ export interface MyContext {
   depositStatus: DepositStatus;
   drinksAlcohol: boolean;
   diet: Diet;
+  /** Cotas que esta pessoa paga: ela e o acompanhante adulto. O sinal e a cota são por cota. */
+  payingUnits: number;
   can: Record<Action, boolean>;
 }
 
@@ -101,6 +123,7 @@ export interface RosterEntry {
   diet: Diet;
   depositStatus: DepositStatus;
   roles: RoleKey[];
+  companions: CompanionDto[];
   /** "Andorinha confiável" ou "primeira vez": só o Idealizador recebe (nos demais é sempre nulo). */
   reliability: Reliability;
 }
@@ -286,7 +309,9 @@ export interface VehicleDto {
   freeSeats: number;
   cargoCapacity: number;
   cargoNote: string | null;
-  passengers: PublicUser[];
+  /** Acompanhantes do motorista: ocupam lugares do carro. */
+  driverCompanions: number;
+  passengers: WithCompanions[];
   cargo: CargoDto[];
   overloaded: boolean;
 }
@@ -311,15 +336,19 @@ export interface AccountExport {
 export interface RoomDto {
   id: string;
   name: string;
+  /** Camas de solteiro. */
   beds: number;
   freeBeds: number;
-  occupants: PublicUser[];
+  /** Camas de casal: um par de adultos da mesma confirmação. */
+  doubleBeds: number;
+  freeDoubleBeds: number;
+  occupants: WithCompanions[];
 }
 
 export interface RoomsDto {
   rooms: RoomDto[];
   /** Confirmados que ainda não têm cama. */
-  unassigned: PublicUser[];
+  unassigned: WithCompanions[];
   myRoomId: string | null;
 }
 
@@ -460,7 +489,10 @@ export interface MissionReportDto {
   /** A conta já foi fechada: os números não mudam mais. */
   final: boolean;
   days: number;
+  /** Cabeças (com acompanhantes). */
   headcount: number;
+  /** Cotas que pagam: o custo por cabeça é dividido por elas. */
+  payingCount: number;
   totalCents: number;
   perHeadCents: number;
   perDayPerHeadCents: number;
@@ -579,7 +611,7 @@ export interface FleetPanel {
 export interface BasePanel {
   percent: number;
   info: { key: string; label: string; done: boolean }[];
-  rooms: { total: number; beds: number; occupied: number };
+  rooms: { total: number; beds: number; doubleBeds: number; occupied: number };
   withoutBed: PublicUser[];
 }
 
@@ -646,4 +678,29 @@ export interface PanelDto {
   base: BasePanel | null;
   treasury: TreasuryPanel | null;
   mine: MyPanel;
+}
+
+/* ------------------------------------ Acompanhantes e regras ------------------------------------ */
+
+export interface PartyRulesDto {
+  allowCompanions: boolean;
+  maxChildren: number;
+  capacity: number | null;
+}
+
+export interface PartyDto {
+  companions: CompanionDto[];
+  rules: PartyRulesDto;
+  /** Teto absoluto por confirmação. */
+  limits: { maxAdults: number; maxChildren: number };
+  payingUnits: number;
+  heads: number;
+  /** Cabeças do rolê inteiro e quanto ainda cabe na casa (nulo = sem limite). */
+  totalHeads: number;
+  capacityLeft: number | null;
+  /** Pode editar agora? Se não, o motivo (ex.: rolê encerrado). */
+  canEdit: boolean;
+  lockedReason: string | null;
+  /** Sinal já pago: só crianças podem mudar. */
+  adultsLocked: boolean;
 }

@@ -15,6 +15,8 @@ import {
   effectiveDepositStatus,
   getParticipation,
   getTreasurerId,
+  loadParties,
+  partyOf,
   requireEvent,
   usersById,
   type EventRow,
@@ -87,14 +89,23 @@ export async function openDepositWindowIfReady(
 
   const treasurerId = await getTreasurerId(db, event);
   const payers = (await confirmedUserIds(db, event.id)).filter((id) => id !== treasurerId);
-  await notify(db, now, {
-    userIds: payers,
-    eventId: event.id,
-    kind: 'deposit.window_opened',
-    title: 'Hora do sinal',
-    body: `Pague ${formatBRL(event.deposit_cents!)} no Pix e anexe o comprovante até ${fmtDateTime(deadline)}. Sem comprovante, a vaga vai para a fila de espera.`,
-    dedupeKey: `deposit.window_opened:${event.id}`,
-  });
+  // O sinal é por cota: quem leva acompanhante adulto paga por dois (criança é isenta).
+  const parties = await loadParties(db, event.id);
+  const byUnits = new Map<number, string[]>();
+  for (const id of payers) {
+    const units = partyOf(parties, id).units;
+    byUnits.set(units, [...(byUnits.get(units) ?? []), id]);
+  }
+  for (const [units, userIds] of byUnits) {
+    await notify(db, now, {
+      userIds,
+      eventId: event.id,
+      kind: 'deposit.window_opened',
+      title: 'Hora do sinal',
+      body: `Pague ${formatBRL(event.deposit_cents! * units)}${units > 1 ? ` (${units} pessoas)` : ''} no Pix e anexe o comprovante até ${fmtDateTime(deadline)}. Sem comprovante, a vaga vai para a fila de espera.`,
+      dedupeKey: `deposit.window_opened:${event.id}`,
+    });
+  }
   await scheduleDepositJobs(db, now, event, deadline);
   await audit(db, now, {
     eventId: event.id,

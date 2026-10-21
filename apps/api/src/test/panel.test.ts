@@ -342,7 +342,7 @@ describe('painel do Tesoureiro e da Base', () => {
       'wifi',
       'checkout',
     ]);
-    expect(b.rooms).toEqual({ total: 1, beds: 2, occupied: 1 });
+    expect(b.rooms).toEqual({ total: 1, beds: 2, doubleBeds: 0, occupied: 1 });
     expect(b.withoutBed.map((u: any) => u.name).sort()).toEqual(['Bia', 'Caio', 'Davi']);
   });
 });

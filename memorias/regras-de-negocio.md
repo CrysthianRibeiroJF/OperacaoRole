@@ -156,3 +156,13 @@ Regras precisas e testáveis. Cada regra tem um ID (`RN-xx`) para ser citada em 
 - **RN-121** Prontidão de uma área é percentual de 0 a 100; sem nada a medir conta 0, não "pronto". A geral é a média das áreas. Com o rolê ainda aberto só se mede a confirmação.
 - **RN-122** Acompanhamento pessoal (rolê confirmado): sinal pago (se exigido), definir como vai, escolher cama (se houver quartos), assumir um item (se houver lista com item livre) e montar a bagagem. Rolê aberto não cobra passos.
 - **RN-123** Ao excluir a conta somem os planos de transporte da pessoa.
+
+## Acompanhantes, cotas e camas de casal (D-045)
+
+- **RN-124** Acompanhante pertence à confirmação do responsável e só a este rolê: não tem conta. Só quem confirmou leva acompanhante, com o rolê aberto ou confirmado. Quem sai do rolê (ou exclui a conta) leva os acompanhantes junto.
+- **RN-125** O quórum (RN-01 a RN-07) conta só o responsável. A casa conta cabeças: responsável mais todos os acompanhantes, criança inclusa.
+- **RN-126** Cotas = responsável mais cada acompanhante adulto. A divisão das despesas é por cota: bebida só para quem bebe, carne e vegetariano pela dieta de cada pessoa, e o custo vai para a conta do responsável. Criança é isenta. "Pessoas específicas" e a conta por item escolhem confirmações e valem com o peso das cotas. O resto de centavos segue para o Tesoureiro (RN-37) e a soma dos saldos é zero (RN-40).
+- **RN-127** Limites: no máximo 1 acompanhante adulto; crianças até o teto do rolê (0 a 4, padrão 2); capacidade da casa opcional, em cabeças. Só o Idealizador define as regras. Não se desliga nem se aperta o limite abaixo do que já está em uso, nem a capacidade abaixo das cabeças confirmadas. Acompanhante que estoura a capacidade é recusado.
+- **RN-128** O sinal é por cota: o responsável paga `valor × cotas` (aviso, Pix e crédito no acerto). Depois que o sinal foi enviado ou aprovado, o número de adultos trava; crianças podem mudar. A devolução do sinal (rolê cancelado) acompanha as cotas. O Tesoureiro não paga sinal.
+- **RN-129** Carros: acompanhantes e crianças ocupam lugar (inclusive os do motorista). Não se cadastra carro com menos lugares que a própria turma, nem se reduz abaixo do ocupado, nem se muda a turma sem caber. Quartos: cada par de adultos da mesma confirmação usa uma cama de casal ou duas de solteiro; adulto sozinho nunca usa cama de casal; criança divide a cama de um adulto. Mudar a turma exige cama no quarto atual.
+- **RN-130** O orçamento por cabeça, o custo por cabeça do Relatório de Missão e a média do Tesouro dividem pelas cotas que pagam; "pessoas" mostra as cabeças. A lista de compras sugerida conta todas as cabeças (e o consumo de cada adulto).

@@ -32,7 +32,7 @@ Visão de como o MVP é montado e por quê. As decisões estão em [memorias/dec
 - **rooms** e **room_occupants** (uma cama por pessoa por rolê).
 - **supply_items** (lista de mercado, com vínculo opcional à despesa gerada), **vehicles**, **vehicle_passengers** (um lugar por pessoa por rolê) e **cargo_items** (bagagem por carro).
 - **notifications** (com chave de deduplicação e `link` opcional para a tela de destino), **event_mutes**.
-- **polls**, **poll_options**, **poll_votes** (enquete); **crews**, **crew_members** (tropa); **event_photos**, **packing_items**, **packing_checks**, **tracks**, **track_votes** (mural); **expense_items**, **expense_item_consumers** (conta por item). Migration 006. **meeting_points** (pontos de encontro e paradas) e **ride_plans** (app ou conta própria de quem não tem lugar no carro): migration 007.
+- **polls**, **poll_options**, **poll_votes** (enquete); **crews**, **crew_members** (tropa); **event_photos**, **packing_items**, **packing_checks**, **tracks**, **track_votes** (mural); **expense_items**, **expense_item_consumers** (conta por item). Migration 006. **meeting_points** (pontos de encontro e paradas) e **ride_plans** (app ou conta própria de quem não tem lugar no carro): migration 007. **companions** (acompanhantes ligados à confirmação, sem conta), regras do rolê em `events` (`capacity`, `max_children`, `allow_companions`) e `rooms.double_beds`: migration 008.
 - **jobs**: agendamentos que sobrevivem a reinícios. **audit_log**: trilha de quem fez o quê.
 
 Convenções: ids UUID em TEXT; datas ISO-8601 UTC em TEXT; dinheiro em centavos inteiros (INTEGER); booleanos 0/1. Tudo portável para PostgreSQL.

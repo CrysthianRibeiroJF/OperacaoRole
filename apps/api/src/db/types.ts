@@ -1,3 +1,5 @@
+import type { Generated } from 'kysely';
+
 /**
  * Tipos das tabelas (espelham as migrations).
  * Convenções: ids TEXT (UUID), datas TEXT ISO-8601 em UTC, booleanos INTEGER 0/1, dinheiro em centavos.
@@ -49,6 +51,10 @@ export interface EventsTable {
   base_schedule: string | null;
   fixed_costs_cents: number | null;
   playlist_url: string | null;
+  /** Capacidade da casa em pessoas (cabeças); nulo = sem limite. */
+  capacity: number | null;
+  max_children: Generated<number>;
+  allow_companions: Generated<number>;
 }
 
 export interface ParticipationsTable {
@@ -266,7 +272,9 @@ export interface RoomsTable {
   id: string;
   event_id: string;
   name: string;
+  /** Camas de solteiro. */
   beds: number;
+  double_beds: Generated<number>;
   created_at: string;
 }
 
@@ -417,6 +425,17 @@ export interface RidePlansTable {
   updated_at: string;
 }
 
+export interface CompanionsTable {
+  id: string;
+  event_id: string;
+  owner_id: string;
+  name: string;
+  kind: 'adult' | 'child';
+  drinks_alcohol: number;
+  diet: 'omnivore' | 'vegetarian';
+  created_at: string;
+}
+
 export interface Database {
   users: UsersTable;
   events: EventsTable;
@@ -460,4 +479,5 @@ export interface Database {
   expense_item_consumers: ExpenseItemConsumersTable;
   meeting_points: MeetingPointsTable;
   ride_plans: RidePlansTable;
+  companions: CompanionsTable;
 }

@@ -57,6 +57,9 @@ export async function repeatEvent(
         base_house_rules: source.base_house_rules,
         base_schedule: source.base_schedule,
         playlist_url: source.playlist_url,
+        capacity: source.capacity,
+        max_children: source.max_children,
+        allow_companions: source.allow_companions,
       })
       .where('id', '=', card.id)
       .execute();
@@ -105,6 +108,7 @@ export async function repeatEvent(
             event_id: card.id,
             name: r.name,
             beds: r.beds,
+            double_beds: r.double_beds,
             created_at: new Date(now.getTime() + i).toISOString(),
           })),
         )

@@ -4,7 +4,14 @@ import type { AppContext } from '../../context';
 import { conflict, forbidden, notFound } from '../../errors';
 import { audit } from '../../lib/audit';
 import { formatBRL } from '../../lib/format';
-import { buildActor, getTreasurerId, requireEvent, usersById } from '../events/event.queries';
+import {
+  buildActor,
+  getTreasurerId,
+  loadParties,
+  partyOf,
+  requireEvent,
+  usersById,
+} from '../events/event.queries';
 import { notify } from '../notifications/notifications.service';
 
 /**
@@ -45,12 +52,14 @@ export async function listRefunds(
     rows.map((r) => r.user_id),
   );
   const amount = event.deposit_cents ?? 0;
+  const parties = await loadParties(ctx.db, eventId);
 
   const items: RefundDto[] = rows
     .filter((r) => canManage || r.user_id === userId)
     .map((r) => ({
       user: users.get(r.user_id) ?? { id: r.user_id, name: '—' },
-      amountCents: amount,
+      // O sinal foi pago por cota (casal = dois sinais): a devolução acompanha.
+      amountCents: amount * partyOf(parties, r.user_id).units,
       refundedAt: done.find((d) => d.user_id === r.user_id)?.refunded_at ?? null,
     }));
   return { canManage, items };
@@ -96,7 +105,7 @@ export async function markRefunded(
       eventId,
       kind: 'deposit.refunded',
       title: 'Devolução do sinal registrada',
-      body: `O Tesoureiro registrou a devolução de ${formatBRL(event.deposit_cents ?? 0)} de ${event.title}. Confira o Pix recebido.`,
+      body: `O Tesoureiro registrou a devolução de ${formatBRL((event.deposit_cents ?? 0) * partyOf(await loadParties(trx, eventId), targetId).units)} de ${event.title}. Confira o Pix recebido.`,
       dedupeKey: `deposit.refunded:${eventId}:${targetId}`,
     });
     await audit(trx, now, {

@@ -246,7 +246,7 @@ function SeatMap({
   return (
     <div>
       <p className="eyebrow mb-2">
-        Lugares · {vehicle.passengers.length}/{vehicle.seats}
+        Lugares · {vehicle.seats - vehicle.freeSeats}/{vehicle.seats}
       </p>
       <ul className="flex flex-wrap gap-2.5">
         <li
@@ -258,7 +258,18 @@ function SeatMap({
           </span>
           <span className="text-[11px] font-bold">Motorista</span>
         </li>
-        {vehicle.passengers.map((p) => (
+        {Array.from({ length: vehicle.driverCompanions }, (_, i) => (
+          <li key={`driver-companion-${i}`} className="flex flex-col items-center gap-1">
+            <span
+              className="grid size-11 place-items-center rounded-xl bg-navy-soft text-xs font-extrabold text-navy-dark"
+              title={`Acompanhante de ${vehicle.driver.name}`}
+            >
+              +1
+            </span>
+            <span className="text-[11px] text-muted">Acomp.</span>
+          </li>
+        ))}
+        {vehicle.passengers.flatMap((p) => [
           <li key={p.id} className="flex flex-col items-center gap-1">
             <button
               type="button"
@@ -271,8 +282,16 @@ function SeatMap({
               <Avatar user={p} size={44} />
             </button>
             <span className="max-w-14 truncate text-[11px] font-bold">{p.name.split(' ')[0]}</span>
-          </li>
-        ))}
+          </li>,
+          ...Array.from({ length: p.companions }, (_, k) => (
+            <li key={`${p.id}-companion-${k}`} className="flex flex-col items-center gap-1">
+              <span className="grid size-11 place-items-center rounded-xl bg-navy-soft text-xs font-extrabold text-navy-dark">
+                +1
+              </span>
+              <span className="text-[11px] text-muted">Acomp.</span>
+            </li>
+          )),
+        ])}
         {Array.from({ length: vehicle.freeSeats }, (_, i) => (
           <li key={`free-${i}`} className="flex flex-col items-center gap-1">
             <span

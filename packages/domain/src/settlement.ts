@@ -1,4 +1,5 @@
 import { assertCents, splitEvenly, type Cents } from './money';
+import type { Companion } from './party';
 
 /**
  * Motor de rateio (RN-32 a RN-41).
@@ -14,6 +15,11 @@ export interface RosterMember {
   userId: string;
   drinksAlcohol: boolean;
   diet: Diet;
+  /**
+   * Acompanhantes da confirmação. Cada adulto é mais uma cota (com a própria bebida e dieta), cobrada
+   * do responsável; criança é isenta. Os saldos seguem sendo por conta: só o responsável tem saldo.
+   */
+  companions?: readonly Companion[];
 }
 
 export interface SettlementExpense {
@@ -74,24 +80,50 @@ export interface SettlementResult {
   totalExpensesCents: Cents;
 }
 
+/** Uma cota de rateio: pertence a uma conta (o responsável) mas tem consumo próprio. */
+interface Unit {
+  ownerId: string;
+  drinksAlcohol: boolean;
+  diet: Diet;
+}
+
+/** Responsável e cada acompanhante adulto; criança fica de fora (isenta). */
+function unitsOf(roster: readonly RosterMember[]): Unit[] {
+  return roster.flatMap((m) => [
+    { ownerId: m.userId, drinksAlcohol: m.drinksAlcohol, diet: m.diet },
+    ...(m.companions ?? [])
+      .filter((c) => c.kind === 'adult')
+      .map((c) => ({ ownerId: m.userId, drinksAlcohol: c.drinksAlcohol, diet: c.diet })),
+  ]);
+}
+
+/** Dono de cada cota que entra na divisão, repetido uma vez por cota (casal = duas vezes). */
+function resolveUnits(expense: SettlementExpense, roster: readonly RosterMember[]): string[] {
+  const units = unitsOf(roster);
+  const pick = (keep: (u: Unit) => boolean) => units.filter(keep).map((u) => u.ownerId);
+  switch (expense.quota) {
+    case 'global':
+      return pick(() => true);
+    case 'alcohol':
+      return pick((u) => u.drinksAlcohol);
+    case 'meat':
+      return pick((u) => u.diet === 'omnivore');
+    case 'vegetarian':
+      return pick((u) => u.diet === 'vegetarian');
+    case 'custom': {
+      // "Pessoas específicas" escolhe confirmações: o casal divide o carro, a casa, a corrida.
+      const wanted = new Set(expense.customParticipantIds ?? []);
+      return pick((u) => wanted.has(u.ownerId));
+    }
+  }
+}
+
+/** Contas que entram na divisão (sem repetir): quem tem ao menos uma cota na despesa. */
 export function resolveBeneficiaries(
   expense: SettlementExpense,
   roster: readonly RosterMember[],
 ): string[] {
-  switch (expense.quota) {
-    case 'global':
-      return roster.map((m) => m.userId);
-    case 'alcohol':
-      return roster.filter((m) => m.drinksAlcohol).map((m) => m.userId);
-    case 'meat':
-      return roster.filter((m) => m.diet === 'omnivore').map((m) => m.userId);
-    case 'vegetarian':
-      return roster.filter((m) => m.diet === 'vegetarian').map((m) => m.userId);
-    case 'custom': {
-      const wanted = new Set(expense.customParticipantIds ?? []);
-      return roster.filter((m) => wanted.has(m.userId)).map((m) => m.userId);
-    }
-  }
+  return [...new Set(resolveUnits(expense, roster))];
 }
 
 export function computeSettlement(input: SettlementInput): SettlementResult {
@@ -144,16 +176,16 @@ export function computeSettlement(input: SettlementInput): SettlementResult {
       continue;
     }
 
-    const beneficiaries = resolveBeneficiaries(expense, roster);
-    if (beneficiaries.length === 0) {
+    const units = resolveUnits(expense, roster);
+    if (units.length === 0) {
       issues.push({ expenseId: expense.id, code: 'NO_BENEFICIARIES' });
       continue;
     }
     totalExpensesCents += expense.amountCents;
     entry(expense.payerId).paidCents += expense.amountCents;
 
-    const { share, remainder } = splitEvenly(expense.amountCents, beneficiaries.length);
-    for (const userId of beneficiaries) entry(userId).costCents += share;
+    const { share, remainder } = splitEvenly(expense.amountCents, units.length);
+    for (const ownerId of units) entry(ownerId).costCents += share;
     entry(treasurerId).costCents += remainder; // RN-37
   }
 

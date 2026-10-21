@@ -35,7 +35,10 @@ import {
   getEventRoles,
   getParticipation,
   getTreasurerId,
+  loadParties,
+  partyOf,
   requireEvent,
+  toCompanionDto,
   toEventCard,
   toEventCards,
   usersById,
@@ -300,6 +303,15 @@ export async function respond(
         .execute();
     }
 
+    // Quem sai do rolê leva os acompanhantes junto: eles só existem ligados à confirmação.
+    if (!goingIn) {
+      await trx
+        .deleteFrom('companions')
+        .where('event_id', '=', eventId)
+        .where('owner_id', '=', userId)
+        .execute();
+    }
+
     const changedSide = wasIn !== goingIn;
     if (!changedSide) return; // resposta repetida: idempotente, sem efeitos colaterais
 
@@ -515,12 +527,14 @@ export async function getEventDetail(
       )
     : new Map<string, Reliability>();
 
+  const parties = await loadParties(ctx.db, eventId);
   const roster: RosterEntry[] = parts.map((p) => ({
     user: users.get(p.user_id) ?? { id: p.user_id, name: '—' },
     drinksAlcohol: p.drinks_alcohol === 1,
     diet: p.diet,
     depositStatus: effectiveDepositStatus(event, p, treasurerId),
     roles: roleRows.filter((r) => r.user_id === p.user_id).map((r) => r.role),
+    companions: partyOf(parties, p.user_id).companions.map(toCompanionDto),
     reliability: p.user_id === userId ? null : (badges.get(p.user_id) ?? null),
   }));
 

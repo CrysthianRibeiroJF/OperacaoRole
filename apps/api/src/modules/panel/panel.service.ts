@@ -29,9 +29,13 @@ import {
   usersById,
   vacantRolesOf,
   getTreasurerId,
+  loadParties,
+  partyOf,
+  partyTotals,
   type EventRow,
   type ParticipationRow,
 } from '../events/event.queries';
+import { occupiedSeats } from '../fleet/fleet.service';
 import { getVault } from '../settlement/settlement.service';
 import { loadRides, loadStops } from '../transport/transport.service';
 
@@ -103,6 +107,8 @@ async function loadData(ctx: AppContext, event: EventRow, userId: string) {
         .execute()
     : [];
 
+  const parties = await loadParties(db, eventId);
+  const totals = partyTotals(memberIds, parties);
   const users = await usersById(db, [
     ...memberIds,
     ...supplies.flatMap((s) => (s.assignee_id ? [s.assignee_id] : [])),
@@ -119,6 +125,9 @@ async function loadData(ctx: AppContext, event: EventRow, userId: string) {
     expenses,
     openContests: contests.length,
     memberIds,
+    parties,
+    headsTotal: totals.heads,
+    unitsTotal: totals.units,
     rides,
     treasurerId,
     packingTotal: packing.length,
@@ -140,7 +149,7 @@ function suppliesPanel(data: Data): SuppliesPanel {
       done: i.done === 1,
       assigneeId: i.assignee_id,
     })),
-    data.memberIds.length,
+    data.unitsTotal,
   );
   const user = (id: string) => data.users.get(id) ?? { id, name: '—' };
   return {
@@ -170,7 +179,15 @@ function fleetPanel(data: Data): FleetPanel {
   const user = (id: string) => data.users.get(id) ?? { id, name: '—' };
   const modeOf = (id: string): RideMode => data.rides.modes.get(id) ?? 'none';
   const seatsTotal = data.vehicles.reduce((sum, v) => sum + v.seats, 0);
-  const summary = summarizeFleet({ modes: data.memberIds.map(modeOf), seatsTotal });
+  // Uma entrada por cabeça: o acompanhante vai como o responsável; os do motorista ocupam lugares no carro.
+  const modes = data.memberIds.flatMap((id): RideMode[] => {
+    const mode = modeOf(id);
+    const extra = partyOf(data.parties, id).companions.length;
+    return mode === 'driver'
+      ? ['driver', ...Array.from({ length: extra }, (): RideMode => 'passenger')]
+      : Array.from({ length: 1 + extra }, () => mode);
+  });
+  const summary = summarizeFleet({ modes, seatsTotal });
   const who = (mode: RideMode) => data.memberIds.filter((id) => modeOf(id) === mode).map(user);
 
   return {
@@ -186,7 +203,11 @@ function fleetPanel(data: Data): FleetPanel {
       departurePlace: v.departure_place,
       departureTime: v.departure_time,
       seats: v.seats,
-      taken: data.passengers.filter((p) => p.vehicle_id === v.id).length,
+      taken: occupiedSeats(
+        v.driver_id,
+        data.passengers.filter((p) => p.vehicle_id === v.id).map((p) => p.user_id),
+        data.parties,
+      ),
     })),
     appRiderUsers: who('app'),
     ownRiderUsers: who('own'),
@@ -226,6 +247,7 @@ function basePanel(event: EventRow, data: Data): BasePanel {
     rooms: {
       total: data.rooms.length,
       beds: data.rooms.reduce((sum, r) => sum + r.beds, 0),
+      doubleBeds: data.rooms.reduce((sum, r) => sum + r.double_beds, 0),
       occupied: data.occupants.length,
     },
     withoutBed,
@@ -238,6 +260,14 @@ function treasuryPanel(event: EventRow, data: Data): TreasuryPanel {
   const open = !!event.deposit_opened_at;
   const count = (s: string) => (open ? payers.filter((p) => status(p) === s).length : 0);
   const approved = count('approved');
+  const collectedCents = open
+    ? payers
+        .filter((p) => status(p) === 'approved')
+        .reduce(
+          (sum, p) => sum + (event.deposit_cents ?? 0) * partyOf(data.parties, p.user_id).units,
+          0,
+        )
+    : 0;
   const approvedExpenses = data.expenses.filter((e) => e.status === 'approved');
   const approvedCents = approvedExpenses.reduce((sum, e) => sum + e.amount_cents, 0);
   return {
@@ -250,15 +280,15 @@ function treasuryPanel(event: EventRow, data: Data): TreasuryPanel {
       pending: count('pending'),
       rejected: count('rejected'),
       waitlisted: count('waitlisted'),
-      collectedCents: approved * (event.deposit_cents ?? 0),
+      collectedCents,
     },
     expenses: {
       count: data.expenses.length,
       approvedCents,
       pendingCount: data.expenses.filter((e) => e.status === 'pending').length,
       openContests: data.openContests,
-      perHeadCents:
-        data.memberIds.length > 0 ? Math.floor(approvedCents / data.memberIds.length) : null,
+      // Por cota que paga (criança é isenta), como na conta do rolê.
+      perHeadCents: data.unitsTotal > 0 ? Math.floor(approvedCents / data.unitsTotal) : null,
     },
     settled: event.status === 'closed',
   };
@@ -364,6 +394,17 @@ function overviewPanel(
       key: 'vacant',
       tone: 'warn',
       text: `Cargo vago: ${vacantRoles.map((r) => ROLE_LABELS[r].replace('General ', '')).join(', ')}. Você cobre enquanto ninguém assume.`,
+      tab: 'equipe',
+    });
+  }
+  if (event.capacity !== null && data.headsTotal >= Math.floor(event.capacity * 0.9)) {
+    const over = data.headsTotal > event.capacity;
+    alerts.push({
+      key: 'capacity',
+      tone: over ? 'danger' : 'info',
+      text: over
+        ? `A casa comporta ${event.capacity} pessoas e já são ${data.headsTotal}.`
+        : `Casa quase cheia: ${data.headsTotal} de ${event.capacity} pessoas.`,
       tab: 'equipe',
     });
   }
@@ -511,7 +552,10 @@ async function minePanel(
     deposit: {
       required: event.deposit_required === 1,
       status: depositStatus,
-      amountCents: event.deposit_cents,
+      amountCents:
+        event.deposit_cents === null
+          ? null
+          : event.deposit_cents * partyOf(data.parties, userId).units,
       deadlineAt: event.deposit_deadline_at,
     },
     ride: {

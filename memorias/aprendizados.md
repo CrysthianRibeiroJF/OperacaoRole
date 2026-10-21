@@ -33,3 +33,7 @@ Uma entrada por fonte, com data, o que foi observado (fatos, não interpretaçã
 ### AP-002 · Cada General quer a sua tela; e casais não cabem no modelo · 2026-10-21 · Fonte: feedback do dono do produto
 **Observado:** pediu que cada General tenha uma tela mais avançada (compras com mais detalhe, caronas com local de encontro, Uber e paradas), que o Idealizador veja tudo e que a andorinha sem cargo tenha um painel de acompanhamento. Em seguida perguntou como ficam casais: divisão de quartos, mais de um casal por rolê e casal pagando em dobro.
 **Implicação:** a aba Painel e os pontos de encontro (D-043, D-044) respondem à primeira parte. A segunda mostra uma lacuna do modelo "uma confirmação = uma pessoa" (Q17): afeta rateio, quórum, sinal, quartos e carros e precisa de decisão antes de construir.
+
+### AP-003 · Casais precisam de um lugar no modelo · 2026-10-21 · Fonte: feedback do dono do produto
+**Observado:** definiu que o acompanhante conta como "andorinha atrelada" só para contar a cabeça (principalmente pela capacidade da casa), que quem confirma com casal paga por dois, que o casal não é ligado à conta e sim ao rolê, e que criança é isenta com limite para não virar creche.
+**Implicação:** D-045 e RN-124 a RN-130. A capacidade da casa em cabeças virou regra do rolê. Vale validar no beta se um adulto só por confirmação basta e se 2 crianças é um bom padrão.

@@ -1,4 +1,4 @@
-import { assertCents, splitEvenly, type Cents } from './money';
+import { assertCents, type Cents } from './money';
 
 /**
  * Conta por item ("a conta do bar"): cada item é dividido só entre quem o consumiu; o que sobra do
@@ -10,11 +10,39 @@ export interface ItemLine {
   consumerIds: readonly string[];
 }
 
-/** `eligible` = quem está no rateio (roster). Devolve null se ninguém consumiu nada. */
+/**
+ * Divide `amount` na proporção dos pesos, sem perder centavo (maior resto; desempate pelo id).
+ * Com pesos iguais é a divisão por igual: o resto vai para os primeiros ids.
+ */
+function splitWeighted(
+  amount: Cents,
+  weights: readonly { id: string; weight: number }[],
+): Map<string, Cents> {
+  const total = weights.reduce((sum, w) => sum + w.weight, 0);
+  const parts = weights.map((w) => {
+    const exact = amount * w.weight;
+    return { id: w.id, whole: Math.floor(exact / total), rest: exact % total };
+  });
+  let leftover = amount - parts.reduce((sum, p) => sum + p.whole, 0);
+  const bonus = new Set<string>();
+  for (const p of [...parts].sort((a, b) => b.rest - a.rest || a.id.localeCompare(b.id))) {
+    if (leftover <= 0) break;
+    bonus.add(p.id);
+    leftover--;
+  }
+  return new Map(parts.map((p) => [p.id, p.whole + (bonus.has(p.id) ? 1 : 0)]));
+}
+
+/**
+ * `eligible` = quem está no rateio (roster). `weights` = quantas cotas cada confirmação tem (casal = 2):
+ * quem leva acompanhante adulto consome por dois. Sem pesos, todo mundo vale 1.
+ * Devolve null se ninguém consumiu nada.
+ */
 export function splitByItems(
   totalCents: Cents,
   items: readonly ItemLine[],
   eligible: ReadonlySet<string>,
+  weights: ReadonlyMap<string, number> = new Map(),
 ): Record<string, Cents> | null {
   assertCents(totalCents, 'despesa');
   const base = new Map<string, Cents>();
@@ -23,8 +51,11 @@ export function splitByItems(
     assertCents(item.amountCents, 'item');
     const who = [...new Set(item.consumerIds)].filter((id) => eligible.has(id)).sort();
     if (who.length === 0) continue;
-    const { share, remainder } = splitEvenly(item.amountCents, who.length);
-    who.forEach((id, i) => base.set(id, (base.get(id) ?? 0) + share + (i < remainder ? 1 : 0)));
+    const split = splitWeighted(
+      item.amountCents,
+      who.map((id) => ({ id, weight: Math.max(1, weights.get(id) ?? 1) })),
+    );
+    for (const [id, cents] of split) base.set(id, (base.get(id) ?? 0) + cents);
   }
 
   const claimed = [...base.values()].reduce((sum, v) => sum + v, 0);

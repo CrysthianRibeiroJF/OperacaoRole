@@ -24,7 +24,7 @@ export function BudgetCard({ detail }: { detail: EventDetail }) {
   const canEdit = me.can['budget.edit'];
   const fixed = budget.fixedCostsCents;
   const suppliesCents = supplies.data?.estimatedCents ?? 0;
-  const input = { fixedCents: fixed ?? 0, suppliesCents, people: event.confirmedCount };
+  const input = { fixedCents: fixed ?? 0, suppliesCents, people: event.payingCount };
   const now = perPersonCents(input);
   const hasData = fixed !== null || suppliesCents > 0;
 
@@ -55,7 +55,9 @@ export function BudgetCard({ detail }: { detail: EventDetail }) {
       ) : (
         <>
           <div>
-            <p className="eyebrow">Hoje, com {event.confirmedCount} pessoas</p>
+            <p className="eyebrow">
+              Hoje, com {event.payingCount} {event.payingCount === 1 ? 'cota' : 'cotas'}
+            </p>
             <p className="mono mt-1 text-[2.25rem] font-semibold leading-none">{formatBRL(now)}</p>
             <p className={`mt-2 text-sm font-bold ${overCap ? 'text-warn' : 'text-ok'}`}>
               {overCap
@@ -71,7 +73,7 @@ export function BudgetCard({ detail }: { detail: EventDetail }) {
                 className="grid grid-cols-[4.5rem_1fr_5.5rem] items-center gap-3 text-sm"
               >
                 <span className="text-muted">
-                  {i === 0 ? 'Agora' : `+${p.people - event.confirmedCount}`}
+                  {i === 0 ? 'Agora' : `+${p.people - event.payingCount}`}
                 </span>
                 <span className="h-3 overflow-hidden rounded-full bg-desk-deep" aria-hidden>
                   <span

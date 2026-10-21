@@ -52,3 +52,7 @@ Vocabulário do produto. Use estes termos de forma consistente em telas, tickets
 | **Meu acompanhamento** | O que falta para cada pessoa no rolê: sinal, transporte, cama, itens e bagagem. |
 | **Ponto de encontro** | Lugar e hora cadastrados pela Frota: encontro, parada, ponto para chamar o app ou volta. |
 | **Plano de transporte** | Declaração de quem não tem carro: app (Uber, 99, táxi) ou conta própria. |
+| **Acompanhante** | Pessoa que vai com um confirmado (casal ou criança), só neste rolê e sem conta. |
+| **Cota** | Parcela do rateio: o responsável e cada acompanhante adulto contam uma; criança é isenta. |
+| **Cabeça** | Pessoa fisicamente no rolê (responsável, adultos e crianças): conta para casa, carros e camas, não para o quórum. |
+| **Cama de casal** | Cama que só um par da mesma confirmação ocupa. |

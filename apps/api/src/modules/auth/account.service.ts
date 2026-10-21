@@ -137,6 +137,7 @@ export async function deleteAccount(ctx: AppContext, userId: string): Promise<vo
     await trx.deleteFrom('packing_checks').where('user_id', '=', userId).execute();
     await trx.deleteFrom('packing_items').where('owner_id', '=', userId).execute();
     await trx.deleteFrom('ride_plans').where('user_id', '=', userId).execute();
+    await trx.deleteFrom('companions').where('owner_id', '=', userId).execute();
     await trx.deleteFrom('track_votes').where('user_id', '=', userId).execute();
     await trx.deleteFrom('tracks').where('user_id', '=', userId).execute();
     await trx.deleteFrom('deposit_proofs').where('user_id', '=', userId).execute();

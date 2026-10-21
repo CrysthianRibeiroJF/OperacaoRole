@@ -1,15 +1,18 @@
-import type { RoomDto, RoomsDto } from '@role/contracts';
-import { can } from '@role/domain';
-import type { AppContext } from '../../context';
-import { conflict, forbidden, notFound } from '../../errors';
+import type { RoomDto, RoomsDto, WithCompanions } from '@role/contracts';
+import { allocateBeds, can } from '@role/domain';
+import type { AppContext, Db } from '../../context';
+import { badRequest, conflict, forbidden, notFound } from '../../errors';
 import { newId } from '../../ids';
 import { audit } from '../../lib/audit';
 import {
   buildActor,
   confirmedUserIds,
+  loadParties,
+  partyOf,
   requireEvent,
   usersById,
   type EventRow,
+  type PartyInfo,
 } from '../events/event.queries';
 import { assertSeatEligible } from '../fleet/fleet.service';
 import { notify } from '../notifications/notifications.service';
@@ -18,6 +21,33 @@ function assertActive(event: EventRow) {
   if (event.status !== 'confirmed') {
     throw conflict('EVENT_NOT_ACTIVE', 'Os quartos só mudam enquanto o rolê está confirmado');
   }
+}
+
+/**
+ * Camas em uso num quarto, com a confirmação de `plus` (ou no lugar da que já estiver): casal usa a
+ * cama de casal (ou duas de solteiro), adulto sozinho usa uma de solteiro, criança divide a cama.
+ */
+export async function bedsUse(
+  db: Db,
+  roomId: string,
+  parties: ReadonlyMap<string, PartyInfo>,
+  plus?: { userId: string; adults: number },
+) {
+  const room = await db
+    .selectFrom('rooms')
+    .selectAll()
+    .where('id', '=', roomId)
+    .executeTakeFirstOrThrow();
+  const occupants = await db
+    .selectFrom('room_occupants')
+    .select('user_id')
+    .where('room_id', '=', roomId)
+    .execute();
+  const list = occupants
+    .filter((o) => o.user_id !== plus?.userId)
+    .map((o) => ({ adults: 1 + partyOf(parties, o.user_id).adults }));
+  if (plus) list.push({ adults: plus.adults });
+  return allocateBeds({ singles: room.beds, doubles: room.double_beds }, list);
 }
 
 async function loadRoom(ctx: AppContext, roomId: string) {
@@ -50,16 +80,26 @@ export async function getRooms(
     ctx.db.selectFrom('room_occupants').selectAll().where('event_id', '=', eventId).execute(),
     confirmedUserIds(ctx.db, eventId),
   ]);
+  const parties = await loadParties(ctx.db, eventId);
   const users = await usersById(ctx.db, [...occupants.map((o) => o.user_id), ...memberIds]);
-  const user = (id: string) => users.get(id) ?? { id, name: '—' };
+  const user = (id: string): WithCompanions => ({
+    ...(users.get(id) ?? { id, name: '—' }),
+    companions: partyOf(parties, id).companions.length,
+  });
 
   const dtos: RoomDto[] = rooms.map((r) => {
     const people = occupants.filter((o) => o.room_id === r.id);
+    const use = allocateBeds(
+      { singles: r.beds, doubles: r.double_beds },
+      people.map((o) => ({ adults: 1 + partyOf(parties, o.user_id).adults })),
+    );
     return {
       id: r.id,
       name: r.name,
       beds: r.beds,
-      freeBeds: Math.max(0, r.beds - people.length),
+      freeBeds: Math.max(0, r.beds - use.singlesUsed),
+      doubleBeds: r.double_beds,
+      freeDoubleBeds: Math.max(0, r.double_beds - use.doublesUsed),
       occupants: people.map((o) => user(o.user_id)),
     };
   });
@@ -75,7 +115,7 @@ export async function createRoom(
   ctx: AppContext,
   userId: string,
   eventId: string,
-  input: { name: string; beds: number },
+  input: { name: string; beds: number; doubleBeds: number },
 ): Promise<void> {
   const event = await requireEvent(ctx.db, eventId);
   assertActive(event);
@@ -88,6 +128,7 @@ export async function createRoom(
       event_id: eventId,
       name: input.name,
       beds: input.beds,
+      double_beds: input.doubleBeds,
       created_at: ctx.clock.now().toISOString(),
     })
     .execute();
@@ -103,28 +144,39 @@ export async function updateRoom(
   ctx: AppContext,
   userId: string,
   roomId: string,
-  patch: { name?: string; beds?: number },
+  patch: { name?: string; beds?: number; doubleBeds?: number },
 ): Promise<void> {
   const { room, event } = await loadRoom(ctx, roomId);
   assertActive(event);
   const { actor } = await buildActor(ctx.db, event, userId);
   if (!can(actor, 'rooms.edit')) throw forbidden('Só o General da Base edita os quartos');
-  if (patch.beds !== undefined) {
-    const taken = await ctx.db
+  if (patch.beds !== undefined || patch.doubleBeds !== undefined) {
+    const singles = patch.beds ?? room.beds;
+    const doubles = patch.doubleBeds ?? room.double_beds;
+    if (singles + doubles < 1) {
+      throw badRequest('BEDS_TOO_FEW', 'O quarto precisa de ao menos uma cama.');
+    }
+    const parties = await loadParties(ctx.db, room.event_id);
+    const occupants = await ctx.db
       .selectFrom('room_occupants')
-      .select((eb) => eb.fn.countAll<number>().as('n'))
+      .select('user_id')
       .where('room_id', '=', room.id)
-      .executeTakeFirstOrThrow();
-    if (patch.beds < Number(taken.n)) {
+      .execute();
+    const use = allocateBeds(
+      { singles, doubles },
+      occupants.map((o) => ({ adults: 1 + partyOf(parties, o.user_id).adults })),
+    );
+    if (!use.ok) {
       throw conflict(
         'BEDS_TOO_FEW',
-        `Já há ${taken.n} pessoa(s) neste quarto. Tire alguém antes de reduzir as camas.`,
+        'As camas que sobram não comportam quem já está neste quarto. Tire alguém antes de reduzir.',
       );
     }
   }
   const set: Record<string, unknown> = {};
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.beds !== undefined) set.beds = patch.beds;
+  if (patch.doubleBeds !== undefined) set.double_beds = patch.doubleBeds;
   if (Object.keys(set).length > 0)
     await ctx.db.updateTable('rooms').set(set).where('id', '=', roomId).execute();
 }
@@ -177,12 +229,13 @@ async function placeUser(
       .executeTakeFirst();
     if (already?.room_id === roomId) return; // idempotente
 
-    const taken = await trx
-      .selectFrom('room_occupants')
-      .select((eb) => eb.fn.countAll<number>().as('n'))
-      .where('room_id', '=', roomId)
-      .executeTakeFirstOrThrow();
-    if (Number(taken.n) >= room.beds) throw conflict('NO_BEDS', 'Esse quarto está lotado');
+    // Casal pega a cama de casal (ou duas de solteiro); sozinho, uma de solteiro.
+    const parties = await loadParties(trx, event.id);
+    const use = await bedsUse(trx, roomId, parties, {
+      userId: targetId,
+      adults: 1 + partyOf(parties, targetId).adults,
+    });
+    if (!use.ok) throw conflict('NO_BEDS', 'Esse quarto não tem cama para a sua turma');
 
     await trx
       .deleteFrom('room_occupants')

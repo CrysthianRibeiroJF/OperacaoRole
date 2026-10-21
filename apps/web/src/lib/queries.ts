@@ -6,6 +6,7 @@ import type {
   FleetDto,
   MissionReportDto,
   PanelDto,
+  PartyDto,
   MutedEventDto,
   PackingDto,
   PhotosDto,
@@ -47,6 +48,7 @@ export const keys = {
   tracks: (id: string) => ['tracks', id] as const,
   report: (id: string) => ['report', id] as const,
   panel: (id: string) => ['panel', id] as const,
+  party: (id: string) => ['party', id] as const,
   transport: (id: string) => ['transport', id] as const,
   polls: ['polls'] as const,
   poll: (code: string) => ['poll', code] as const,
@@ -155,6 +157,14 @@ export const usePanel = (id: string) =>
     retry: false,
   });
 
+export const useParty = (id: string, enabled = true) =>
+  useQuery({
+    queryKey: keys.party(id),
+    queryFn: () => api.get<PartyDto>(`/events/${id}/party`),
+    enabled,
+    retry: false,
+  });
+
 export const useTransport = (id: string) =>
   useQuery({
     queryKey: keys.transport(id),
@@ -219,6 +229,7 @@ export const eventKeys = (id: string, code?: string): QueryKey[] => [
   keys.tracks(id),
   keys.report(id),
   keys.panel(id),
+  keys.party(id),
   keys.transport(id),
   keys.feed,
   keys.notifications,

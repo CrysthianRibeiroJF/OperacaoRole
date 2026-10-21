@@ -216,6 +216,13 @@ export function InvitePage() {
             Abrir o QG do rolê
           </Link>
 
+          <Link
+            to={`/role/${event.id}?aba=equipe`}
+            className="block rounded-[14px] bg-navy-soft p-4 text-sm font-bold text-navy-dark"
+          >
+            Vai levar alguém? Adicione seu acompanhante (casal ou criança) na aba Equipe.
+          </Link>
+
           <div className="card p-4">
             <p className="eyebrow">Seu perfil neste rolê</p>
             <p className="mb-1 mt-1 text-sm text-muted">

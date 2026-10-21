@@ -115,6 +115,11 @@ export function ReportPage() {
               <p className="mt-1 text-sm text-muted">
                 {formatBRL(report.perDayPerHeadCents)} por dia
               </p>
+              {report.payingCount !== report.headcount && (
+                <p className="mt-1 text-xs text-muted">
+                  Dividido por {report.payingCount} cotas: criança é isenta.
+                </p>
+              )}
             </div>
             <dl className="grid grid-cols-3 gap-3 text-center">
               <Stat label="Pessoas" value={String(report.headcount)} />
